@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Real-time Trading Dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #eee; margin:0; padding:0; }
+    header { padding:1rem; background:#222; }
+    main { display:flex; height: calc(100vh - 60px); }
+    #left, #right { padding:1rem; overflow:auto; }
+    #left { flex: 2; }
+    #right { flex: 1; border-left:1px solid #333; }
+    .section { margin-bottom:1rem; }
+    .section h3 { margin-bottom:0.5rem; color:#ccc; }
+    #chart { width:100%; height:60vh; }
+    #logs { height:20vh; overflow-y:auto; background:#222; padding:0.5rem; white-space:pre-wrap; }
+    .tf-btn { margin-right:0.5rem; padding:0.3rem 0.6rem; background:#333; color:#eee; border:none; cursor:pointer; }
+    .tf-btn.active { background:#555; }
+    .log-list { height:15vh; overflow-y:auto; background:#222; padding:0.5rem; white-space:pre-wrap; font-family:monospace; }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="tf-btn active" data-tf="1m">1분봉</button>
+  <button class="tf-btn" data-tf="5m">5분봉</button>
+  <button class="tf-btn" data-tf="15m">15분봉</button>
+  <button class="tf-btn" data-tf="30m">30분봉</button>
+  <button class="tf-btn" data-tf="1h">1시간봉</button>
+  <button class="tf-btn" data-tf="4h">4시간봉</button>
+</header>
+
+<main>
+  <div id="left">
+    <div id="chart"></div>
+    <div id="logs" class="section"></div>
+  </div>
+  <div id="right">
+    <div id="balance" class="section">
+      <h3>계좌 잔고</h3>
+      <div id="balance-logs" class="log-list">로딩 중…</div>
+    </div>
+    <div id="positions" class="section">
+      <h3>포지션</h3>
+      <div id="position-logs" class="log-list">로딩 중…</div>
+    </div>
+    <div id="trade-logs" class="section">
+      <h3>매수/매도 내역</h3>
+      <div id="trade-logs-list" class="log-list">로딩 중…</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  let currentTf = '1m';
+  document.querySelectorAll('.tf-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTf = btn.dataset.tf;
+      fetchAndPlot();
+    });
+  });
+
+  const chartDiv = document.getElementById('chart');
+  async function fetchAndPlot() {
+    try {
+      const res  = await fetch(`/data?tf=${currentTf}`);
+      const data = await res.json();
+
+      const x     = data.map(d => new Date(d.timestamp));
+      const open  = data.map(d => d.open);
+      const high  = data.map(d => d.high);
+      const low   = data.map(d => d.low);
+      const close = data.map(d => d.close);
+
+      // 볼린저 밴드
+      const basis = data.map(d => d.basis);
+      const upper = data.map(d => d.upper);
+      const lower = data.map(d => d.lower);
+
+      // 캔들
+      const candleTrace = {
+        x, open, high, low, close,
+        type: 'candlestick',
+        name: 'BTC/USDT'
+      };
+
+      // 밴드 선들
+      const basisTrace = {
+        x, y: basis, mode: 'lines', name: 'Basis',
+        line: { width: 1, dash: 'solid', color: 'yellow' }
+      };
+      const upperTrace = {
+        x, y: upper, mode: 'lines', name: 'Upper',
+        line: { width: 1, dash: 'dot', color: 'magenta' }
+      };
+      const lowerTrace = {
+        x, y: lower, mode: 'lines', name: 'Lower',
+        line: { width: 1, dash: 'dot', color: 'cyan' }
+      };
+
+      // 매수/매도 마커
+      const buys = data.filter(d => d.signal === 'buy');
+      const sells= data.filter(d => d.signal === 'sell');
+      const buyTrace = {
+        x: buys.map(d => new Date(d.timestamp)),
+        y: buys.map(d => d.close),
+        mode: 'markers',
+        marker: { symbol: 'triangle-up', size: 10, color: 'lime' },
+        name: 'Buy'
+      };
+      const sellTrace = {
+        x: sells.map(d => new Date(d.timestamp)),
+        y: sells.map(d => d.close),
+        mode: 'markers',
+        marker: { symbol: 'triangle-down', size: 10, color: 'tomato' },
+        name: 'Sell'
+      };
+
+      // 렌더
+      Plotly.react(
+        chartDiv,
+        [candleTrace, basisTrace, upperTrace, lowerTrace, buyTrace, sellTrace],
+        { xaxis: { rangeslider: { visible: false } }, margin: { t:20, b:40 } }
+      );
+    } catch (e) {
+      console.error('차트 로드 실패', e);
+    }
+  }
+  // 로그 SSE
+  const logDiv = document.getElementById('logs');
+  const evt = new EventSource('/stream');
+  evt.onmessage = e => {
+    let line = e.data
+      .replace(/Signal:\s*buy/, '<span style="color:lime;">Signal: buy</span>')
+      .replace(/Signal:\s*sell/, '<span style="color:tomato;">Signal: sell</span>');
+    logDiv.innerHTML += line + '\n';
+    logDiv.scrollTop = logDiv.scrollHeight;
+  };
+
+  // 계좌·포지션·거래내역 갱신
+  async function fetchAccount() {
+    try {
+      // 각 엔드포인트 호출
+      const [balRes,posRes,trRes] = await Promise.all([
+        fetch('/account'), fetch('/positions'), fetch('/trade-logs')
+      ]);
+      const bal = await balRes.json();
+      const pos = await posRes.json();
+      const tr  = await trRes.json();
+
+      // 1) 잔고 로그: BTC, USDT, ETH 순
+      const assets = ['BTC','USDT','ETH'];
+      let balHtml = '';
+      assets.forEach(a => {
+        if (bal[a] !== undefined) {
+          balHtml += `${bal[a].toFixed(2)} ${a}\t`;
+        }
+      });
+      document.getElementById('balance-logs').textContent = balHtml || '데이터 없음';
+
+      // 2) 포지션 로그: 한 줄씩
+      let posHtml = '';
+      if (pos.length) {
+        pos.forEach(p => {
+          posHtml += ` 보유:${p.total.toFixed(2)}${p.symbol}  사용 가능:${p.available.toFixed(2)}${p.symbol} \n`;
+        });
+      } else posHtml = '포지션 없음';
+      document.getElementById('position-logs').textContent = posHtml;
+
+      // 3) 거래내역 로그
+      let trHtml = '';
+      if (tr.length) {
+        tr.forEach(r => {
+          const time = new Date(r.timestamp).toLocaleTimeString();
+          const color = r.side==='buy' ? 'lime' : 'tomato';
+          trHtml += `<span style="color:${color}">${time}  ${r.side.toUpperCase()}  ${r.price}  ${r.amount}</span>\n`;
+        });
+      } else trHtml = '거래내역 없음';
+      document.getElementById('trade-logs-list').innerHTML = trHtml;
+
+    } catch(e){ console.error('데이터 로드 실패', e); }
+  }
+
+  // 초기 및 5초마다
+  fetchAndPlot();
+  fetchAccount();
+  setInterval(fetchAndPlot, 2000);
+  setInterval(fetchAccount, 5000);
+</script>
+
+</body>
+</html>
