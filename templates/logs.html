@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Real-time Monitor Logs</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; padding: 1rem; }
+    #logs { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>실시간 모니터링 로그</h2>
+  <div id="logs"></div>
+
+  <script>
+    const logDiv = document.getElementById("logs");
+    const evtSource = new EventSource("/stream");
+
+    evtSource.onmessage = e => {
+      let line = e.data;
+
+      // Signal 텍스트 부분을 찾아서 컬러 태깅
+      line = line.replace(/Signal:\s*buy/, 
+        '<span style="color:lime;">Signal: buy</span>');
+      line = line.replace(/Signal:\s*sell/, 
+        '<span style="color:tomato;">Signal: sell</span>');
+
+      // innerHTML 로 추가해야 HTML 태그가 적용됩니다
+      logDiv.innerHTML += line + "<br>";
+
+      // 자동 스크롤
+      window.scrollTo(0, document.body.scrollHeight);
+    };
+  </script>
+</body>
+</html>

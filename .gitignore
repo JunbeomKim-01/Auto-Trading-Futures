@@ -1,0 +1,6 @@
+/config
+/__pycache__
+/client/__pycache__
+/strategies/__pycache__
+/streams/__pycache__
+/utills/__pycache__
