@@ -9,7 +9,7 @@
     header { padding:1rem; background:#222; }
     main { display:flex; height: calc(100vh - 60px); }
     #left, #right { padding:1rem; overflow:auto; }
-    #left { flex: 2; }
+    #left { flex: 1; }
     #right { flex: 1; border-left:1px solid #333; }
     .section { margin-bottom:1rem; }
     .section h3 { margin-bottom:0.5rem; color:#ccc; }
@@ -18,6 +18,23 @@
     .tf-btn { margin-right:0.5rem; padding:0.3rem 0.6rem; background:#333; color:#eee; border:none; cursor:pointer; }
     .tf-btn.active { background:#555; }
     .log-list { height:15vh; overflow-y:auto; background:#222; padding:0.5rem; white-space:pre-wrap; font-family:monospace; }
+    #position-table-container { overflow-x: auto; }
+    #position-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: monospace;
+    }
+    #position-table th,
+    #position-table td {
+      padding: 0.2rem;
+      border: 1px solid #333;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+    #position-table th {
+      background: #222;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
@@ -49,7 +66,26 @@
     </div>
     <div id="positions" class="section">
       <h3>포지션</h3>
-      <div id="position-logs" class="log-list">로딩 중…</div>
+      <div id="position-table-container" class="log-list">
+        <table id="position-table">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Size</th>
+              <th>Entry Price</th>
+              <th>Break Even Price</th>
+              <th>Mark Price</th>
+              <th>Liq. Price</th>
+              <th>Margin Ratio</th>
+              <th>Margin</th>
+              <th>PNL (ROI%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- JS가 여기에 <tr>들을 채워 넣습니다 -->
+          </tbody>
+        </table>
+      </div>
     </div>
     <div id="trade-logs" class="section">
       <h3>매수/매도 내역</h3>
@@ -94,6 +130,7 @@
       const basis = data.map(d => d.basis);
       const upper = data.map(d => d.upper);
       const lower = data.map(d => d.lower);
+      const slope = data.map(d => d.slope);
 
       // 캔들
       const candleTrace = {
@@ -114,6 +151,13 @@
       const lowerTrace = {
         x, y: lower, mode: 'lines', name: 'Lower',
         line: { width: 1, dash: 'dot', color: 'cyan' }
+      };
+
+      // 3) 슬로프 보조 지표 (yaxis: 'y2' 로 지정)
+      const slopeTrace = {
+        x, y: slope, type: 'scatter', name: 'Slope',
+        xaxis: 'x', yaxis: 'y2',
+        line: { width: 1.5, color: 'orange' }
       };
 
       // 매수/매도 마커
@@ -137,13 +181,17 @@
       // 렌더
       Plotly.react(
         chartDiv,
-        [candleTrace, basisTrace, upperTrace, lowerTrace, buyTrace, sellTrace],
+        [candleTrace, basisTrace, upperTrace, lowerTrace, buyTrace, sellTrace, slopeTrace],
         {
-          xaxis: { rangeslider: { visible: false } },
-          margin: { t:20, b:40 },
-          paper_bgcolor: '#000000',  // 전체 배경을 검정으로
-          plot_bgcolor:  '#000000',  // 차트 영역 배경도 검정으로
-          font: { color: '#eee' }    // 축 숫자·레이블은 연한 색으로
+          grid: { rows: 2, columns: 1, roworder: 'top to bottom', pattern: 'independent' },
+          // 첫 번째 서브플롯(가격)은 domain [0.3,1], 슬로프는 [0,0.25]
+          yaxis:  { domain: [0.3, 1],  title: 'Price',   gridcolor:'#333' },
+          yaxis2: { domain: [0,   0.25], title: 'Slope',   gridcolor:'#333' },
+          xaxis:  { rangeslider:{visible:false}, gridcolor:'#333' },
+          xaxis2: { matches: 'x', showticklabels:false },  // 하단 x축은 상단과 매칭, 레이블 감춤
+          margin: { t:20, b:30, l:50, r:20 },
+          paper_bgcolor: '#000', plot_bgcolor: '#000',
+          font: { color: '#eee' }
         }
       );
     } catch (e) {
@@ -165,43 +213,89 @@
   // 계좌·포지션·거래내역 갱신
   async function fetchAccount() {
     try {
-      // 각 엔드포인트 호출
-      const [balRes,posRes,trRes] = await Promise.all([
-        fetch('/account'), fetch('/positions'), fetch('/trade-logs')
+      // 1) 세 엔드포인트를 병렬 호출
+      const [balRes, posRes, trRes] = await Promise.all([
+        fetch(`/account?symbol=${encodeURIComponent(currentSymbol)}`),
+        fetch(`/position`),  // 모든 심볼을 돌려주던 엔드포인트
+        fetch(`/trade-logs?symbol=${encodeURIComponent(currentSymbol)}`)
       ]);
-      const bal = await balRes.json();
-      const pos = await posRes.json();
-      const tr  = await trRes.json();
 
-      // 1) 잔고 로그: BTC, USDT, ETH 순
-      const assets = ['BTC','USDT','ETH'];
-      let balHtml = '';
-      assets.forEach(a => {
-        if (bal[a] !== undefined) {
-          balHtml += `${bal[a].toFixed(2)} ${a}\t`;
-        }
-      });
-      document.getElementById('balance-logs').textContent = balHtml || '데이터 없음';
+      // 2) JSON 파싱
+      const bal     = await balRes.json();
+      const posList = await posRes.json();
+      const trList  = await trRes.json();
 
-      // 2) 포지션 로그: 한 줄씩
-      let posHtml = '';
-      if (pos.length) {
-        pos.forEach(p => {
-          posHtml += ` 보유:${p.total.toFixed(2)}${p.symbol}  사용 가능:${p.available.toFixed(2)}${p.symbol} \n`;
+      // --- 계좌 잔고 렌더링 ---
+      const [base, quote] = currentSymbol.split('/');
+      const balHtml = [
+        `${(bal[base]   || 0).toFixed(6)} ${base}`,
+        `${(bal[quote]  || 0).toFixed(6)} ${quote}`
+      ].join('    ');
+      document.getElementById('balance-logs').textContent = balHtml;
+
+      // --- 포지션 테이블 렌더링 ---
+      const tbody = document.querySelector('#position-table tbody');
+      if (posList.length) {
+        tbody.innerHTML = '';  // 기존 행 제거
+        posList.forEach(p => {
+          // 가끔 API 필드명이 다를 수 있으니 안전하게 fallback
+          const side     = p.side?.toUpperCase()       || '-';
+          const contracts= p.contracts                 || 0;
+          const entry    = p.entryPrice?.toLocaleString()      || '-';
+          const brit     = (p.breakEvenPrice ?? '-').toLocaleString();
+          const mark     = p.markPrice?.toLocaleString()       || '-';
+          const liq      = (p.liquidationPrice ?? '-').toLocaleString();
+          const mratio   = p.marginRatio!=null 
+                           ? (p.marginRatio*100).toFixed(2) + '%' 
+                           : '-';
+          const margin   = p.margin!=null 
+                           ? p.margin.toFixed(2) 
+                           : '-';
+          const pnl      = p.unrealizedPnl!=null 
+                           ? p.unrealizedPnl.toFixed(2) 
+                           : '0.00';
+          const roi      = p.unrealizedPnlPercentage!=null 
+                           ? p.unrealizedPnlPercentage.toFixed(2) + '%' 
+                           : '0.00%';
+          const pnlColor = (p.unrealizedPnl>=0) ? 'lime' : 'tomato';
+
+          tbody.innerHTML += `
+            <tr>
+              <td>${p.symbol}</td>
+              <td>${side}</td>
+              <td>${contracts}</td>
+              <td>${entry}</td>
+              <td>${brit}</td>
+              <td>${mark}</td>
+              <td>${liq}</td>
+              <td>${mratio}</td>
+              <td>${margin}</td>
+              <td style="color:${p.unrealizedPnl>=0?'lime':'tomato'}">
+                ${pnl} (${roi})
+              </td>
+            </tr>`;
         });
-      } else posHtml = '포지션 없음';
-      document.getElementById('position-logs').textContent = posHtml;
+      } else {
+        tbody.innerHTML = `<tr><td colspan="10">포지션 없음</td></tr>`;
+      }
 
-      // 3) 거래내역 로그
-      let trHtml = '';
-      if (tr.length) {
-        tr.forEach(r => {
-          const time = new Date(r.timestamp).toLocaleTimeString();
+      // --- 거래내역 로그 렌더링 ---
+      const tradeDiv = document.getElementById('trade-logs-list');
+      if (trList.length) {
+        tradeDiv.innerHTML = '';
+        trList.forEach(r => {
+          const time  = new Date(r.timestamp).toLocaleTimeString();
           const color = r.side==='buy' ? 'lime' : 'tomato';
-          trHtml += `<span style="color:${color}">${time}  ${r.side.toUpperCase()}  ${r.price}  ${r.amount}</span>\n`;
+          tradeDiv.innerHTML += 
+            `<span style="color:${color}">
+               ${time}  ${r.side.toUpperCase()}  
+               ${r.price.toLocaleString()}  
+               ${r.amount}
+             </span>\n`;
         });
-      } else trHtml = '거래내역 없음';
-      document.getElementById('trade-logs-list').innerHTML = trHtml;
+      } else {
+        tradeDiv.textContent = '거래내역 없음';
+      }
 
     } catch(e){ console.error('데이터 로드 실패', e); }
   }
@@ -210,7 +304,7 @@
   fetchAndPlot();
   fetchAccount();
   setInterval(fetchAndPlot, 2000);
-  setInterval(fetchAccount, 5000);
+  setInterval(fetchAccount, 2000);
 </script>
 
 </body>

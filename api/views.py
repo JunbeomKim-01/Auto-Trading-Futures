@@ -38,6 +38,7 @@ def data():
             "basis":     row["basis"],
             "upper":     row["upper"],
             "lower":     row["lower"],
+            "slope":     row["slope"],
             "signal":    row["signal"] or ""
         })
     return jsonify(payload)
@@ -51,18 +52,23 @@ def account():
     bal = provider.fetch_balance()
     return jsonify(bal)
 
-@bp.route('/positions')
-def positions():
+@bp.route('/position')  # 혹은 /positions 로 바꿔도 무방
+def position():
     """
-    GET /positions
-    → [
-         {"symbol":"BTC","available":0.005,"used":0,"total":0.005},
-         {"symbol":"ETH","available":0.1,"used":0,"total":0.1},
-         ...
-       ]
+    GET /position
+    → ['BTC/USDT','ETH/USDT','XRP/USDT'] 에 대한
+      fetch_futures_positions 결과를 모두 합쳐서 반환.
     """
-    pos = provider.fetch_positions()
-    return jsonify(pos)
+    symbols = ['BTC/USDT', 'ETH/USDT', 'XRP/USDT']
+    all_positions = []
+    for sym in symbols:
+        pos = provider.fetch_futures_positions(sym)
+        # pos가 리스트라면 extend, 단일 dict이면 append
+        if isinstance(pos, list):
+            all_positions.extend(pos)
+        elif pos:
+            all_positions.append(pos)
+    return jsonify(all_positions)
 
 @bp.route('/trade-logs')
 def trade_logs():

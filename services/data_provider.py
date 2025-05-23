@@ -50,6 +50,9 @@ class BinanceDataProvider(IDataProvider):
     def fetch_balance(self) -> dict:
         bal = self._exchange.fetch_balance()
         return bal['total']
+        
+    def fetch_futures_positions(self, symbol: str) -> list:
+        return self._exchange.fetch_positions([symbol])
 
     def fetch_positions(self) -> list:
         bal = self._exchange.fetch_balance()
