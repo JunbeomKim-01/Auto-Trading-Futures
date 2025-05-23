@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask
+from flask import Flask, request
 from api.views import bp as views_bp
 from api.events import bp_events
 from services.monitor import Monitor
@@ -10,11 +10,11 @@ def create_app():
     app = Flask(__name__)
     app.register_blueprint(views_bp)
     app.register_blueprint(bp_events)
-
+    symbol = 'BTC/USDT'
     # 백그라운드 모니터 시작
     provider = BinanceDataProvider()
     signaler = BollingerSignalService()
-    monitor = Monitor(provider, signaler, symbol='BTC/USDT', interval_sec=5)
+    monitor = Monitor(provider, signaler, symbol=symbol, interval_sec=5)
     monitor.start()
 
     return app

@@ -87,4 +87,5 @@ def bollinger_band_strategy(
             signals.append(None)
 
     df['signal'] = signals
-    return df
+    df2 = df.dropna(subset=['basis','upper','lower']).reset_index(drop=True)   
+    return df2

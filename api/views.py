@@ -17,15 +17,15 @@ def index():
 @bp.route('/data')
 def data():
     tf    = request.args.get('tf', '1m')
+    symbol = request.args.get('symbol', 'BTC/USDT')
     limit = int(request.args.get('limit', 100))
 
     # 1) OHLCV → DataFrame
-    raw = provider.fetch_ohlcv('BTC/USDT', tf, limit=limit)
+    raw = provider.fetch_ohlcv(symbol, tf, limit=limit)
     df  = ohlcv_to_dataframe(raw)
 
     # 2) 볼린저 밴드 전략 적용 (basis, upper, lower, signal 등 컬럼 추가)
     df2 = bollinger_band_strategy(df)
-    df2 = df2.dropna(subset=['basis','upper','lower']).reset_index(drop=True)   
     # 3) JSON 직렬화
     payload = []
     for _, row in df2.iterrows():

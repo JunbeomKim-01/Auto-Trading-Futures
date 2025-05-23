@@ -29,6 +29,12 @@
   <button class="tf-btn" data-tf="30m">30분봉</button>
   <button class="tf-btn" data-tf="1h">1시간봉</button>
   <button class="tf-btn" data-tf="4h">4시간봉</button>
+  <label for="symbol-select" style="margin-left:1rem;">심볼:</label>
+  <select id="symbol-select" style="padding:0.3rem; background:#333; color:#eee; border:none;">
+    <option value="BTC/USDT">BTC/USDT</option>
+    <option value="ETH/USDT">ETH/USDT</option>
+    <option value="XRP/USDT">XRP/USDT</option>
+  </select>
 </header>
 
 <main>
@@ -54,6 +60,15 @@
 
 <script>
   let currentTf = '1m';
+  let currentSymbol = 'BTC/USDT';
+ // 2) 심볼 변경 처리
+ document.getElementById('symbol-select').addEventListener('change', e => {
+    currentSymbol = e.target.value;
+    fetchAndPlot();
+    fetchAccount();
+  });
+
+
   document.querySelectorAll('.tf-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
@@ -66,8 +81,8 @@
   const chartDiv = document.getElementById('chart');
   async function fetchAndPlot() {
     try {
-      const res  = await fetch(`/data?tf=${currentTf}`);
-      const data = await res.json();
+      const res  = await fetch(`/data?tf=${currentTf}&symbol=${encodeURIComponent(currentSymbol)}`);
+    const data = await res.json();
 
       const x     = data.map(d => new Date(d.timestamp));
       const open  = data.map(d => d.open);
@@ -84,7 +99,7 @@
       const candleTrace = {
         x, open, high, low, close,
         type: 'candlestick',
-        name: 'BTC/USDT'
+        name: currentSymbol
       };
 
       // 밴드 선들
@@ -123,12 +138,19 @@
       Plotly.react(
         chartDiv,
         [candleTrace, basisTrace, upperTrace, lowerTrace, buyTrace, sellTrace],
-        { xaxis: { rangeslider: { visible: false } }, margin: { t:20, b:40 } }
+        {
+          xaxis: { rangeslider: { visible: false } },
+          margin: { t:20, b:40 },
+          paper_bgcolor: '#000000',  // 전체 배경을 검정으로
+          plot_bgcolor:  '#000000',  // 차트 영역 배경도 검정으로
+          font: { color: '#eee' }    // 축 숫자·레이블은 연한 색으로
+        }
       );
     } catch (e) {
       console.error('차트 로드 실패', e);
     }
   }
+  
   // 로그 SSE
   const logDiv = document.getElementById('logs');
   const evt = new EventSource('/stream');
