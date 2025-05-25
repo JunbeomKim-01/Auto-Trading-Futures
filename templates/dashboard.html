@@ -2,94 +2,212 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8"/>
-  <title>Real-time Trading Dashboard</title>
+  <title>Trading Dashboard</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://kit.fontawesome.com/yourfontawesomekit.js" crossorigin="anonymous"></script>
   <style>
-    body { font-family: sans-serif; background: #111; color: #eee; margin:0; padding:0; }
-    header { padding:1rem; background:#222; }
-    main { display:flex; height: calc(100vh - 60px); }
-    #left, #right { padding:1rem; overflow:auto; }
-    #left { flex: 1; }
-    #right { flex: 1; border-left:1px solid #333; }
-    .section { margin-bottom:1rem; }
-    .section h3 { margin-bottom:0.5rem; color:#ccc; }
-    #chart { width:100%; height:60vh; }
-    #logs { height:20vh; overflow-y:auto; background:#222; padding:0.5rem; white-space:pre-wrap; }
-    .tf-btn { margin-right:0.5rem; padding:0.3rem 0.6rem; background:#333; color:#eee; border:none; cursor:pointer; }
-    .tf-btn.active { background:#555; }
-    .log-list { height:15vh; overflow-y:auto; background:#222; padding:0.5rem; white-space:pre-wrap; font-family:monospace; }
-    #position-table-container { overflow-x: auto; }
+    :root {
+      --bg:    #111;
+      --card:  #1e1e1e;
+      --accent:#555;
+      --text:  #eee;
+      --subt:  #aaa;
+      --green: #4caf50;
+      --red:   #f44336;
+      --gap:   1rem;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); }
+    header {
+      position: sticky; top:0; z-index:10;
+      display:flex; align-items:center; padding:var(--gap);
+      background:var(--card); gap:var(--gap);
+    }
+    header select, header button {
+      background:var(--accent); border:none; color:var(--text);
+      padding:0.5em 1em; border-radius:4px; cursor:pointer;
+      transition: background 0.2s;
+    }
+    header select:hover, header button:hover { background:var(--green); }
+    header .kpi {
+      margin-left:auto; font-size:0.9rem; display:flex; gap:1.5rem;
+    }
+    header .kpi div span { display:block; font-size:1.2rem; }
+
+    main {
+      display:grid; grid-template-columns:2fr 1fr;
+      gap:var(--gap); padding:var(--gap);
+      height:calc(100vh - 60px);
+    }
+    .card {
+      background:var(--card); border-radius:6px;
+      padding:var(--gap); display:flex; flex-direction:column;
+      overflow:hidden;
+    }
+    .card h3 {
+      margin:0 0 calc(var(--gap)/2); color:var(--subt);
+      font-weight:normal; font-size:1rem;
+    }
+
+    /* Chart & Logs */
+    #chart { flex:1; }
+    #logs {
+      flex:1; margin-top:var(--gap);
+      background:var(--bg); overflow:auto;
+      font-family:monospace; padding:0.5rem;
+      border-radius:4px;
+    }
+
+    /* Position Table */
     #position-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: monospace;
+      width:100%; border-collapse:collapse;
+      font-size:0.85rem; margin-top:calc(var(--gap)/2);
     }
-    #position-table th,
-    #position-table td {
-      padding: 0.2rem;
-      border: 1px solid #333;
-      text-align: center;
-      font-size: 0.8rem;
+    #position-table th, #position-table td {
+      padding:0.4rem; border:1px solid var(--accent);
+      text-align:center;
     }
-    #position-table th {
-      background: #222;
-      color: #ccc;
+    #position-table th { background:var(--accent); }
+    #position-table tr:nth-child(even) { background:#1a1a1a; }
+    #position-table tr:hover { background:#2a2a2a; }
+
+    /* Trade Log Table */
+    #trade-log-table {
+      width:100%; border-collapse:collapse;
+      font-size:0.85rem; margin-top:calc(var(--gap)/2);
     }
+    #trade-log-table th, #trade-log-table td {
+      padding:0.4rem; border:1px solid var(--accent);
+      text-align:center;
+    }
+    #trade-log-table th { background:var(--accent); color:var(--text); }
+    #trade-log-table tr:nth-child(even) { background:#1a1a1a; }
+    #trade-log-table tr:hover { background:#2a2a2a; }
+
+    /* Profit Log Table */
+    #profit-log-table {
+      width:100%; border-collapse:collapse;
+      font-size:0.85rem; margin-top:calc(var(--gap)/2);
+    }
+    #profit-log-table th, #profit-log-table td {
+      padding:0.4rem; border:1px solid var(--accent);
+      text-align:center;
+    }
+    #profit-log-table th { background:var(--accent); }
+    #profit-log-table tr:nth-child(even) { background:#1a1a1a; }
+    #profit-log-table tr:hover { background:#2a2a2a; }
+
+    /* Balance Card */
+    .balance-card { background:var(--card); border-radius:8px;
+      padding:1rem; display:flex; flex-direction:column; gap:0.5rem;
+    }
+    .balance-header { display:flex; justify-content:space-between; align-items:center; }
+    .balance-title { font-size:1rem; color:var(--subt); }
+    .toggle-view { background:transparent; border:none; color:var(--accent); cursor:pointer; }
+    .balance-main { display:flex; align-items:baseline; gap:1rem; }
+    .balance-value { font-size:2.5rem; font-weight:bold; }
+    .balance-change { font-size:0.9rem; }
+    .balance-change.positive { color:var(--green); }
+    .balance-change.negative { color:var(--red); }
+    .balance-sparkline { height:40px; }
+    .balance-legend {
+      list-style:none; padding:0; margin:0;
+      display:flex; gap:1rem; font-size:0.85rem;
+    }
+    .balance-legend li strong { color:var(--text); }
   </style>
 </head>
 <body>
 
 <header>
-  <button class="tf-btn active" data-tf="1m">1분봉</button>
-  <button class="tf-btn" data-tf="5m">5분봉</button>
-  <button class="tf-btn" data-tf="15m">15분봉</button>
-  <button class="tf-btn" data-tf="30m">30분봉</button>
-  <button class="tf-btn" data-tf="1h">1시간봉</button>
-  <button class="tf-btn" data-tf="4h">4시간봉</button>
-  <label for="symbol-select" style="margin-left:1rem;">심볼:</label>
-  <select id="symbol-select" style="padding:0.3rem; background:#333; color:#eee; border:none;">
-    <option value="BTC/USDT">BTC/USDT</option>
-    <option value="ETH/USDT">ETH/USDT</option>
-    <option value="XRP/USDT">XRP/USDT</option>
+  <button id="toggle-menu"><i class="fas fa-bars"></i></button>
+  <select id="symbol-select">
+    <option>BTC/USDT</option>
+    <option>ETH/USDT</option>
+    <option>XRP/USDT</option>
   </select>
+  <button class="tf-btn active" data-tf="1m">1m</button>
+  <button class="tf-btn"        data-tf="5m">5m</button>
+  <button class="tf-btn"        data-tf="15m">15m</button>
+  <button class="tf-btn"        data-tf="30m">30m</button>
+  <button class="tf-btn"        data-tf="1h">1h</button>
+  <button class="tf-btn"        data-tf="4h">4h</button>
+  <div class="kpi">
+    <div><span id="kpi-price">--</span> 현재가</div>
+    <div><span id="kpi-24h">--%</span> 24H</div>
+  </div>
 </header>
 
 <main>
-  <div id="left">
+  <!-- 좌측: 차트 + 로그 -->
+  <div class="card">
+    <h3>차트</h3>
     <div id="chart"></div>
-    <div id="logs" class="section"></div>
+    <h3>실시간 로그</h3>
+    <div id="logs"></div>
   </div>
-  <div id="right">
-    <div id="balance" class="section">
-      <h3>계좌 잔고</h3>
-      <div id="balance-logs" class="log-list">로딩 중…</div>
+
+  <!-- 우측: 잔고, 포지션, Profit, 매매내역 -->
+  <div style="display:flex; flex-direction:column; gap:var(--gap);">
+    <!-- 잔고 카드 -->
+    <div class="card balance-card">
+      <div class="balance-header">
+        <span class="balance-title">총 자산</span>
+        <button class="toggle-view">[⟳] USD / KRW</button>
+      </div>
+      <div class="balance-main">
+        <span id="balance-value" class="balance-value">--</span>
+        <span id="balance-change" class="balance-change"></span>
+      </div>
+      <div class="balance-sparkline" id="networth-sparkline"></div>
+      <ul id="balance-legend" class="balance-legend">
+        <li><strong>BTC</strong> -- BTC</li>
+        <li><strong>USDT</strong> -- USDT</li>
+      </ul>
     </div>
-    <div id="positions" class="section">
+
+    <!-- 포지션 카드 -->
+    <div class="card">
       <h3>포지션</h3>
-      <div id="position-table-container" class="log-list">
+      <div style="overflow-x:auto;">
         <table id="position-table">
           <thead>
             <tr>
-              <th>Symbol</th>
-              <th>Size</th>
-              <th>Entry Price</th>
-              <th>Break Even Price</th>
-              <th>Mark Price</th>
-              <th>Liq. Price</th>
-              <th>Margin Ratio</th>
-              <th>Margin</th>
-              <th>PNL (ROI%)</th>
+              <th>심볼</th><th>방향</th><th>수량</th><th>진입가</th><th>손익%</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- JS가 여기에 <tr>들을 채워 넣습니다 -->
-          </tbody>
+          <tbody><tr><td colspan="5">로딩 중…</td></tr></tbody>
         </table>
       </div>
     </div>
-    <div id="trade-logs" class="section">
+
+    <!-- Profit Log 카드 -->
+    <div class="card">
+      <h3>Profit Log</h3>
+      <div style="overflow-x:auto;">
+        <table id="profit-log-table">
+          <thead>
+            <tr>
+              <th>Entry Time</th><th>Exit Time</th><th>Side</th>
+              <th>Amount</th><th>Entry Price</th><th>Exit Price</th><th>Profit</th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="7">로딩 중…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 매수/매도 내역 카드 -->
+    <div class="card">
       <h3>매수/매도 내역</h3>
-      <div id="trade-logs-list" class="log-list">로딩 중…</div>
+      <div style="overflow-x:auto;">
+        <table id="trade-log-table">
+          <thead>
+            <tr><th>시간</th><th>사이드</th><th>가격</th><th>수량</th></tr>
+          </thead>
+          <tbody><tr><td colspan="4">로딩 중…</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </main>
@@ -97,14 +215,18 @@
 <script>
   let currentTf = '1m';
   let currentSymbol = 'BTC/USDT';
- // 2) 심볼 변경 처리
- document.getElementById('symbol-select').addEventListener('change', e => {
-    currentSymbol = e.target.value;
-    fetchAndPlot();
-    fetchAccount();
-  });
 
+  // 심볼 변경 핸들러
+  document.getElementById('symbol-select')
+    .addEventListener('change', e => {
+      currentSymbol = e.target.value;
+      fetchAndPlot();
+      fetchAccount();
+      updateKPI();
+      fetchProfitLogs();
+    });
 
+  // 타임프레임 버튼
   document.querySelectorAll('.tf-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
@@ -114,6 +236,7 @@
     });
   });
 
+  // 차트 그리기 (기존 로직)
   const chartDiv = document.getElementById('chart');
   async function fetchAndPlot() {
     try {
@@ -199,112 +322,126 @@
     }
   }
   
-  // 로그 SSE
-  const logDiv = document.getElementById('logs');
-  const evt = new EventSource('/stream');
-  evt.onmessage = e => {
+
+  // 실시간 로그
+  new EventSource('/stream').onmessage = e => {
+    const logDiv = document.getElementById('logs');
     let line = e.data
       .replace(/Signal:\s*buy/, '<span style="color:lime;">Signal: buy</span>')
       .replace(/Signal:\s*sell/, '<span style="color:tomato;">Signal: sell</span>');
-    logDiv.innerHTML += line + '\n';
+    logDiv.innerHTML += line + '<br>';
     logDiv.scrollTop = logDiv.scrollHeight;
   };
 
-  // 계좌·포지션·거래내역 갱신
+  // KPI 업데이트
+  async function updateKPI() {
+    const res = await fetch(`/ticker?symbol=${encodeURIComponent(currentSymbol)}`);
+    const t   = await res.json();
+    document.getElementById('kpi-price').textContent = t.last.toLocaleString();
+    document.getElementById('kpi-24h').textContent =
+      (t.changePercent24h>=0?'+':'') + t.changePercent24h.toFixed(2) + '%';
+  }
+
+  // 잔고/포지션/매매내역 업데이트
   async function fetchAccount() {
     try {
-      // 1) 세 엔드포인트를 병렬 호출
       const [balRes, posRes, trRes] = await Promise.all([
         fetch(`/account?symbol=${encodeURIComponent(currentSymbol)}`),
-        fetch(`/position`),  // 모든 심볼을 돌려주던 엔드포인트
+        fetch(`/position`),
         fetch(`/trade-logs?symbol=${encodeURIComponent(currentSymbol)}`)
       ]);
-
-      // 2) JSON 파싱
       const bal     = await balRes.json();
       const posList = await posRes.json();
       const trList  = await trRes.json();
 
-      // --- 계좌 잔고 렌더링 ---
+      // — 잔고 렌더링 —
       const [base, quote] = currentSymbol.split('/');
-      const balHtml = [
-        `${(bal[base]   || 0).toFixed(6)} ${base}`,
-        `${(bal[quote]  || 0).toFixed(6)} ${quote}`
-      ].join('    ');
-      document.getElementById('balance-logs').textContent = balHtml;
+      const baseAmt  = bal[base]  || 0;
+      const quoteAmt = bal[quote] || 0;
+      document.getElementById('balance-value').textContent =
+        `${baseAmt.toFixed(6)} ${base}  /  ${quoteAmt.toLocaleString()} ${quote}`;
+      document.getElementById('balance-legend').innerHTML = `
+        <li><strong>${base}</strong> ${baseAmt.toFixed(6)} ${base}</li>
+        <li><strong>${quote}</strong> ${quoteAmt.toLocaleString()} ${quote}</li>`;
+      document.getElementById('balance-change').style.display = 'none';
 
-      // --- 포지션 테이블 렌더링 ---
+      // — 포지션 렌더링 —
       const tbody = document.querySelector('#position-table tbody');
-      if (posList.length) {
-        tbody.innerHTML = '';  // 기존 행 제거
-        posList.forEach(p => {
-          // 가끔 API 필드명이 다를 수 있으니 안전하게 fallback
-          const side     = p.side?.toUpperCase()       || '-';
-          const contracts= p.contracts                 || 0;
-          const entry    = p.entryPrice?.toLocaleString()      || '-';
-          const brit     = (p.breakEvenPrice ?? '-').toLocaleString();
-          const mark     = p.markPrice?.toLocaleString()       || '-';
-          const liq      = (p.liquidationPrice ?? '-').toLocaleString();
-          const mratio   = p.marginRatio!=null 
-                           ? (p.marginRatio*100).toFixed(2) + '%' 
-                           : '-';
-          const margin   = p.margin!=null 
-                           ? p.margin.toFixed(2) 
-                           : '-';
-          const pnl      = p.unrealizedPnl!=null 
-                           ? p.unrealizedPnl.toFixed(2) 
-                           : '0.00';
-          const roi      = p.unrealizedPnlPercentage!=null 
-                           ? p.unrealizedPnlPercentage.toFixed(2) + '%' 
-                           : '0.00%';
-          const pnlColor = (p.unrealizedPnl>=0) ? 'lime' : 'tomato';
-
-          tbody.innerHTML += `
-            <tr>
+      tbody.innerHTML = posList.length
+        ? posList.map(p => {
+            const side    = (p.side||'').toUpperCase();
+            const ctr     = p.contracts || 0;
+            const ep      = p.entryPrice?.toLocaleString()||'-';
+            const roi     = (p.unrealizedPnlPercentage||0).toFixed(2) + '%';
+            const color   = p.unrealizedPnl>=0?'lime':'tomato';
+            return `<tr>
               <td>${p.symbol}</td>
               <td>${side}</td>
-              <td>${contracts}</td>
-              <td>${entry}</td>
-              <td>${brit}</td>
-              <td>${mark}</td>
-              <td>${liq}</td>
-              <td>${mratio}</td>
-              <td>${margin}</td>
-              <td style="color:${p.unrealizedPnl>=0?'lime':'tomato'}">
-                ${pnl} (${roi})
-              </td>
+              <td>${ctr}</td>
+              <td>${ep}</td>
+              <td style="color:${color}">${roi}</td>
             </tr>`;
-        });
-      } else {
-        tbody.innerHTML = `<tr><td colspan="10">포지션 없음</td></tr>`;
-      }
+          }).join('')
+        : `<tr><td colspan="5">포지션 없음</td></tr>`;
 
-      // --- 거래내역 로그 렌더링 ---
-      const tradeDiv = document.getElementById('trade-logs-list');
-      if (trList.length) {
-        tradeDiv.innerHTML = '';
-        trList.forEach(r => {
-          const time  = new Date(r.timestamp).toLocaleTimeString();
-          const color = r.side==='buy' ? 'lime' : 'tomato';
-          tradeDiv.innerHTML += 
-            `<span style="color:${color}">
-               ${time}  ${r.side.toUpperCase()}  
-               ${r.price.toLocaleString()}  
-               ${r.amount}
-             </span>\n`;
-        });
-      } else {
-        tradeDiv.textContent = '거래내역 없음';
-      }
+      // — 매매내역 렌더링 —
+      const tradeTbody = document.querySelector('#trade-log-table tbody');
+      tradeTbody.innerHTML = trList.length
+        ? trList.map(r => {
+            const time  = new Date(r.timestamp).toLocaleTimeString();
+            const side  = r.side.toUpperCase();
+            const color = r.side==='buy'?'lime':'tomato';
+            return `<tr style="color:${color}">
+              <td>${time}</td>
+              <td>${side}</td>
+              <td>${Number(r.price).toLocaleString()}</td>
+              <td>${r.amount}</td>
+            </tr>`;
+          }).join('')
+        : `<tr><td colspan="4">거래내역 없음</td></tr>`;
 
-    } catch(e){ console.error('데이터 로드 실패', e); }
+    } catch(e) {
+      console.error('데이터 로드 실패', e);
+    }
   }
 
-  // 초기 및 5초마다
+  // Profit Log 렌더링
+  async function fetchProfitLogs() {
+    try {
+      const res  = await fetch(`/profit-logs?symbol=${encodeURIComponent(currentSymbol)}`);
+      const logs = await res.json();
+      const tbody = document.querySelector('#profit-log-table tbody');
+      tbody.innerHTML = logs.length
+        ? logs.map(r => {
+            const et = new Date(r.entryTime).toLocaleTimeString();
+            const xt = new Date(r.exitTime).toLocaleTimeString();
+            const clr= r.profit>=0?'lime':'tomato';
+            return `<tr>
+              <td>${et}</td><td>${xt}</td>
+              <td>${r.side.toUpperCase()}</td>
+              <td>${r.amount}</td>
+              <td>${Number(r.entryPrice).toLocaleString()}</td>
+              <td>${Number(r.exitPrice).toLocaleString()}</td>
+              <td style="color:${clr}">${r.profit.toFixed(2)}</td>
+            </tr>`;
+          }).join('')
+        : `<tr><td colspan="7">Profit log 없음</td></tr>`;
+    } catch(e) {
+      console.error('Profit Log 로드 실패', e);
+    }
+  }
+
+  // 초기 호출 및 주기 갱신
   fetchAndPlot();
   fetchAccount();
-  setInterval(fetchAndPlot, 2000);
-  setInterval(fetchAccount, 2000);
+  updateKPI();
+  fetchProfitLogs();
+  setInterval(() => {
+    fetchAndPlot();
+    fetchAccount();
+    updateKPI();
+    fetchProfitLogs();
+  }, 2000);
 </script>
 
 </body>

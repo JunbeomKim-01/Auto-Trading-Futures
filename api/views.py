@@ -79,5 +79,44 @@ def trade_logs():
          ...
        ]
     """
-    logs = provider.fetch_trade_logs('BTC/USDT', limit=10)
-    return jsonify(logs)
+    symbols = ['BTC/USDT', 'ETH/USDT', 'XRP/USDT']
+    all_trade_logs = []
+    for sym in symbols:
+        pos = provider.fetch_trade_logs(sym, limit=10)
+        # pos가 리스트라면 extend, 단일 dict이면 append
+        if isinstance(pos, list):
+            all_trade_logs.extend(pos)
+        elif pos:
+            all_trade_logs.append(pos)
+    #logs = provider.fetch_trade_logs('BTC/USDT', limit=10)
+    return jsonify(all_trade_logs)
+
+@bp.route('/ticker')
+def ticker():
+    symbol = request.args.get('symbol', 'BTC/USDT')
+    t      = provider.fetch_ticker(symbol)
+    # 백엔드에 changePercent24h 등 계산 로직이 없으면 간단히 0으로 둡시다
+    return jsonify({
+      "last": t, 
+      "changePercent24h": provider.fetch_24h_change_percent(symbol)
+    })
+
+@bp.route('/profit-logs')
+def profit_logs():
+    """
+    GET /profit-logs?symbol=BTC/USDT
+    → 각 트레이드별 profit 내역 반환
+    """
+    #symbol = request.args.get('symbol', 'BTC/USDT')
+    symbols = ['BTC/USDT', 'ETH/USDT', 'XRP/USDT']
+    all_trade_logs = []
+    for sym in symbols:
+        pos = provider.fetch_profit_logs(sym, limit=10)
+        # pos가 리스트라면 extend, 단일 dict이면 append
+        if isinstance(pos, list):
+            all_trade_logs.extend(pos)
+        elif pos:
+            all_trade_logs.append(pos)
+
+    #logs   = provider.fetch_profit_logs(symbol, limit=100)
+    return jsonify(all_trade_logs)

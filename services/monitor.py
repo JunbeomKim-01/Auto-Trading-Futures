@@ -35,7 +35,7 @@ class Monitor:
                 price   = self.provider.fetch_ticker(self.symbol)
                 signals = self.signaler.generate_signals(candles)
                 latest  = signals[-1] or '–'
-                logger.info(f"{self.symbol} | Price: {price:,.0f} | Signal: {latest}")
+                logger.info(f"{self.symbol}  | Signal: {latest} \n")
             except Exception as e:
                 logger.error(f"Monitor error: {e}")
             time.sleep(self.interval)
