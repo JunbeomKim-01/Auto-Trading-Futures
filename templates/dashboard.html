@@ -115,6 +115,16 @@
       display:flex; gap:1rem; font-size:0.85rem;
     }
     .balance-legend li strong { color:var(--text); }
+    /* ── 타임프레임 버튼 active 색상 ── */
+    .tf-btn.active {
+      background: var(--green);
+      color: var(--text);
+    }
+
+    /* ── 24H 변동률 색상 ── */
+    #kpi-24h.positive { color: var(--green); }
+    #kpi-24h.negative { color: var(--red); }
+
   </style>
 </head>
 <body>
@@ -188,8 +198,8 @@
         <table id="profit-log-table">
           <thead>
             <tr>
-              <th>Entry Time</th><th>Exit Time</th><th>Side</th>
-              <th>Amount</th><th>Entry Price</th><th>Exit Price</th><th>Profit</th>
+              <th>Entry Time</th><th>Side</th>
+              <th>Amount</th><th>Entry Price</th><th>Exit Price</th><th>Profit</th><th>손익%</th>
             </tr>
           </thead>
           <tbody><tr><td colspan="7">로딩 중…</td></tr></tbody>
@@ -215,7 +225,8 @@
 <script>
   let currentTf = '1m';
   let currentSymbol = 'BTC/USDT';
-
+  let currentLimit = 100;
+  let wheelThrottled = false;
   // 심볼 변경 핸들러
   document.getElementById('symbol-select')
     .addEventListener('change', e => {
@@ -238,9 +249,24 @@
 
   // 차트 그리기 (기존 로직)
   const chartDiv = document.getElementById('chart');
+  chartDiv.addEventListener('wheel', e => {
+   e.preventDefault();
+   if (wheelThrottled) return;            // 쓰로틀 중이면 무시
+   wheelThrottled = true;
+   setTimeout(() => { wheelThrottled = false; }, 200);
+
+   // deltaY 양수/음수에 따라 작은 단위(5)로 증감
+   if (e.deltaY < 0) {
+     currentLimit = Math.min(currentLimit + 5, 500);
+   } else {
+     currentLimit = Math.max(currentLimit - 5, 20);
+   }
+   console.log(`🔍 limit=${currentLimit}`);
+   fetchAndPlot();
+  });
   async function fetchAndPlot() {
     try {
-      const res  = await fetch(`/data?tf=${currentTf}&symbol=${encodeURIComponent(currentSymbol)}`);
+      const res  = await fetch(`/data?tf=${currentTf}&symbol=${encodeURIComponent(currentSymbol)}&limit=${currentLimit}`);
     const data = await res.json();
 
       const x     = data.map(d => new Date(d.timestamp));
@@ -335,12 +361,16 @@
 
   // KPI 업데이트
   async function updateKPI() {
-    const res = await fetch(`/ticker?symbol=${encodeURIComponent(currentSymbol)}`);
-    const t   = await res.json();
-    document.getElementById('kpi-price').textContent = t.last.toLocaleString();
-    document.getElementById('kpi-24h').textContent =
-      (t.changePercent24h>=0?'+':'') + t.changePercent24h.toFixed(2) + '%';
-  }
+  const res = await fetch(`/ticker?symbol=${encodeURIComponent(currentSymbol)}`);
+  const t   = await res.json();
+  document.getElementById('kpi-price').textContent = t.last.toLocaleString();
+  const pct = t.changePercent24h;
+  const el  = document.getElementById('kpi-24h');
+
+  el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+  el.classList.toggle('positive', pct >= 0);
+  el.classList.toggle('negative', pct < 0);
+}
 
   // 잔고/포지션/매매내역 업데이트
   async function fetchAccount() {
@@ -415,14 +445,16 @@
         ? logs.map(r => {
             const et = new Date(r.entryTime).toLocaleTimeString();
             const xt = new Date(r.exitTime).toLocaleTimeString();
+            const profitPct = ((r.exitPrice - r.entryPrice) / r.entryPrice * 100).toFixed(2);
             const clr= r.profit>=0?'lime':'tomato';
             return `<tr>
-              <td>${et}</td><td>${xt}</td>
+              <td>${et}</td>
               <td>${r.side.toUpperCase()}</td>
               <td>${r.amount}</td>
               <td>${Number(r.entryPrice).toLocaleString()}</td>
               <td>${Number(r.exitPrice).toLocaleString()}</td>
-              <td style="color:${clr}">${r.profit.toFixed(2)}</td>
+              <td style="color:${clr}">$${r.profit.toFixed(2)}</td>
+              <td style="color:${clr}">${profitPct}%</td>
             </tr>`;
           }).join('')
         : `<tr><td colspan="7">Profit log 없음</td></tr>`;

@@ -88,7 +88,6 @@ def trade_logs():
             all_trade_logs.extend(pos)
         elif pos:
             all_trade_logs.append(pos)
-    #logs = provider.fetch_trade_logs('BTC/USDT', limit=10)
     return jsonify(all_trade_logs)
 
 @bp.route('/ticker')
@@ -107,7 +106,6 @@ def profit_logs():
     GET /profit-logs?symbol=BTC/USDT
     → 각 트레이드별 profit 내역 반환
     """
-    #symbol = request.args.get('symbol', 'BTC/USDT')
     symbols = ['BTC/USDT', 'ETH/USDT', 'XRP/USDT']
     all_trade_logs = []
     for sym in symbols:
@@ -117,6 +115,4 @@ def profit_logs():
             all_trade_logs.extend(pos)
         elif pos:
             all_trade_logs.append(pos)
-
-    #logs   = provider.fetch_profit_logs(symbol, limit=100)
     return jsonify(all_trade_logs)
