@@ -141,7 +141,7 @@
   <button class="tf-btn"        data-tf="15m">15m</button>
   <button class="tf-btn"        data-tf="30m">30m</button>
   <button class="tf-btn"        data-tf="1h">1h</button>
-  <button class="tf-btn"        data-tf="4h">4h</button>
+  <button class="tf-btn"        data-tf="4h">4h</button> 
   <div class="kpi">
     <div><span id="kpi-price">--</span> 현재가</div>
     <div><span id="kpi-24h">--%</span> 24H</div>
@@ -267,7 +267,7 @@
   async function fetchAndPlot() {
     try {
       const res  = await fetch(`/data?tf=${currentTf}&symbol=${encodeURIComponent(currentSymbol)}&limit=${currentLimit}`);
-    const data = await res.json();
+      const data = await res.json();
 
       const x     = data.map(d => new Date(d.timestamp));
       const open  = data.map(d => d.open);
@@ -302,14 +302,12 @@
         x, y: lower, mode: 'lines', name: 'Lower',
         line: { width: 1, dash: 'dot', color: 'cyan' }
       };
-
       // 3) 슬로프 보조 지표 (yaxis: 'y2' 로 지정)
       const slopeTrace = {
         x, y: slope, type: 'scatter', name: 'Slope',
         xaxis: 'x', yaxis: 'y2',
         line: { width: 1.5, color: 'orange' }
       };
-
       // 매수/매도 마커
       const buys = data.filter(d => d.signal === 'buy');
       const sells= data.filter(d => d.signal === 'sell');

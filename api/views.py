@@ -4,7 +4,7 @@ from services.data_provider import BinanceDataProvider
 from services.signal_service import BollingerSignalService
 from utils.helper import ohlcv_to_dataframe
 from strategies.bollinger_band_strategy import bollinger_band_strategy
-
+import pprint
 bp = Blueprint('dashboard', __name__)
 
 provider = BinanceDataProvider()
@@ -25,8 +25,7 @@ def data():
     df  = ohlcv_to_dataframe(raw)
 
     # 2) 볼린저 밴드 전략 적용 (basis, upper, lower, signal 등 컬럼 추가)
-    df2 = bollinger_band_strategy(df,symbol=symbol)
-    #print(df2.columns)
+    df2 = bollinger_band_strategy(df,symbol=symbol,base_tf=tf)
     # 3) JSON 직렬화
     payload = []
     for _, row in df2.iterrows():
@@ -40,6 +39,18 @@ def data():
             "upper":     row["upper"],
             "lower":     row["lower"],
             "slope":     row["slope"],
+            "upper_1m":  row["upper_1m"],
+            "lower_1m":  row["lower_1m"],
+            "upper_5m":  row["upper_5m"],
+            "lower_5m":  row["lower_5m"],
+            "upper_15m":  row["upper_15m"],
+            "lower_15m":  row["lower_15m"],
+            "upper_30m":  row["upper_30m"],
+            "lower_30m":  row["lower_30m"],
+            "upper_1h":  row["upper_1h"],
+            "lower_1h":  row["lower_1h"],
+            "upper_4h":  row["upper_4h"],
+            "lower_4h":  row["lower_4h"],
             "signal":    row["signal"] or ""
         })
     return jsonify(payload)

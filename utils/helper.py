@@ -15,7 +15,7 @@ def ohlcv_to_dataframe(raw_data):
 
     # 3) timestamp 열을 datetime으로 변환
     try:
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms') 
     except (TypeError, ValueError):
         df['timestamp'] = pd.to_datetime(df['timestamp'])
 
