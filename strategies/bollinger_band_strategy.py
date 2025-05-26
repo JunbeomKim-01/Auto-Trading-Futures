@@ -128,7 +128,7 @@ def bollinger_band_strategy(
         # 칼럼 접미사 붙이기 (_5m, _15m 등)
         tmp = bb_slice.add_suffix(f'_{tf}') \
                     .rename(columns={f'timestamp_{tf}': 'timestamp'})
-        tmp = tmp[['timestamp'] + [f'lower_{tf}',f'upper_{tf}']].copy()
+        #tmp = tmp[['timestamp'] + [f'lower_{tf}',f'upper_{tf}']].copy()
         # (3) 1분봉 기준 backward merge
         df_merged = pd.merge_asof(
             df_merged,
@@ -139,7 +139,7 @@ def bollinger_band_strategy(
             # tolerance=pd.Timedelta(tf)
         )
     # 4) Signal generation
-    df_merged['signal'] = df_merged.apply(generate_mtf_signal, axis=1)
     for col in df_merged.columns[:-1]:
         df_merged[f'{col}'] = df_merged[f'{col}'].bfill()
+    df_merged['signal'] = df_merged.apply(generate_mtf_signal, axis=1)
     return df_merged
