@@ -34,8 +34,13 @@ class Monitor:
                 candles = self.provider.fetch_ohlcv(self.symbol, '1m', self.limit)
                 price   = self.provider.fetch_ticker(self.symbol)
                 signals = self.signaler.generate_signals(candles)
-                latest  = signals[-1] or '–'
-                logger.info(f"{self.symbol}  | Signal: {latest} \n")
+                latest  = signals[-1] or '-'
+                if latest == 'buy':
+                    logger.info(f"▲ BUY {self.symbol}  | Price: {price:,.2f}")
+                elif latest == 'sell':
+                    logger.info(f"▼ SELL{self.symbol}  | Price: {price:,.2f}")
+                else:
+                    logger.info(f"{self.symbol}  | Signal: No Signal \n")
             except Exception as e:
                 logger.error(f"Monitor error: {e}")
             time.sleep(self.interval)

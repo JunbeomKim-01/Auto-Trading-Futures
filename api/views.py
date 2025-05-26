@@ -25,7 +25,8 @@ def data():
     df  = ohlcv_to_dataframe(raw)
 
     # 2) 볼린저 밴드 전략 적용 (basis, upper, lower, signal 등 컬럼 추가)
-    df2 = bollinger_band_strategy(df)
+    df2 = bollinger_band_strategy(df,symbol=symbol)
+    #print(df2.columns)
     # 3) JSON 직렬화
     payload = []
     for _, row in df2.iterrows():

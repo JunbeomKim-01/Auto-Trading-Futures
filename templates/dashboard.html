@@ -280,6 +280,7 @@
       const upper = data.map(d => d.upper);
       const lower = data.map(d => d.lower);
       const slope = data.map(d => d.slope);
+      const hi = data.map(d => d.hi);
 
       // 캔들
       const candleTrace = {
@@ -389,9 +390,9 @@
       const baseAmt  = bal[base]  || 0;
       const quoteAmt = bal[quote] || 0;
       document.getElementById('balance-value').textContent =
-        `${baseAmt.toFixed(6)} ${base}  /  ${quoteAmt.toLocaleString()} ${quote}`;
+        `${quoteAmt.toLocaleString()} ${quote}`;
       document.getElementById('balance-legend').innerHTML = `
-        <li><strong>${base}</strong> ${baseAmt.toFixed(6)} ${base}</li>
+         <li><strong>${base}</strong> ${baseAmt.toFixed(6)} ${base}</li>
         <li><strong>${quote}</strong> ${quoteAmt.toLocaleString()} ${quote}</li>`;
       document.getElementById('balance-change').style.display = 'none';
 

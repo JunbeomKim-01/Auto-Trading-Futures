@@ -1,91 +1,91 @@
 # strategies/bollinger_band_strategy.py
-
 import pandas as pd
 import numpy as np
+from utils.helper import ohlcv_to_dataframe
+from services.data_provider import BinanceDataProvider
+
+provider = BinanceDataProvider()
+
+def linreg_slope(x: np.ndarray) -> float:
+    """OLS 선형회귀로 기울기 계산 (NaN 처리)"""
+    idx = np.arange(len(x))
+    if np.any(np.isnan(x)):
+        return np.nan
+    return np.polyfit(idx, x, 1)[0]
+
+
+def compute_bollinger(
+    df: pd.DataFrame,
+    length: int = 24,
+    mult: float = 2.0,
+    slope_len: int = 5,
+    window_bw: int = 125,
+) -> pd.DataFrame:
+    """
+    단일 타임프레임 볼린저 밴드 계산:
+      - basis, upper, lower, bandwidth, slope, hi_bw 컬럼 추가
+    """
+    # 리스트(raw) 입력을 DataFrame으로 변환
+    if isinstance(df, list):
+        df = ohlcv_to_dataframe(df)
+
+    df = df.copy()
+    df['basis']    = df['close'].rolling(length).mean()
+    df['stddev']   = df['close'].rolling(length).std()
+    df['upper']    = df['basis'] + mult * df['stddev']
+    df['lower']    = df['basis'] - mult * df['stddev']
+    df['bandwidth']= (df['upper'] - df['lower']) / df['basis'] * 100
+    df['slope']    = df['bandwidth'].rolling(slope_len).apply(linreg_slope, raw=True)
+    df['hi_bw']    = df['bandwidth'].rolling(window_bw).max()
+    return df
+
+
+def generate_mtf_signal(row) -> str:
+    """병합된 MTF 데이터에서 시그널 생성"""
+    signal = None
+    if row['close'] > row.get('upper_5m', np.nan) and row['close'] > row.get('upper_15m', np.nan):
+        signal = 'buy'
+    elif row['close'] < row.get('lower_5m', np.nan) and row['close'] < row.get('lower_1h', np.nan):
+        signal = 'sell'
+    return signal
+
 
 def bollinger_band_strategy(
     df: pd.DataFrame,
-    length: int        = 24,
-    mult: float        = 2.0,
-    ma_type: str       = "SMA",
-    window_bw: int     = 125,
-    slope_len: int     = 10,
+    length: int = 24,
+    mult: float = 2.0,
+    slope_len: int = 3,
+    window_bw: int = 10,
+    symbol: str = "BTC/USDT",
 ) -> pd.DataFrame:
     """
-    Bollinger Bands 기반 전략:
-      - Trend-following: 밴드 확장 & slope 양수 시 밴드 돌파 방향으로 진입
-      - Mean-reversion: 밴드 최고점 도달 & slope 음수 시 밴드 반대 방향 진입
-
-    입력 df: timestamp, open, high, low, close, volume 칼럼 필수
-    리턴 df: basis, upper, lower, bandwidth, slope, hi_bw, signal 칼럼 추가
+    멀티타임프레임 MTF Bollinger Band 전략 구현
+    Parameters:
+        df: 기준 프레임(5m) OHLCV DataFrame
+    Returns:
+        멀티타임프레임 밴드 계산 및 signal 컬럼이 추가된 DataFrame
     """
 
-    # 1) Basis (중심선) 계산 (SMA/EMA)
-    if ma_type.upper() == "SMA":
-        df['basis'] = df['close'].rolling(length).mean()
-    elif ma_type.upper() == "EMA":
-        df['basis'] = df['close'].ewm(span=length, adjust=False).mean()
-    else:
-        raise ValueError("ma_type must be 'SMA' or 'EMA'")
+    # 2) 5m 볼린저밴드 계산 (기준 프레임)
+    bb_5m = compute_bollinger(df, length, mult, slope_len, window_bw)
 
-    # 2) StdDev & Bands
-    df['stddev'] = df['close'].rolling(length).std()
-    df['upper'] = df['basis'] + mult * df['stddev']
-    df['lower'] = df['basis'] - mult * df['stddev']
+    # 3) MTF 병합 준비: df_merged는 bb_5m 베이스
+    df_merged = bb_5m.copy()
+    tfs = ['5m','15m', '30m', '1h', '4h']
+    for tf in tfs:
+        raw_tf = provider.fetch_ohlcv(symbol, tf, limit=length)
+        df_tf  = ohlcv_to_dataframe(raw_tf)
+        bb_tf  = compute_bollinger(df_tf, length, mult, slope_len, window_bw)
+        bb_tf = bb_tf[['upper', 'lower']].rename(columns={
+            'upper': f'upper_{tf}',
+            'lower': f'lower_{tf}'
+        })
+        df_merged = df_merged.merge(bb_tf, how='left', left_index=True, right_index=True)
+        df_merged[f'upper_{tf}'] = df_merged[f'upper_{tf}'].ffill()
+        df_merged[f'lower_{tf}'] = df_merged[f'lower_{tf}'].ffill()
 
-    # 3) Bandwidth
-    df['bandwidth'] = (df['upper'] - df['lower']) / df['basis'] * 100
+    # 4) signal 생성
+    df_merged['signal'] = df_merged.apply(generate_mtf_signal, axis=1)
 
-    # 4) Slope: 선형회귀 기울기 (OLS slope) 계산
-    def linreg_slope(x: np.ndarray) -> float:
-        idx = np.arange(len(x))
-        return np.polyfit(idx, x, 1)[0]
-    df['slope'] = df['bandwidth'].rolling(slope_len).apply(linreg_slope, raw=True)
-
-    # 5) hi_bw: 과거 window_bw 기간 중 최대 Bandwidth
-    df['hi_bw'] = df['bandwidth'].rolling(window_bw).max()
-
-    # 6) 공통 필터: 시가가 밴드 내부, 종가가 밴드 외부
-    cond = (
-        (df['open'] > df['lower']) &
-        (df['open'] < df['upper']) &
-        ((df['close'] > df['upper']) | (df['close'] < df['lower']))
-    )
-
-    # 7) 시그널 생성
-    signals = []
-    for i in range(len(df)):
-        if not cond.iat[i]:
-            signals.append(None)
-            continue
-
-        bw  = df['bandwidth'].iat[i]
-        hi  = df['hi_bw'].iat[i]
-        slp = df['slope'].iat[i]
-        c   = df['close'].iat[i]
-        up  = df['upper'].iat[i]
-        lo  = df['lower'].iat[i]
-
-        # Trend-following
-        if bw > hi / 2 and slp > 0:
-            if c > up:
-                signals.append("buy")
-            elif c < lo:
-                signals.append("sell")
-            else:
-                signals.append(None)
-
-        # Mean-reversion
-        elif bw == hi and slp < 0:
-            if c > up:
-                signals.append("sell")
-            elif c < lo:
-                signals.append("buy")
-            else:
-                signals.append(None)
-        else:
-            signals.append(None)
-
-    df['signal'] = signals
-    df2 = df.dropna(subset=['basis','upper','lower','slope']).reset_index(drop=True)   
-    return df2
+    # 5) 필수 컬럼(dropna) 후 반환
+    return df_merged.dropna(subset=['basis', 'upper', 'lower', 'slope']).reset_index()
