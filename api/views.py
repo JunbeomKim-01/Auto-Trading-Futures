@@ -25,20 +25,21 @@ def data():
     df  = ohlcv_to_dataframe(raw)
 
     # 2) 볼린저 밴드 전략 적용 (basis, upper, lower, signal 등 컬럼 추가)
-    df2 = bollinger_band_strategy(df,symbol=symbol,base_tf=tf)
+    df2 = bollinger_band_strategy(df, base_tf=tf, symbol=symbol)
     # 3) JSON 직렬화
     payload = []
     for _, row in df2.iterrows():
+        row.fillna(method="bfill").fillna(method="ffill")
         payload.append({
             "timestamp": row["timestamp"].isoformat(),
-            "open":      row["open"],
-            "high":      row["high"],
-            "low":       row["low"],
-            "close":     row["close"],
-            "basis":     row["basis"],
-            "upper":     row["upper"],
-            "lower":     row["lower"],
-            "slope":     row["slope"],
+            "open":      row[f"open_{tf}"],
+            "high":      row[f"high_{tf}"],
+            "low":       row[f"low_{tf}"],
+            "close":     row[f"close_{tf}"],
+            "basis":     row[f"basis_{tf}"],
+            "upper":     row[f"upper_{tf}"],
+            "lower":     row[f"lower_{tf}"],
+            "slope":     row[f"slope_{tf}"],
             "upper_1m":  row["upper_1m"],
             "lower_1m":  row["lower_1m"],
             "upper_5m":  row["upper_5m"],

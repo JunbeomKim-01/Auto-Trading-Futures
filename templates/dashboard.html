@@ -268,7 +268,7 @@
     try {
       const res  = await fetch(`/data?tf=${currentTf}&symbol=${encodeURIComponent(currentSymbol)}&limit=${currentLimit}`);
       const data = await res.json();
-
+      print(data)
       const x     = data.map(d => new Date(d.timestamp));
       const open  = data.map(d => d.open);
       const high  = data.map(d => d.high);
@@ -302,6 +302,32 @@
         x, y: lower, mode: 'lines', name: 'Lower',
         line: { width: 1, dash: 'dot', color: 'cyan' }
       };
+      
+      traces=[]
+      // data[0] 객체의 키들 중에서 "_5m", "_15m" 등 suffix 찾기
+      const suffixes = Object.keys(data[0])
+        .filter(k => /^basis_/.test(k))
+        .map(k => k.replace('basis_', ''));  // ['1m','5m',...]
+      
+      
+      // 각 suffix 별로 basis/upper/lower 선 추가
+      suffixes.forEach((tf, i) => {
+        if (tf === currentTf) return;  // 이미 그렸으니 스킵
+        const colUpper = data.map(d => d[`upper_${tf}`]);
+        const colLower = data.map(d => d[`lower_${tf}`]);
+        // 색상은 색상 배열에서 순환
+        const colors = ['orange','lime','magenta','cyan','white','gray'];
+        const color = colors[i % colors.length];
+        
+        traces.push({
+          x, y: colUpper, mode:'lines',
+          name:`Upper_${tf}`, line:{dash:'dot', width:1, color}
+        }, {
+          x, y: colLower, mode:'lines',
+          name:`Lower_${tf}`, line:{dash:'dot', width:1, color}
+        });
+      });
+
       // 3) 슬로프 보조 지표 (yaxis: 'y2' 로 지정)
       const slopeTrace = {
         x, y: slope, type: 'scatter', name: 'Slope',
@@ -329,7 +355,7 @@
       // 렌더
       Plotly.react(
         chartDiv,
-        [candleTrace, basisTrace, upperTrace, lowerTrace, buyTrace, sellTrace, slopeTrace],
+        [candleTrace,traces, basisTrace, upperTrace, lowerTrace, buyTrace, sellTrace, slopeTrace],
         {
           grid: { rows: 2, columns: 1, roworder: 'top to bottom', pattern: 'independent' },
           // 첫 번째 서브플롯(가격)은 domain [0.3,1], 슬로프는 [0,0.25]
@@ -347,7 +373,6 @@
     }
   }
   
-
   // 실시간 로그
   new EventSource('/stream').onmessage = e => {
     const logDiv = document.getElementById('logs');
@@ -469,10 +494,12 @@
   fetchProfitLogs();
   setInterval(() => {
     fetchAndPlot();
-    fetchAccount();
     updateKPI();
-    fetchProfitLogs();
   }, 2000);
+  setInterval(() => {
+    fetchAccount();
+    fetchProfitLogs();
+  }, 60 * 1000);
 </script>
 
 </body>

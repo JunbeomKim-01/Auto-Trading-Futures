@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from utils.helper import ohlcv_to_dataframe
 from services.data_provider import BinanceDataProvider
-import pprint
+import math
 provider = BinanceDataProvider()
 
 def linreg_slope(x: np.ndarray) -> float:
@@ -62,84 +62,80 @@ def compute_bollinger(
     return df
 
 
-def generate_mtf_signal(row) -> str:
-    """병합된 MTF 데이터에서 시그널 생성"""
-    signal = None
-    # 타임프레임별 upper 순서 비교: 30m > 1h > 15m > 5m > 4h -> 하락세 강화
-    if (
-        row.get('upper_30m', np.nan) >= row.get('upper_1h', np.nan) >=
-        row.get('upper_15m', np.nan) >= row.get('upper_5m', np.nan) >=
-        row.get('upper_4h', np.nan)
-    ):
-        signal = 'sell'
-    # 타임프레임별 lower 순서 비교: 1h <= 30m <= 15m <= 5m <= 4h -> 반등세 강화
-    elif (
-        row.get('lower_1h', np.nan) <= row.get('lower_30m', np.nan) <=
-        row.get('lower_15m', np.nan) <= row.get('lower_5m', np.nan) <=
-        row.get('lower_4h', np.nan)
-    ):
-        signal = 'buy'
-    return signal
-
-
-
 def bollinger_band_strategy(
     df: pd.DataFrame,
     base_tf: str = "1m",
+    symbol: str = "BTC/USDT",
     length: int = 24,
     mult: float = 2.0,
     slope_len: int = 3,
     window_bw: int = 10,
-    symbol: str = "BTC/USDT",
     mtf_tfs: list = None,
-    lag_count: int = 30
 ) -> pd.DataFrame:
     """
-    멀티타임프레임 MTF Bollinger Band 전략 구현
-    Parameters:
-        df: 기준 프레임 OHLCV DataFrame (e.g., 5m, 15m 등)
-    Returns:
-        멀티타임프레임 밴드 계산 및 signal 컬럼이 추가된 DataFrame
+    어떤 base_tf(1m,5m,15m,30m,1h,4h)가 들어와도
+    나머지 타임프레임을 모두 계산/병합해 줍니다.
     """
-    # 기준 프레임 볼린저밴드 계산
-    base_df = provider.fetch_ohlcv(symbol, "1m", limit = window_bw + slope_len + length)
+    # 1) raw list → DataFrame
+    if isinstance(df, list):
+        df = ohlcv_to_dataframe(df)
+    df = df.copy()
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+    # 2) MTF 목록
+    default = ["1m", "5m", "15m", "30m", "1h", "4h"]
+    tfs = mtf_tfs or default.copy()
+    if base_tf not in tfs:
+        tfs.append(base_tf)
+
+    # 3) 기준프레임 볼린저 계산 & suffix 붙이기
     base_bb = compute_bollinger(df, length, mult, slope_len, window_bw)
-    df_merged = base_bb.copy()
-    #print(len(df))
-    default_tfs = ['1m','5m','15m','30m','1h','4h']
-    if mtf_tfs is None:
-        mtf_tfs = [tf for tf in default_tfs]
-    #print(mtf_tfs)
+    suf = f"_{base_tf}"
+    base_bb = base_bb.add_suffix(suf).rename({f"timestamp{suf}":"timestamp"}, axis=1)
 
-    # 3) Fetch and merge other timeframes
-    limit = window_bw + slope_len + length
-    for i,tf in enumerate(mtf_tfs):
-        scale = [1,5,15,30,60,240]
-        ln = len(df) // (scale[i])
-        if ln <= 0:
-            ln = 1
-        raw_tf = provider.fetch_ohlcv(symbol, tf, limit = 100)
-        df_tf  = ohlcv_to_dataframe(raw_tf)
-        bb_tf  = compute_bollinger(df_tf, length, mult, slope_len, window_bw)
-        bb_slice = bb_tf[-ln:].copy()  
-        bb_slice['timestamp'] = pd.to_datetime(bb_slice['timestamp'])
-        bb_slice.sort_values('timestamp', inplace=True)
-
-        # 칼럼 접미사 붙이기 (_5m, _15m 등)
-        tmp = bb_slice.add_suffix(f'_{tf}') \
-                    .rename(columns={f'timestamp_{tf}': 'timestamp'})
-        #tmp = tmp[['timestamp'] + [f'lower_{tf}',f'upper_{tf}']].copy()
-        # (3) 1분봉 기준 backward merge
-        df_merged = pd.merge_asof(
-            df_merged,
-            tmp,
-            on='timestamp',
-            direction='backward',
-            # 필요하면 tolerance 옵션도 추가 가능:
-            # tolerance=pd.Timedelta(tf)
+    merged = base_bb.sort_values("timestamp")
+    base_minutes  = tf_to_minutes(base_tf)            # ex. base_tf="1m" → 1
+    # 4) 나머지 TF 병합
+    for tf in tfs:
+        tf_minutes = tf_to_minutes(tf)
+        # 동일 기간을 커버할 캔들 개수
+        bars_required = len(df)    # ex. 125 + 3 + 24 = 152 bars:
+        dynamic_limit = math.ceil(bars_required * base_minutes / tf_minutes)
+        if tf == base_tf:
+            continue
+        raw_tf = provider.fetch_ohlcv(symbol, tf, limit=dynamic_limit)
+        df_tf = ohlcv_to_dataframe(raw_tf)
+        df_tf['timestamp'] = pd.to_datetime(df_tf['timestamp'])
+        bb_tf = compute_bollinger(df_tf, length, mult, slope_len, window_bw)
+        suf2 = f"_{tf}"
+        bb_tf = bb_tf.add_suffix(suf2).rename({f"timestamp{suf2}":"timestamp"}, axis=1)
+        merged = pd.merge_asof(
+            merged.sort_values("timestamp"),
+            bb_tf.sort_values("timestamp"),
+            on="timestamp",
+            direction="backward",
+            tolerance=pd.Timedelta(tf)
         )
-    # 4) Signal generation
-    for col in df_merged.columns[:-1]:
-        df_merged[f'{col}'] = df_merged[f'{col}'].bfill()
-    df_merged['signal'] = df_merged.apply(generate_mtf_signal, axis=1)
-    return df_merged
+        merged = merged.fillna(method="bfill").fillna(method="ffill")
+
+    # 5) Signal 생성 (예시: multi-tf 상/하단 순서 비교)
+    def gen_sig(row):
+        uppers = [row[f"upper_{x}"] for x in tfs if f"upper_{x}" in row]
+        lowers = [row[f"lower_{x}"] for x in tfs if f"lower_{x}" in row]
+        if all(uppers[i] >= uppers[i+1] for i in range(len(uppers)-1)):
+            return "sell"
+        if all(lowers[i] <= lowers[i+1] for i in range(len(lowers)-1)):
+            return "buy"
+        return None
+
+    merged["signal"] = merged.apply(gen_sig, axis=1)
+
+    return merged.reset_index(drop=True)
+
+def tf_to_minutes(tf: str) -> int:
+    unit = tf[-1]
+    n    = int(tf[:-1])
+    if unit == 'm':   return n
+    if unit == 'h':   return n * 60
+    if unit == 'd':   return n * 60 * 24
+    raise ValueError(f"Unsupported tf: {tf}")
