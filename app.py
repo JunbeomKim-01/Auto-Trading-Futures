@@ -6,6 +6,10 @@ from services.monitor import Monitor
 from services.data_provider import BinanceDataProvider
 from services.signal_service import BollingerSignalService, ISignalService
 
+import os, sys
+# 현재 파일(app.py)이 있는 디렉터리(=/app)를 import root로 미리 등록
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(views_bp)
