@@ -50,7 +50,7 @@
     }
 
     /* Chart & Logs */
-    #chart { flex:1; }
+    #chart { flex:2; }
     #logs {
       flex:1; margin-top:var(--gap);
       background:var(--bg); overflow:auto;
@@ -223,7 +223,7 @@
 </main>
 
 <script>
-  let currentTf = '1m';
+  let currentTf = '5m';
   let currentSymbol = 'BTC/USDT';
   let currentLimit = 100;
   let wheelThrottled = false;
@@ -253,7 +253,7 @@
    e.preventDefault();
    if (wheelThrottled) return;            // 쓰로틀 중이면 무시
    wheelThrottled = true;
-   setTimeout(() => { wheelThrottled = false; }, 200);
+   setTimeout(() => { wheelThrottled = false; }, 500);
 
    // deltaY 양수/음수에 따라 작은 단위(5)로 증감
    if (e.deltaY < 0) {
@@ -265,114 +265,140 @@
    fetchAndPlot();
   });
   async function fetchAndPlot() {
-    try {
-      const res  = await fetch(`/data?tf=${currentTf}&symbol=${encodeURIComponent(currentSymbol)}&limit=${currentLimit}`);
-      const data = await res.json();
-      print(data)
-      const x     = data.map(d => new Date(d.timestamp));
-      const open  = data.map(d => d.open);
-      const high  = data.map(d => d.high);
-      const low   = data.map(d => d.low);
-      const close = data.map(d => d.close);
+  try {
 
-      // 볼린저 밴드
-      const basis = data.map(d => d.basis);
-      const upper = data.map(d => d.upper);
-      const lower = data.map(d => d.lower);
-      const slope = data.map(d => d.slope);
-      const hi = data.map(d => d.hi);
+    // 1) 데이터 가져오기
+    const res  = await fetch(
+      `/data?tf=${currentTf}` +
+      `&symbol=${encodeURIComponent(currentSymbol)}` +
+      `&limit=${currentLimit}`
+    );
+    // fetchAndPlot 최상단에
+    const TF_ORDER = ['1m','5m','15m','30m','1h','4h'];
+    const data = await res.json();
 
-      // 캔들
-      const candleTrace = {
-        x, open, high, low, close,
-        type: 'candlestick',
-        name: currentSymbol
-      };
+    // 2) 공통 x, ohlc
+    const x     = data.map(d => new Date(d.timestamp));
+    const open  = data.map(d => d.open);
+    const high  = data.map(d => d.high);
+    const low   = data.map(d => d.low);
+    const close = data.map(d => d.close);
 
-      // 밴드 선들
-      const basisTrace = {
-        x, y: basis, mode: 'lines', name: 'Basis',
-        line: { width: 1, dash: 'solid', color: 'yellow' }
-      };
-      const upperTrace = {
-        x, y: upper, mode: 'lines', name: 'Upper',
-        line: { width: 1, dash: 'dot', color: 'magenta' }
-      };
-      const lowerTrace = {
-        x, y: lower, mode: 'lines', name: 'Lower',
-        line: { width: 1, dash: 'dot', color: 'cyan' }
-      };
-      
-      traces=[]
-      // data[0] 객체의 키들 중에서 "_5m", "_15m" 등 suffix 찾기
-      const suffixes = Object.keys(data[0])
-        .filter(k => /^basis_/.test(k))
-        .map(k => k.replace('basis_', ''));  // ['1m','5m',...]
-      
-      
-      // 각 suffix 별로 basis/upper/lower 선 추가
-      suffixes.forEach((tf, i) => {
-        if (tf === currentTf) return;  // 이미 그렸으니 스킵
-        const colUpper = data.map(d => d[`upper_${tf}`]);
-        const colLower = data.map(d => d[`lower_${tf}`]);
-        // 색상은 색상 배열에서 순환
-        const colors = ['orange','lime','magenta','cyan','white','gray'];
-        const color = colors[i % colors.length];
-        
-        traces.push({
-          x, y: colUpper, mode:'lines',
-          name:`Upper_${tf}`, line:{dash:'dot', width:1, color}
-        }, {
-          x, y: colLower, mode:'lines',
-          name:`Lower_${tf}`, line:{dash:'dot', width:1, color}
-        });
-      });
+    // 3) 기본 Candle
+    const candleTrace = {
+      x, open, high, low, close,
+      type: 'candlestick',
+      name: currentSymbol
+    };
 
-      // 3) 슬로프 보조 지표 (yaxis: 'y2' 로 지정)
-      const slopeTrace = {
-        x, y: slope, type: 'scatter', name: 'Slope',
-        xaxis: 'x', yaxis: 'y2',
-        line: { width: 1.5, color: 'orange' }
-      };
-      // 매수/매도 마커
-      const buys = data.filter(d => d.signal === 'buy');
-      const sells= data.filter(d => d.signal === 'sell');
-      const buyTrace = {
-        x: buys.map(d => new Date(d.timestamp)),
-        y: buys.map(d => d.close),
-        mode: 'markers',
-        marker: { symbol: 'triangle-up', size: 10, color: 'lime' },
-        name: 'Buy'
-      };
-      const sellTrace = {
-        x: sells.map(d => new Date(d.timestamp)),
-        y: sells.map(d => d.close),
-        mode: 'markers',
-        marker: { symbol: 'triangle-down', size: 10, color: 'tomato' },
-        name: 'Sell'
-      };
+    // 4) 기준 TF Bollinger (basis, upper, lower)
+    const basisTrace = {
+      x, y: data.map(d=>d.basis), mode:'lines', name:`Basis (${currentTf})`,
+      line:{width:1,dash:'solid',color:'yellow'}
+    };
+    const upperTrace = {
+      x, y: data.map(d=>d.upper), mode:'lines', name:`Upper (${currentTf})`,
+      line:{width:1,dash:'dot',color:'magenta'}
+    };
+    const lowerTrace = {
+      x, y: data.map(d=>d.lower), mode:'lines', name:`Lower (${currentTf})`,
+      line:{width:1,dash:'dot',color:'cyan'}
+    };
 
-      // 렌더
-      Plotly.react(
-        chartDiv,
-        [candleTrace,traces, basisTrace, upperTrace, lowerTrace, buyTrace, sellTrace, slopeTrace],
+    // 5) 다른 TF 자동 감지
+    // data[0] 키에서 "upper_5m", "upper_15m" 등 suffix 뽑기
+    const suffixes = Object.keys(data[0])
+      .filter(k => k.startsWith('upper_'))
+      .map(k => k.replace('upper_',''))
+      // 기준 TF 먼저 나오도록 정렬(optional)
+      .sort((a,b) => TF_ORDER.indexOf(a) - TF_ORDER.indexOf(b));
+    // 6) traces 배열에 순서대로 담기
+    const traces = [
+      candleTrace,
+      basisTrace, upperTrace, lowerTrace
+    ];
+
+    // 7) 각 suffix 별 Bollinger Band 추가
+    const colors = ['white','blue','green','red','purple','yellow'];
+    suffixes.forEach((tf, i) => {
+      if (tf === currentTf) return;
+
+      const colUpper = data.map(d => d[`upper_${tf}`]);
+      const colLower = data.map(d => d[`lower_${tf}`]);
+      const color    = colors[i % colors.length];
+
+      traces.push(
         {
-          grid: { rows: 2, columns: 1, roworder: 'top to bottom', pattern: 'independent' },
-          // 첫 번째 서브플롯(가격)은 domain [0.3,1], 슬로프는 [0,0.25]
-          yaxis:  { domain: [0.3, 1],  title: 'Price',   gridcolor:'#333' },
-          yaxis2: { domain: [0,   0.25], title: 'Slope',   gridcolor:'#333' },
-          xaxis:  { rangeslider:{visible:false}, gridcolor:'#333' },
-          xaxis2: { matches: 'x', showticklabels:false },  // 하단 x축은 상단과 매칭, 레이블 감춤
-          margin: { t:20, b:30, l:50, r:20 },
-          paper_bgcolor: '#000', plot_bgcolor: '#000',
-          font: { color: '#eee' }
+          x, y: colUpper, mode:'lines',
+          name:`Upper (${tf})`,
+          line:{dash:'dot', width:1,color}
+        },
+        {
+          x, y: colLower, mode:'lines',
+          name:`Lower (${tf})`,
+          line:{dash:'dot', width:1,color}
         }
       );
-    } catch (e) {
-      console.error('차트 로드 실패', e);
-    }
+    });
+
+    
+    // 8) slope, buy/sell marker 추가 (기존 로직)
+    const slopeTrace = {
+      x, y: data.map(d=>d.slope),
+      type:'scatter', name:'Slope',
+      xaxis:'x', yaxis:'y2',
+      line:{width:1.5,color:'orange'}
+    };
+    const bibwTrace = {
+      x, y: data.map(d=>d['hi_bw']),
+      type:'scatter', name:'HiBW',
+      xaxis:'x', yaxis:'y2',
+      line:{width:1.5,color:'red'}
+    };
+    const bwTrace = {
+      x, y: data.map(d=>d['bandwidth']),
+      type:'scatter', name:'BW',
+      xaxis:'x', yaxis:'y2',
+      line:{width:1.5,color:'blue'}
+    };
+
+
+    const buys  = data.filter(d=>d.signal==='buy');
+    const sells = data.filter(d=>d.signal==='sell');
+    const buyTrace = {
+      x: buys.map(d=>new Date(d.timestamp)),
+      y: buys.map(d=>d.close), mode:'markers',
+      marker:{symbol:'triangle-up',size:10,color:'lime'},
+      name:'Buy'
+    };
+    const sellTrace = {
+      x: sells.map(d=>new Date(d.timestamp)),
+      y: sells.map(d=>d.close), mode:'markers',
+      marker:{symbol:'triangle-down',size:10,color:'tomato'},
+      name:'Sell'
+    };
+    traces.push(buyTrace, sellTrace, slopeTrace, bibwTrace,bwTrace);
+
+    // 9) Plotly.react 호출
+    Plotly.react(
+      chartDiv,
+      traces,
+      {
+        grid:{rows:2,columns:1,roworder:'top to bottom',pattern:'independent'},
+        yaxis: {domain:[0.3,1], title:'Price', gridcolor:'#333'},
+        yaxis2:{domain:[0,0.25], title:'Slope', gridcolor:'#333'},
+        xaxis:{rangeslider:{visible:false}, gridcolor:'#333'},
+        xaxis2:{matches:'x', showticklabels:false},
+        margin:{t:20,b:30,l:50,r:20},
+        paper_bgcolor:'#000', plot_bgcolor:'#000',
+        font:{color:'#eee'}
+      }
+    );
+  } catch(e) {
+    console.error('차트 로드 실패', e);
   }
-  
+}
+
   // 실시간 로그
   new EventSource('/stream').onmessage = e => {
     const logDiv = document.getElementById('logs');

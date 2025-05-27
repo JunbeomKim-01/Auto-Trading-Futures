@@ -28,6 +28,7 @@ def data():
     df2 = bollinger_band_strategy(df, base_tf=tf, symbol=symbol)
     # 3) JSON 직렬화
     payload = []
+    #print(df2.columns)
     for _, row in df2.iterrows():
         row.fillna(method="bfill").fillna(method="ffill")
         payload.append({
@@ -40,6 +41,8 @@ def data():
             "upper":     row[f"upper_{tf}"],
             "lower":     row[f"lower_{tf}"],
             "slope":     row[f"slope_{tf}"],
+            "hi_bw":     row[f'hi_bw_{tf}'],
+            "bandwidth": row[f"bandwidth_{tf}"],
             "upper_1m":  row["upper_1m"],
             "lower_1m":  row["lower_1m"],
             "upper_5m":  row["upper_5m"],

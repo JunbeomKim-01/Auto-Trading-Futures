@@ -70,6 +70,7 @@ def bollinger_band_strategy(
     mult: float = 2.0,
     slope_len: int = 3,
     window_bw: int = 10,
+    is_monior: bool = False,
     mtf_tfs: list = None,
 ) -> pd.DataFrame:
     """
@@ -85,8 +86,6 @@ def bollinger_band_strategy(
     # 2) MTF 목록
     default = ["1m", "5m", "15m", "30m", "1h", "4h"]
     tfs = mtf_tfs or default.copy()
-    if base_tf not in tfs:
-        tfs.append(base_tf)
 
     # 3) 기준프레임 볼린저 계산 & suffix 붙이기
     base_bb = compute_bollinger(df, length, mult, slope_len, window_bw)
@@ -100,12 +99,15 @@ def bollinger_band_strategy(
         tf_minutes = tf_to_minutes(tf)
         # 동일 기간을 커버할 캔들 개수
         bars_required = len(df)    # ex. 125 + 3 + 24 = 152 bars:
-        dynamic_limit = math.ceil(bars_required * base_minutes / tf_minutes)
+        dynamic_limit = math.ceil(bars_required * base_minutes / tf_minutes) + 1
+        #if not is_monior : 
+        #    print(f'{base_minutes} _ {base_tf}: {bars_required} -> {tf}: {dynamic_limit}')
         if tf == base_tf:
             continue
         raw_tf = provider.fetch_ohlcv(symbol, tf, limit=dynamic_limit)
         df_tf = ohlcv_to_dataframe(raw_tf)
         df_tf['timestamp'] = pd.to_datetime(df_tf['timestamp'])
+
         bb_tf = compute_bollinger(df_tf, length, mult, slope_len, window_bw)
         suf2 = f"_{tf}"
         bb_tf = bb_tf.add_suffix(suf2).rename({f"timestamp{suf2}":"timestamp"}, axis=1)
@@ -114,7 +116,7 @@ def bollinger_band_strategy(
             bb_tf.sort_values("timestamp"),
             on="timestamp",
             direction="backward",
-            tolerance=pd.Timedelta(tf)
+            tolerance=pd.Timedelta(base_tf)  # 또는 None
         )
         merged = merged.fillna(method="bfill").fillna(method="ffill")
 
@@ -129,7 +131,7 @@ def bollinger_band_strategy(
         return None
 
     merged["signal"] = merged.apply(gen_sig, axis=1)
-
+    
     return merged.reset_index(drop=True)
 
 def tf_to_minutes(tf: str) -> int:

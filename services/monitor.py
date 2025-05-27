@@ -31,14 +31,14 @@ class Monitor:
     def _run(self):
         while not self._stop.is_set():
             try:
-                candles = self.provider.fetch_ohlcv(self.symbol, '1m', self.limit)
+                candles = self.provider.fetch_ohlcv(self.symbol,'1m', limit=2)
                 price   = self.provider.fetch_ticker(self.symbol)
-                signals = self.signaler.generate_signals(candles)
+                signals = self.signaler.generate_signals(candles,True)
                 latest  = signals[-1] or '-'
                 if latest == 'buy':
                     logger.info(f"▲ BUY {self.symbol}  | Price: {price:,.2f}")
                 elif latest == 'sell':
-                    logger.info(f"▼ SELL{self.symbol}  | Price: {price:,.2f}")
+                    logger.info(f"▼ SELL {self.symbol}  | Price: {price:,.2f}")
                 else:
                     logger.info(f"{self.symbol}  | Signal: No Signal \n")
             except Exception as e:

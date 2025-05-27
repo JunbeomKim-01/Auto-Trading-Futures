@@ -10,12 +10,12 @@ from models.ohlcv import OhlcvCandle
 
 class ISignalService(ABC):
     @abstractmethod
-    def generate_signals(self, candles: List[OhlcvCandle]) -> List[str]:
+    def generate_signals(self, candles: List[OhlcvCandle],is_monitor) -> List[str]:
         """각 봉마다 'buy'/'sell'/None 시그널 생성"""
 
 
 class BollingerSignalService(ISignalService):
-    def generate_signals(self, candles):
+    def generate_signals(self, candles, is_monitor):
         df = pd.DataFrame([c.to_dict() for c in candles])
-        df = bollinger_band_strategy(df)
+        df = bollinger_band_strategy(df,is_monior=is_monitor)
         return df['signal'].fillna('').tolist()
