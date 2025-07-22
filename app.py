@@ -6,16 +6,12 @@ from services.monitor import Monitor
 from services.data_provider import BinanceDataProvider
 from services.signal_service import BollingerSignalService, ISignalService
 
-import os, sys
-# 현재 파일(app.py)이 있는 디렉터리(=/app)를 import root로 미리 등록
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(views_bp)
     app.register_blueprint(bp_events)
     symbol = 'BTC/USDT'
-    # 백그라운드 모니터 시작
+    # 백그라운드 모니터 시작go
     provider = BinanceDataProvider()
     signaler = BollingerSignalService()
     monitor = Monitor(provider, signaler, symbol=symbol, interval_sec=5)
@@ -24,5 +20,5 @@ def create_app():
     return app
 
 if __name__ == '__main__':
-    create_app().run(host='127.0.0.1', port=8080, debug=True)
+    create_app().run(host='127.0.0.1', port=3000, debug=True)
 
