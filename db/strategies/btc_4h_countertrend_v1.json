@@ -1,0 +1,57 @@
+{
+  "strategyId": "btc_4h_countertrend_v1",
+  "name": "BTC 4H 역추세 분할매수 전략",
+  "symbol": "BTCUSDT",
+  "market": "BINANCE_USDM_FUTURES",
+  "timeframe": "4h",
+  "mode": "testnet",
+  "indicators": {
+    "rsi14": { "type": "RSI", "period": 14 },
+    "macd": { "type": "MACD", "fast": 12, "slow": 26, "signal": 9 },
+    "atr14": { "type": "ATR", "period": 14 },
+    "ema200": { "type": "EMA", "period": 200 },
+    "volumeMA20": { "type": "SMA", "source": "volume", "period": 20 }
+  },
+  "entry": {
+    "long": {
+      "enabled": true,
+      "minimumScore": 70,
+      "hardFilters": [
+        { "left": "close", "operator": ">", "right": "ema200", "description": "장기 하락 추세에서는 롱 진입 제한" }
+      ],
+      "scoreRules": [
+        { "name": "RSI 과매도", "left": "rsi14", "operator": "<=", "right": 35, "score": 25 },
+        { "name": "MACD 하락 둔화", "left": "macd.histogram", "operator": ">", "right": "macd.histogram.previous", "score": 20 },
+        { "name": "거래량 증가", "left": "volume", "operator": ">", "right": "volumeMA20 * 1.5", "score": 20 },
+        { "name": "ATR 기준 과도한 하락", "left": "close", "operator": "<", "right": "previousClose - atr14 * 1.2", "score": 25 }
+      ]
+    }
+  },
+  "positionSizing": {
+    "type": "atr_based",
+    "maxPositionValuePercent": 25,
+    "leverage": 2,
+    "entries": [
+      { "step": 1, "sizePercent": 25, "trigger": "initial_signal" },
+      { "step": 2, "sizePercent": 25, "trigger": "price <= avgEntry - atr14 * 0.7" },
+      { "step": 3, "sizePercent": 25, "trigger": "price <= avgEntry - atr14 * 1.2" },
+      { "step": 4, "sizePercent": 25, "trigger": "price <= avgEntry - atr14 * 2.0" }
+    ]
+  },
+  "exit": {
+    "takeProfit": [
+      { "sizePercent": 30, "trigger": "price >= avgEntry + atr14 * 0.7" },
+      { "sizePercent": 30, "trigger": "price >= avgEntry + atr14 * 1.2" },
+      { "sizePercent": 30, "trigger": "price >= avgEntry + atr14 * 2.0" }
+    ],
+    "trailingStop": { "enabled": true, "sizePercent": 10, "atrMultiplier": 1.5 }
+  },
+  "risk": {
+    "maxDailyLossPercent": 2,
+    "maxWeeklyLossPercent": 5,
+    "maxConsecutiveLosses": 3,
+    "minLiquidationDistancePercent": 5,
+    "maxOpenPositions": 1,
+    "disableNewEntryWhenOrderPending": true
+  }
+}

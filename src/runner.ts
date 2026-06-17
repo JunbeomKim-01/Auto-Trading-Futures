@@ -151,7 +151,10 @@ export async function runStrategyTick(env: Env, now: Date = new Date()): Promise
       detailJson: JSON.stringify({ qty, fill: res.fillPrice, status: res.status }),
     });
   } else if (decision.action === 'take_profit' && position) {
-    const closeQty = roundCloseQty(position.totalSize * (decision.sizePercent / 100));
+    // 마지막 레벨은 잔량 전량 청산, 그 외는 비중만큼.
+    const closeQty = decision.closeRemaining
+      ? roundCloseQty(position.totalSize)
+      : roundCloseQty(position.totalSize * (decision.sizePercent / 100));
     const res = await executor.execute({
       symbol: SYMBOL, side: 'SELL', quantity: closeQty, reduceOnly: true, refPrice: price, mode,
     });
@@ -163,7 +166,9 @@ export async function runStrategyTick(env: Env, now: Date = new Date()): Promise
       exchangeOrderId: res.exchangeOrderId, rawResponse: res.raw, candleOpenTime: last.openTime,
     });
     if (res.status !== 'ERROR') {
-      const updated = reducePosition(position, res.fillQty, res.fillPrice, now);
+      const updated = reducePosition(
+        position, res.fillQty, res.fillPrice, now, decision.tpIndex, decision.closeRemaining,
+      );
       await d1.upsertPosition(updated);
     }
     await d1.logSignal({

@@ -13,6 +13,7 @@ interface PositionRow {
   total_size: number;
   current_step: number;
   max_step: number;
+  tp_filled: number;
   realized_pnl: number;
   opened_at: string;
   closed_at: string | null;
@@ -85,21 +86,22 @@ export class D1Repository {
     await this.env.DB.prepare(
       `INSERT INTO positions
          (position_id, symbol, side, strategy_id, strategy_version, state,
-          avg_entry_price, total_size, current_step, max_step, realized_pnl,
+          avg_entry_price, total_size, current_step, max_step, tp_filled, realized_pnl,
           opened_at, closed_at, updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
        ON CONFLICT(position_id) DO UPDATE SET
          state = excluded.state,
          avg_entry_price = excluded.avg_entry_price,
          total_size = excluded.total_size,
          current_step = excluded.current_step,
+         tp_filled = excluded.tp_filled,
          realized_pnl = excluded.realized_pnl,
          closed_at = excluded.closed_at,
          updated_at = excluded.updated_at`,
     )
       .bind(
         p.positionId, p.symbol, p.side, p.strategyId, p.strategyVersion, p.state,
-        p.avgEntryPrice, p.totalSize, p.currentStep, p.maxStep, p.realizedPnl,
+        p.avgEntryPrice, p.totalSize, p.currentStep, p.maxStep, p.tpFilled, p.realizedPnl,
         p.openedAt, p.closedAt, p.updatedAt,
       )
       .run();
@@ -215,6 +217,7 @@ function rowToPosition(r: PositionRow): Position {
     totalSize: r.total_size,
     currentStep: r.current_step,
     maxStep: r.max_step,
+    tpFilled: r.tp_filled,
     realizedPnl: r.realized_pnl,
     openedAt: r.opened_at,
     closedAt: r.closed_at,

@@ -33,6 +33,7 @@ export function openPosition(
     totalSize: fillQty,
     currentStep: 1,
     maxStep,
+    tpFilled: 0,
     realizedPnl: 0,
     openedAt: now.toISOString(),
     closedAt: null,
@@ -62,21 +63,25 @@ export function addToPosition(
 }
 
 // 부분/전체 익절. 청산 비율만큼 줄이고 실현손익 누적.
+// tpIndex 레벨을 체결 처리(tpFilled = tpIndex+1)하고, closeRemaining이면 잔량 전량 청산.
 export function reducePosition(
   pos: Position,
   closeQty: number,
   fillPrice: number,
   now: Date,
+  tpIndex: number,
+  closeRemaining: boolean,
 ): Position {
-  const qty = Math.min(closeQty, pos.totalSize);
+  const qty = closeRemaining ? pos.totalSize : Math.min(closeQty, pos.totalSize);
   const pnl = pos.side === 'LONG'
     ? (fillPrice - pos.avgEntryPrice) * qty
     : (pos.avgEntryPrice - fillPrice) * qty;
   const remaining = +(pos.totalSize - qty).toFixed(8);
-  const closed = remaining <= 0;
+  const closed = closeRemaining || remaining <= 0;
   return {
     ...pos,
     totalSize: closed ? 0 : remaining,
+    tpFilled: tpIndex + 1,
     realizedPnl: pos.realizedPnl + pnl,
     state: closed ? 'CLOSED' : 'PARTIAL_TAKE_PROFIT',
     closedAt: closed ? now.toISOString() : pos.closedAt,

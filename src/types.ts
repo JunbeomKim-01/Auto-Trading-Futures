@@ -93,6 +93,7 @@ export interface StrategyConfig {
   };
   exit: {
     takeProfit: ExitStep[];
+    stopLoss?: ExitStep;
     trailingStop: { enabled: boolean; sizePercent: number; atrMultiplier: number };
   };
   risk: {
@@ -135,6 +136,7 @@ export interface Position {
   totalSize: number;
   currentStep: number;
   maxStep: number;
+  tpFilled: number;        // 체결 완료한 분할익절 레벨 수 (각 레벨 1회만 체결)
   realizedPnl: number;
   openedAt: string;
   closedAt: string | null;

@@ -46,7 +46,8 @@ export function buildContext(config: StrategyConfig, candles: Candle[], position
 export type Decision =
   | { action: 'enter'; side: 'LONG'; sizePercent: number; score: ScoreResult }
   | { action: 'add'; side: 'LONG'; step: number; sizePercent: number }
-  | { action: 'take_profit'; side: 'LONG'; sizePercent: number; tpIndex: number }
+  | { action: 'take_profit'; side: 'LONG'; sizePercent: number; tpIndex: number; closeRemaining: boolean }
+  | { action: 'stop_loss'; side: 'LONG'; sizePercent: number; closeRemaining: true }
   | { action: 'hold'; reason: string }
   | { action: 'no_signal'; score: ScoreResult };
 
@@ -66,12 +67,24 @@ export function decide(config: StrategyConfig, ctx: EvalContext, position: Posit
   }
 
   // 2) 보유 중: 익절 먼저 확인 (청산 우선). 문서 11장.
-  // MVP: 부분익절 단계 추적은 단순화 — 트리거 충족 시 해당 비중 청산.
-  for (let t = 0; t < config.exit.takeProfit.length; t++) {
-    const tp = config.exit.takeProfit[t];
-    if (safeTrigger(tp.trigger, ctx)) {
-      return { action: 'take_profit', side: 'LONG', sizePercent: tp.sizePercent, tpIndex: t };
-    }
+  // 분할익절 레벨은 가격 오름차순이므로 다음 미체결 레벨(tpFilled)만 본다.
+  // 각 레벨은 1회만 체결하고, 마지막 레벨은 잔량을 전량 청산한다(잔여 dust 방지).
+  const tps = config.exit.takeProfit;
+  const t = position.tpFilled;
+  if (t < tps.length && safeTrigger(tps[t].trigger, ctx)) {
+    const isLast = t === tps.length - 1;
+    return {
+      action: 'take_profit',
+      side: 'LONG',
+      sizePercent: tps[t].sizePercent,
+      tpIndex: t,
+      closeRemaining: isLast,
+    };
+  }
+
+  const stopLoss = config.exit.stopLoss;
+  if (stopLoss && safeTrigger(stopLoss.trigger, ctx)) {
+    return { action: 'stop_loss', side: 'LONG', sizePercent: stopLoss.sizePercent, closeRemaining: true };
   }
 
   // 3) 분할 추가매수: 다음 단계 트리거 확인.
