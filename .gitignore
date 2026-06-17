@@ -4,3 +4,10 @@ dist/
 .dev.vars
 *.log
 .DS_Store
+
+# python backtest engine
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/candles/
