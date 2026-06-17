@@ -61,9 +61,12 @@ wrangler secret delete BINANCE_API_SECRET
 | 메서드 | 경로 | 인증 | 용도 |
 |---|---|---|---|
 | GET | `/health` | 불필요 | 헬스체크 |
-| GET | `/klines?symbol=&interval=&limit=` | Bearer | 캔들 조회 |
+| GET | `/klines?symbol=&interval=&limit=&startTime=&endTime=` | Bearer | 캔들 조회 |
 | POST | `/account` | Bearer | 계정/잔고 |
 | POST | `/leverage` `{symbol,leverage}` | Bearer | 레버리지 설정 |
 | POST | `/order` `{symbol,side,quantity,reduceOnly}` | Bearer | 시장가 주문 |
 
 로컬 검증 완료: 테스트넷 klines/account 정상, Bearer 미인증 시 401.
+
+> 백테스트는 과거 구간을 페이지 단위로 조회하므로 `startTime` / `endTime`
+> 파라미터를 Executor가 Binance로 그대로 전달해야 합니다.

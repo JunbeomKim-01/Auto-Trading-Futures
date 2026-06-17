@@ -81,11 +81,16 @@ const server = http.createServer(async (req, res) => {
 
     // 공개 klines.
     if (url.pathname === '/klines' && req.method === 'GET') {
-      const r = await publicRequest('/fapi/v1/klines', {
+      const params = {
         symbol: url.searchParams.get('symbol') ?? '',
         interval: url.searchParams.get('interval') ?? '',
         limit: url.searchParams.get('limit') ?? '500',
-      });
+      };
+      const startTime = url.searchParams.get('startTime');
+      const endTime = url.searchParams.get('endTime');
+      if (startTime) params.startTime = startTime;
+      if (endTime) params.endTime = endTime;
+      const r = await publicRequest('/fapi/v1/klines', params);
       return send(res, r.status, r.ok ? JSON.parse(r.body) : { error: r.body });
     }
 

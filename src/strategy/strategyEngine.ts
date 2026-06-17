@@ -1,6 +1,14 @@
 // 캔들 + 전략 설정 → EvalContext 구성 및 진입/추가/청산 판단. 문서 6/13장.
 import type { Candle, EvalContext, Position, StrategyConfig } from '../types';
-import { calculateATR, calculateEMA, calculateMACD, calculateRSI, calculateSMA } from '../indicators';
+import {
+  calculateATR,
+  calculateEMA,
+  calculateFVG,
+  calculateMACD,
+  calculateOrderBlock,
+  calculateRSI,
+  calculateSMA,
+} from '../indicators';
 import { evaluateEntry, type ScoreResult } from './scoreEngine';
 import { evaluateTrigger } from './conditionParser';
 
@@ -8,6 +16,7 @@ import { evaluateTrigger } from './conditionParser';
 // (RSI14 / MACD / ATR14 / EMA200 / volumeMA20). 문서 19장.
 export function buildContext(config: StrategyConfig, candles: Candle[], position: Position | null): EvalContext {
   const closes = candles.map((c) => c.close);
+  const opens = candles.map((c) => c.open);
   const highs = candles.map((c) => c.high);
   const lows = candles.map((c) => c.low);
   const volumes = candles.map((c) => c.volume);
@@ -23,6 +32,10 @@ export function buildContext(config: StrategyConfig, candles: Candle[], position
   const ema = calculateEMA(closes, emaPeriod);
   const volMa = calculateSMA(volumes, volMaPeriod);
   const macd = calculateMACD(closes, macdSpec.fast ?? 12, macdSpec.slow ?? 26, macdSpec.signal ?? 9);
+  // FVG / Order Block: 가격 구역 지표. 조건식에서 fvg.* / ob.* 로 참조한다.
+  const fvg = calculateFVG(highs, lows);
+  const obSpec = config.indicators.ob ?? config.indicators.orderBlock;
+  const ob = calculateOrderBlock(opens, highs, lows, closes, obSpec?.minBodyRatio ?? 0);
 
   const i = candles.length - 1; // 마지막(=마감) 캔들 인덱스
 
@@ -38,6 +51,20 @@ export function buildContext(config: StrategyConfig, candles: Candle[], position
     volumeMA20: volMa[i],
     'macd.histogram': macd.histogram[i],
     'macd.histogram.previous': macd.histogram[i - 1],
+    'fvg.bullish': fvg.bullish[i],
+    'fvg.bearish': fvg.bearish[i],
+    'fvg.direction': fvg.direction[i],
+    'fvg.low': fvg.low[i],
+    'fvg.high': fvg.high[i],
+    'fvg.mid': fvg.mid[i],
+    'fvg.size': fvg.size[i],
+    'ob.bullish': ob.bullish[i],
+    'ob.bearish': ob.bearish[i],
+    'ob.direction': ob.direction[i],
+    'ob.low': ob.low[i],
+    'ob.high': ob.high[i],
+    'ob.mid': ob.mid[i],
+    'ob.size': ob.size[i],
     avgEntry: position ? position.avgEntryPrice : NaN,
     price: closes[i],
   };

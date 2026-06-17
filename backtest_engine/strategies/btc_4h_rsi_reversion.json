@@ -1,0 +1,26 @@
+{
+  "name": "BTC 4H RSI 역추세 (TP/SL)",
+  "symbol": "BTCUSDT",
+  "timeframe": "4h",
+  "indicators": {
+    "rsi14": { "type": "RSI", "source": "close", "period": 14 },
+    "ema200": { "type": "EMA", "source": "close", "period": 200 },
+    "atr14": { "type": "ATR", "period": 14 },
+    "volume_ma20": { "type": "VOLUME_MA", "period": 20 }
+  },
+  "entry": {
+    "side": "LONG",
+    "rule": {
+      "logic": "AND",
+      "conditions": [
+        { "left": "close", "operator": ">", "right": "ema200" },
+        { "left": "rsi14", "operator": "<=", "right": 35 },
+        { "left": "volume", "operator": ">", "right": "volume_ma20 * 1.2" }
+      ]
+    }
+  },
+  "exit": {
+    "take_profit_pct": 0.03,
+    "stop_loss_pct": 0.02
+  }
+}

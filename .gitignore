@@ -4,3 +4,16 @@ dist/
 .dev.vars
 *.log
 .DS_Store
+
+# python backtest engine
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/candles/
+
+# 미커밋 로컬 설정 / 문서 초안
+.claude/
+Desigin.md
+auto_trading_ui_design_spec.md
+auto_trading_ui_ux_spec.md

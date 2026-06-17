@@ -68,6 +68,29 @@ Binance는 Cloudflare Workers의 출구 IP를 **CloudFront 403으로 차단**합
 - `EXECUTOR_URL` 설정 시 → 워커가 모든 Binance 호출을 Executor 경유.
 - 미설정 시 (로컬 dev) → Binance 직접 호출.
 
+## 백테스트 (문서 16/17장)
+
+라이브와 **동일한 전략 코드**(`buildContext`/`decide`/상태머신)를 과거 4시간봉에 적용한다.
+로컬 IP는 Binance가 차단하지 않으므로 prod kline을 직접 페이지네이션으로 받는다.
+
+```bash
+npx tsx scripts/backtest.ts --years 3
+npx tsx scripts/backtest.ts --symbol ETHUSDT --interval 4h --years 2 \
+  --config db/strategies/btc_4h_countertrend_v1.json
+```
+
+- 전략 설정 원본(canonical): [db/strategies/btc_4h_countertrend_v1.json](db/strategies/btc_4h_countertrend_v1.json).
+  `db/seed.sql`은 같은 내용을 D1에 심는다 — **둘은 동기화 유지 필요**.
+- 출력: 총수익률, 거래수, 승률, Profit Factor, **MDD**, **최대 연속손실**(핵심 지표).
+
+### 시드 전략 백테스트가 드러낸 점 (BTCUSDT 4h, 2023-07~2026-06)
+
+- 3년간 **8거래**뿐 — `close>ema200 AND RSI<=35` 동시 충족이 드물어 빈도가 매우 낮다.
+- 총 +5.16% (≈연 1.7%), MDD 2.42%. **승률 100%는 좋은 신호가 아니다** —
+  구현된 청산이 익절뿐이라 **손절이 없어** 손실 포지션은 실현되지 않고 회복될 때까지 보유된다.
+  이 표본에선 BTC가 매번 회복해 전부 "승"이 됐을 뿐, 회복 못 하는 구간에선 무한 물타기 위험.
+- 결론: 실거래 전 **가격 기반 손절** 추가가 필수. (다음 과제)
+
 ## 운영 모드 (문서 18장)
 
 `OFF → ALERT_ONLY → PAPER → TESTNET → LIVE_SMALL → LIVE_FULL` 순서로 검증 후 승격.
@@ -76,10 +99,10 @@ Binance는 Cloudflare Workers의 출구 IP를 **CloudFront 403으로 차단**합
 
 ## MVP 의도적 단순화 (다음 단계 과제)
 
+- **가격 기반 손절 미구현** → 손실 포지션이 청산되지 않음. 백테스트가 드러낸 최우선 과제.
 - 청산가 거리(`liquidationDistancePercent`)는 100 고정 → 미차단. 실거래 전 실제 산출 필요.
-- 부분익절 단계 추적 단순화(트리거 충족 시 비중 청산).
 - 미체결 주문(`hasPendingOrder`) 개념은 시장가 전제로 false 고정.
-- 트레일링 스탑 / 비상 청산 / 백테스트 / 페이퍼 실시간 시세 미구현.
+- 트레일링 스탑 / 비상 청산 / 페이퍼 실시간 시세 미구현.
 - 심볼 수량 정밀도 BTCUSDT(0.001) 하드코딩 → exchangeInfo 연동 필요.
 - 대시보드는 읽기/모드전환만. 전략 JSON 편집 UI는 미구현(문서 14장).
 

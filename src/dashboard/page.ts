@@ -7,6 +7,7 @@ export function dashboardHtml(): string {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Auto Trading Futures</title>
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
   :root {
     --canvas:#0b0e11;
@@ -803,6 +804,60 @@ export function dashboardHtml(): string {
     }
     .mobile-actions .danger { background:var(--live); border:0; color:#fff; }
   }
+
+  /* ── 백테스트 차트 (Lightweight Charts) ── */
+  .bt-chart-head {
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:12px; margin:4px 0 6px;
+  }
+  .bt-chart-head .label { font-size:12px; font-weight:650; color:var(--text); }
+  .bt-chart-head .muted { font-size:11px; }
+  .chart-host {
+    position:relative; width:100%; height:340px;
+    border:1px solid var(--line); border-radius:8px;
+    background:#0e1318; overflow:hidden;
+  }
+  .chart-host.equity { height:200px; }
+  .chart-host.live { height:360px; }
+  .chart-empty-abs {
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:0 24px; color:var(--muted); font-size:12px; line-height:1.5;
+  }
+  .bt-legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:8px; font-size:11px; color:var(--muted-strong); }
+  .bt-legend span { display:inline-flex; align-items:center; gap:5px; }
+  .bt-legend i { width:9px; height:9px; border-radius:2px; display:inline-block; }
+  .bt-legend i.in { background:var(--up); }
+  .bt-legend i.win { background:#2ebd85; }
+  .bt-legend i.loss { background:var(--down); }
+  .bt-legend i.eq { background:var(--primary); }
+
+  /* ── 지표 카드 재설계 (한눈에 on/off + 현재값) ── */
+  .ind-add-bar { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+  .ind-add-bar select {
+    flex:1; padding:8px 10px; border-radius:7px; border:1px solid var(--line);
+    background:var(--elevated); color:var(--text); font-size:12px;
+  }
+  .indicator-card { min-height:0; transition:border-color .15s, opacity .15s; }
+  .indicator-card.off { opacity:.5; }
+  .indicator-card.on { border-color:rgba(46,189,133,.45); }
+  .ind-head { display:flex; align-items:center; gap:8px; }
+  .ind-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); flex:0 0 auto; }
+  .indicator-card.on .ind-dot { background:#2ebd85; box-shadow:0 0 0 3px rgba(46,189,133,.15); }
+  .ind-head h3 { margin:0; font-size:13px; font-weight:650; }
+  .ind-head .ind-hint { font-size:11px; color:var(--muted); }
+  .ind-head .spacer { flex:1; }
+  .ind-remove {
+    background:transparent; border:0; color:var(--muted); cursor:pointer;
+    font-size:16px; line-height:1; padding:2px 4px; border-radius:5px;
+  }
+  .ind-remove:hover { color:var(--down); background:rgba(246,70,93,.12); }
+  .ind-summary {
+    font-size:12px; color:var(--muted-strong); font-variant-numeric:tabular-nums;
+    padding:2px 0 2px; letter-spacing:.2px;
+  }
+  .indicator-card.on .ind-summary { color:var(--text); }
+  .ind-params { display:grid; gap:7px; }
+  .indicator-card.off .ind-params { display:none; }
 </style>
 </head>
 <body>
@@ -891,7 +946,7 @@ export function dashboardHtml(): string {
           </div>
           <span id="chartSummary" class="status info">chart</span>
         </div>
-        <div id="tradeChart" class="trade-chart" aria-label="Trade log chart"></div>
+        <div id="tradeChart" class="chart-host live" aria-label="Trade log chart"></div>
       </section>
 
       <section class="card view-logs">
@@ -923,6 +978,7 @@ export function dashboardHtml(): string {
                 </div>
                 <span id="indicatorCount" class="status info">0 active</span>
               </div>
+              <div id="indicatorAddBar" class="ind-add-bar"></div>
               <div id="indicatorGrid" class="indicator-grid"></div>
             </div>
 
@@ -993,10 +1049,23 @@ stop new entries when dailyLoss <= -2%</textarea>
             <h2>백테스트 결과 비교</h2>
             <p class="muted">진입·청산 위치, 수익률, 승률, MDD, 손익비를 확인하고 여러 전략 결과를 나란히 비교합니다.</p>
           </div>
-          <button class="btn primary" type="button" onclick="previewBacktest()">백테스트 실행</button>
+          <button id="btRunBtn" class="btn primary" type="button" onclick="previewBacktest()">백테스트 실행</button>
         </div>
-        <div id="backtestChart" class="trade-chart" aria-label="Backtest trade chart" style="margin-bottom:12px;"></div>
-        <div class="result-grid">
+
+        <div class="bt-chart-head">
+          <span class="label">가격 · 진입/청산</span>
+          <span id="btChartHint" class="muted">실행하면 실제 캔들 위에 진입(▲)·청산(▼) 위치가 표시됩니다.</span>
+        </div>
+        <div id="backtestChart" class="chart-host" aria-label="Backtest price chart">
+          <div class="chart-empty-abs">백테스트 실행 후 실제 4시간봉 차트에 진입/청산 타점이 가격축 그대로 표시됩니다.</div>
+        </div>
+        <div class="bt-legend">
+          <span><i class="in"></i>진입</span>
+          <span><i class="win"></i>익절 청산</span>
+          <span><i class="loss"></i>손절 청산</span>
+        </div>
+
+        <div class="result-grid" style="margin-top:14px;">
           <div class="metric"><span class="label">총 수익률</span><b id="btReturn" class="num neutral">대기</b></div>
           <div class="metric"><span class="label">승률</span><b id="btWinRate" class="num neutral">대기</b></div>
           <div class="metric"><span class="label">MDD</span><b id="btMdd" class="num neutral">대기</b></div>
@@ -1004,6 +1073,14 @@ stop new entries when dailyLoss <= -2%</textarea>
           <div class="metric"><span class="label">Profit Factor</span><b id="btPf" class="num neutral">대기</b></div>
           <div class="metric"><span class="label">거래 수</span><b id="btTrades" class="num neutral">대기</b></div>
           <div class="metric"><span class="label">판정</span><b id="btVerdict">대기</b></div>
+        </div>
+
+        <div class="bt-chart-head" style="margin-top:16px;">
+          <span class="label">자산 곡선 (Equity)</span>
+          <span class="muted">초기 자본 대비 누적 손익 추이 · MDD 구간 확인</span>
+        </div>
+        <div id="equityChart" class="chart-host equity" aria-label="Backtest equity curve">
+          <div class="chart-empty-abs">자산이 어떻게 불어났는지(또는 줄었는지) 시간순 곡선으로 표시됩니다.</div>
         </div>
         <div class="tool-panel" style="margin-top:14px;">
           <div class="tool-head">
@@ -1102,13 +1179,30 @@ let state = { status:{ mode:'OFF', position:null }, signals:[], orders:[] };
 let editorMode = 'script';
 let backtestPassed = false;
 let lastBacktestResult = null;
+let lastBacktestCandles = null;
 let savedVersionCounter = 4;
+// 보조지표 카탈로그. '지표 추가'에서 선택 가능한 전체 목록.
+const INDICATOR_CATALOG = {
+  rsi:       { name:'RSI', hint:'과매수/과매도 구간', params:[['period', 14, 2, 50], ['oversold', 35, 5, 50]] },
+  ema:       { name:'EMA', hint:'추세 필터', params:[['period', 200, 20, 400]] },
+  sma:       { name:'SMA', hint:'단순 이동평균', params:[['period', 50, 5, 300]] },
+  macd:      { name:'MACD', hint:'모멘텀 변화', params:[['fast', 12, 2, 40], ['slow', 26, 5, 80], ['signal', 9, 2, 30]] },
+  atr:       { name:'ATR', hint:'손절/익절 거리', params:[['period', 14, 2, 50], ['stop x', 1.1, 0.5, 4]] },
+  bollinger: { name:'Bollinger', hint:'변동성 밴드', params:[['period', 20, 5, 80], ['std', 2, 1, 4]] },
+  volume:    { name:'Volume', hint:'거래량 돌파', params:[['sma', 20, 5, 80], ['spike x', 1.5, 1, 4]] },
+  fvg:       { name:'FVG', hint:'공정가치 갭 · fvg.bullish / fvg.mid', params:[] },
+  ob:        { name:'Order Block', hint:'주문 블록 · ob.bullish / ob.high', params:[['body ratio', 0.3, 0, 1]] },
+};
+function makeIndicator(type, enabled) {
+  const c = INDICATOR_CATALOG[type];
+  return { id:type, type, name:c.name, enabled:!!enabled, params:c.params.map(p => p.slice()) };
+}
 const indicators = [
-  { id:'rsi', name:'RSI', enabled:true, params:[['period', 14, 2, 50], ['oversold', 35, 5, 50]] },
-  { id:'ema', name:'EMA', enabled:true, params:[['period', 200, 20, 400]] },
-  { id:'macd', name:'MACD', enabled:true, params:[['fast', 12, 2, 40], ['slow', 26, 5, 80], ['signal', 9, 2, 30]] },
-  { id:'atr', name:'ATR', enabled:true, params:[['period', 14, 2, 50], ['stop x', 1.1, 0.5, 4]] },
-  { id:'volume', name:'Volume', enabled:false, params:[['sma', 20, 5, 80], ['spike x', 1.5, 1, 4]] },
+  makeIndicator('rsi', true),
+  makeIndicator('ema', true),
+  makeIndicator('macd', true),
+  makeIndicator('atr', true),
+  makeIndicator('volume', false),
 ];
 let conditions = [
   { join:'AND', left:'rsi14', op:'<=', right:'35' },
@@ -1137,7 +1231,7 @@ function route() {
     const normalized = target === 'strategy-lab' ? 'strategy' : target;
     a.classList.toggle('active', normalized === view);
   });
-  if (view === 'backtest') renderBacktestChart(lastBacktestResult);
+  if (view === 'backtest') renderBacktestChart(lastBacktestResult, lastBacktestCandles);
   if (view === 'logs') renderTradeChart();
   window.scrollTo({ top:0, behavior:'auto' });
 }
@@ -1206,7 +1300,7 @@ function render() {
 
   renderLogs();
   renderTradeChart();
-  renderBacktestChart(lastBacktestResult);
+  renderBacktestChart(lastBacktestResult, lastBacktestCandles);
   renderStrategyBuilder();
   renderVersions();
   renderCompare();
@@ -1214,73 +1308,156 @@ function render() {
   renderOrders(failedOrders);
 }
 
-function syntheticCandles() {
-  const heights = [82,116,94,132,108,156,128,174,146,122,188,164,136,214,178,152,198,170,226,190,158,204,184,166];
-  return heights.map((h, i) => {
-    const left = 3 + i * 4;
-    const bottom = 76 + (i % 5) * 8;
-    const down = i % 4 === 1 || i % 7 === 0;
-    return '<span class="chart-candle ' + (down ? 'down' : '') + '" style="left:' + left + '%;height:' + h + 'px;bottom:' + bottom + 'px;color:' + (down ? 'var(--down)' : 'var(--up)') + ';"></span>';
-  }).join('');
+// 라이브 매매 로그 차트(Lightweight Charts). 실제 4시간봉 + 주문 마커 + 평단선.
+let liveChart = null, liveCandleSeries = null, liveCandles = null, liveLoading = false, livePriceLine = null;
+
+function ensureLiveChart() {
+  if (typeof LightweightCharts === 'undefined') return false;
+  const el = $('tradeChart');
+  if (!el || el.clientWidth === 0) return false;
+  if (!liveChart) {
+    liveChart = LightweightCharts.createChart(el, chartTheme(360));
+    liveCandleSeries = liveChart.addCandlestickSeries({
+      upColor:'#2ebd85', downColor:'#f6465d', borderVisible:false,
+      wickUpColor:'#2ebd85', wickDownColor:'#f6465d',
+    });
+  }
+  return true;
 }
 
-function syntheticVolume() {
-  const values = [18,28,20,34,22,38,26,40,32,24,42,36,28,44,34,30,39,33,41,35,25,37,31,29];
-  return '<div class="chart-volume">' + values.map((h, i) => '<span style="height:' + h + 'px;background:' + (i % 4 === 1 ? 'var(--down)' : 'var(--up)') + ';"></span>').join('') + '</div>';
-}
-
-function chartBase(extraLines) {
-  return syntheticCandles() + syntheticVolume() + (extraLines || '');
-}
-
-function orderNotional(order) {
-  const qty = Number(order.qty || 0);
-  const price = Number(order.price || 0);
-  if (qty > 0 && price > 0) return qty * price;
-  return 0;
+function loadLiveCandles() {
+  if (liveLoading || liveCandles) return;
+  liveLoading = true;
+  fetch('/api/klines?symbol=BTCUSDT&interval=4h&limit=200')
+    .then(r => r.json())
+    .then(b => { liveCandles = (b && b.ok && b.candles) ? b.candles : []; })
+    .catch(() => { liveCandles = []; })
+    .finally(() => { liveLoading = false; renderTradeChart(); });
 }
 
 function renderTradeChart() {
-  const orders = state.orders.slice(0, 8).reverse();
+  const orders = state.orders || [];
+  if (!ensureLiveChart()) return; // 라이브러리 미로드 또는 뷰 숨김
+  liveChart.applyOptions({ width: $('tradeChart').clientWidth });
+  if (liveCandles === null) { $('chartSummary').textContent = 'loading…'; loadLiveCandles(); return; }
+  if (!liveCandles.length) { $('chartSummary').textContent = 'no price data'; return; }
+
+  const bars = liveCandles
+    .map(c => ({ time: sec(c.t), open:c.o, high:c.h, low:c.l, close:c.c }))
+    .filter((b, i, a) => i === 0 || b.time > a[i - 1].time);
+  liveCandleSeries.setData(bars);
+  const firstT = bars.length ? bars[0].time : 0;
+
+  // 주문 마커: BUY ▲(아래) / SELL ▼(위) / 실패 ●(빨강). 캔들 openTime 축에 정렬.
+  const markers = orders
+    .filter(o => o.candle_open_time)
+    .map(o => {
+      const failed = isFailedOrder(o);
+      const buy = String(o.side || '').toUpperCase() === 'BUY';
+      return {
+        time: sec(o.candle_open_time),
+        position: buy ? 'belowBar' : 'aboveBar',
+        color: failed ? '#f6465d' : (buy ? '#2ebd85' : '#e0a800'),
+        shape: failed ? 'circle' : (buy ? 'arrowUp' : 'arrowDown'),
+        text: failed ? 'FAIL' : (o.reason || o.side || ''),
+      };
+    })
+    .filter(m => m.time >= firstT)
+    .sort((a, b) => a.time - b.time);
+  liveCandleSeries.setMarkers(markers);
+
+  // 현재 포지션 평단선.
+  if (livePriceLine) { liveCandleSeries.removePriceLine(livePriceLine); livePriceLine = null; }
   const position = state.status.position;
-  const avgLine = position
-    ? '<div class="chart-line" style="top:42%;"></div><div class="chart-line-label" style="top:42%;">평단 ' + esc(num(position.avgEntryPrice)) + '</div>'
-    : '';
-  if (!orders.length) {
-    $('chartSummary').textContent = 'no orders';
-    $('tradeChart').innerHTML = chartBase(avgLine) + '<div class="chart-empty">아직 차트에 표시할 주문이 없습니다.<br />Run once 이후 주문 로그가 생기면 매매 위치와 금액/수량이 여기에 표시됩니다.</div>';
-    return;
+  if (position && position.avgEntryPrice) {
+    livePriceLine = liveCandleSeries.createPriceLine({
+      price: Number(position.avgEntryPrice), color:'#f0b90b', lineWidth:1,
+      lineStyle:2, axisLabelVisible:true, title:'평단',
+    });
   }
-  $('chartSummary').textContent = orders.length + ' trades';
-  const markers = orders.map((o, i) => {
-    const left = 12 + (i / Math.max(1, orders.length - 1)) * 76;
-    const top = 62 - ((i * 11) % 34);
-    const failed = isFailedOrder(o);
-    const side = String(o.side || '').toUpperCase();
-    const notional = orderNotional(o);
-    const title = (failed ? 'FAILED' : side || 'ORDER') + ' · ' + esc(o.symbol || 'BTCUSDT');
-    const detail = '금액 ' + (notional ? num(notional) + ' USDT' : '미집계') + '<br />수량 ' + num(o.qty) + ' · 가격 ' + num(o.price);
-    return '<div class="trade-marker ' + (failed ? 'failed' : side === 'SELL' ? 'sell' : '') + '" style="left:' + left + '%;top:' + top + '%;">' +
-      '<b>' + title + '</b><span>' + detail + '</span></div>';
-  }).join('');
-  $('tradeChart').innerHTML = chartBase(avgLine) + markers;
+
+  liveChart.timeScale().fitContent();
+  $('chartSummary').textContent = markers.length ? markers.length + ' orders' : 'no orders';
 }
 
-function renderBacktestChart(result) {
-  const trades = result?.tradeList || [];
-  const markers = trades.length
-    ? trades.slice(-6).flatMap((t, i) => {
-        const left = 12 + (i / Math.max(1, Math.min(6, trades.length) - 1)) * 76;
-        const entryTop = t.pnl >= 0 ? 58 : 42;
-        const exitTop = t.pnl >= 0 ? 34 : 66;
-        return [
-          '<div class="trade-marker backtest" style="left:' + left + '%;top:' + entryTop + '%;"><b>LONG · ' + esc(dateShort(t.entryTime)) + '</b><span>평단 ' + num(t.avgEntry) + '<br />수량 ' + num(t.size) + ' · ' + t.steps + ' steps</span></div>',
-          '<div class="trade-marker sell" style="left:' + Math.min(88, left + 8) + '%;top:' + exitTop + '%;"><b>EXIT · ' + esc(dateShort(t.exitTime)) + '</b><span>청산가 ' + num(t.exitPrice) + '<br />손익 ' + num(t.pnl) + ' USDT</span></div>',
-        ];
-      }).join('')
-    : '<div class="chart-empty">백테스트 실행 후 실제 엔진이 만든 진입/청산 위치와 당시 금액·수량이 표시됩니다.</div>';
-  const line = '<div class="chart-line" style="top:46%;"></div><div class="chart-line-label" style="top:46%;">Backtest avg</div>';
-  $('backtestChart').innerHTML = chartBase(line) + markers;
+// Lightweight Charts 인스턴스(뷰 전환마다 재생성하지 않고 재사용).
+let btPriceChart = null, btCandleSeries = null;
+let btEquityChart = null, btEquitySeries = null;
+const sec = (ms) => Math.floor(Number(ms) / 1000);
+
+function chartTheme(height) {
+  return {
+    height: height,
+    layout: { background:{ color:'transparent' }, textColor:'#8b949e', fontSize:11 },
+    grid: { vertLines:{ color:'rgba(255,255,255,.04)' }, horzLines:{ color:'rgba(255,255,255,.04)' } },
+    rightPriceScale: { borderColor:'rgba(255,255,255,.08)' },
+    timeScale: { borderColor:'rgba(255,255,255,.08)', timeVisible:false },
+    crosshair: { mode:0 },
+  };
+}
+
+function ensureBacktestCharts() {
+  if (typeof LightweightCharts === 'undefined') return false;
+  const priceEl = $('backtestChart');
+  const eqEl = $('equityChart');
+  if (!priceEl || priceEl.clientWidth === 0) return false; // 숨겨진 뷰에서는 0폭 → 생성 보류
+  if (!btPriceChart) {
+    btPriceChart = LightweightCharts.createChart(priceEl, chartTheme(340));
+    btCandleSeries = btPriceChart.addCandlestickSeries({
+      upColor:'#2ebd85', downColor:'#f6465d', borderVisible:false,
+      wickUpColor:'#2ebd85', wickDownColor:'#f6465d',
+    });
+  }
+  if (!btEquityChart && eqEl) {
+    btEquityChart = LightweightCharts.createChart(eqEl, chartTheme(200));
+    btEquitySeries = btEquityChart.addAreaSeries({
+      lineColor:'#f0b90b', topColor:'rgba(240,185,11,.25)', bottomColor:'rgba(240,185,11,.02)',
+      lineWidth:2, priceLineVisible:false,
+    });
+  }
+  return true;
+}
+
+function resizeBacktestCharts() {
+  if (btPriceChart) btPriceChart.applyOptions({ width: $('backtestChart').clientWidth });
+  if (btEquityChart) btEquityChart.applyOptions({ width: $('equityChart').clientWidth });
+  if (liveChart) liveChart.applyOptions({ width: $('tradeChart').clientWidth });
+}
+
+function renderBacktestChart(result, candles) {
+  if (!ensureBacktestCharts()) return; // 라이브러리 미로드 또는 뷰 숨김
+  resizeBacktestCharts();
+  const series = candles || lastBacktestCandles || [];
+  const trades = (result && result.tradeList) || [];
+
+  // 가격 캔들 (시간 오름차순, 중복 제거).
+  const bars = series
+    .map(c => ({ time: sec(c.t), open:c.o, high:c.h, low:c.l, close:c.c }))
+    .filter((b, i, a) => i === 0 || b.time > a[i - 1].time);
+  btCandleSeries.setData(bars);
+
+  // 진입(▲)·청산(▼) 마커를 실제 가격 캔들 위에 표시.
+  const markers = [];
+  for (const t of trades) {
+    markers.push({ time: sec(t.entryTime), position:'belowBar', color:'#2ebd85',
+      shape:'arrowUp', text:'IN ' + num(t.avgEntry) });
+    const winCls = t.pnl >= 0;
+    markers.push({ time: sec(t.exitTime), position:'aboveBar', color: winCls ? '#2ebd85' : '#f6465d',
+      shape:'arrowDown', text:(t.pnl >= 0 ? '+' : '') + Math.round(t.pnl) });
+  }
+  markers.sort((a, b) => a.time - b.time);
+  btCandleSeries.setMarkers(markers);
+
+  // 자산 곡선.
+  const eq = ((result && result.equityCurve) || [])
+    .map(p => ({ time: sec(p.time), value: p.equity }))
+    .filter((p, i, a) => i === 0 || p.time > a[i - 1].time);
+  if (btEquitySeries) btEquitySeries.setData(eq);
+
+  if (bars.length) { btPriceChart.timeScale().fitContent(); if (btEquityChart) btEquityChart.timeScale().fitContent(); }
+  $('btChartHint').textContent = trades.length
+    ? trades.length + '개 거래 · ▲진입 ▼청산 (숫자는 손익 USDT)'
+    : '거래가 없습니다. 진입 조건을 완화해 보세요.';
 }
 
 function renderLogs() {
@@ -1305,22 +1482,44 @@ function renderLogs() {
   }).join('');
 }
 
+function indicatorSummary(ind) {
+  // 한눈에 보이는 현재 설정 요약. 예: "기간 14 · 과매도 35"
+  return ind.params.map(p => p[0] + ' ' + p[1]).join(' · ') || '파라미터 없음';
+}
+
 function renderStrategyBuilder() {
   const active = indicators.filter(i => i.enabled).length;
-  $('indicatorCount').textContent = active + ' active';
+  $('indicatorCount').textContent = active + ' / ' + indicators.length + ' active';
+
+  // 지표 추가 바: 카탈로그에 있고 아직 추가 안 된 타입만 노출.
+  const addable = Object.keys(INDICATOR_CATALOG).filter(t => !indicators.some(i => i.type === t));
+  $('indicatorAddBar').innerHTML =
+    '<select onchange="if(this.value){addIndicator(this.value); this.value=\\'\\';}"' +
+      (addable.length ? '' : ' disabled') + '>' +
+      '<option value="">+ 보조지표 추가' + (addable.length ? '' : ' (모두 추가됨)') + '</option>' +
+      addable.map(t => '<option value="' + t + '">' + esc(INDICATOR_CATALOG[t].name) + ' — ' + esc(INDICATOR_CATALOG[t].hint) + '</option>').join('') +
+    '</select>';
+
   $('indicatorGrid').innerHTML = indicators.map((ind, index) => {
     const params = ind.params.map((p, paramIndex) => {
       const step = String(p[1]).includes('.') ? '0.1' : '1';
       return '<div class="param-row">' +
         '<span class="label">' + esc(p[0]) + '</span>' +
-        '<input type="range" min="' + p[2] + '" max="' + p[3] + '" step="' + step + '" value="' + p[1] + '" oninput="setIndicatorParam(' + index + ',' + paramIndex + ', this.value)" />' +
-        '<input type="number" step="' + step + '" value="' + p[1] + '" oninput="setIndicatorParam(' + index + ',' + paramIndex + ', this.value)" />' +
+        '<input type="range" min="' + p[2] + '" max="' + p[3] + '" step="' + step + '" value="' + p[1] + '" oninput="setIndicatorParam(' + index + ',' + paramIndex + ', this.value, this)" />' +
+        '<input type="number" step="' + step + '" value="' + p[1] + '" oninput="setIndicatorParam(' + index + ',' + paramIndex + ', this.value, this)" />' +
       '</div>';
     }).join('');
-    return '<article class="indicator-card">' +
-      '<div class="indicator-top"><div><h3>' + esc(ind.name) + '</h3><p class="muted">' + indicatorHint(ind.id) + '</p></div>' +
-      '<label class="switch" title="' + esc(ind.name) + ' 사용"><input type="checkbox" ' + (ind.enabled ? 'checked' : '') + ' onchange="toggleIndicator(' + index + ')" /><span></span></label></div>' +
-      params +
+    return '<article class="indicator-card ' + (ind.enabled ? 'on' : 'off') + '">' +
+      '<div class="ind-head">' +
+        '<span class="ind-dot"></span>' +
+        '<h3>' + esc(ind.name) + '</h3>' +
+        '<span class="ind-hint">' + indicatorHint(ind.id) + '</span>' +
+        '<span class="spacer"></span>' +
+        '<label class="switch" title="' + esc(ind.name) + ' 사용"><input type="checkbox" ' + (ind.enabled ? 'checked' : '') + ' onchange="toggleIndicator(' + index + ')" /><span></span></label>' +
+        '<button class="ind-remove" type="button" title="지표 제거" onclick="removeIndicator(' + index + ')">×</button>' +
+      '</div>' +
+      '<div class="ind-summary" id="indSummary' + index + '">' + esc(indicatorSummary(ind)) + '</div>' +
+      '<div class="ind-params">' + params + '</div>' +
     '</article>';
   }).join('');
 
@@ -1337,14 +1536,20 @@ function renderStrategyBuilder() {
 }
 
 function indicatorHint(id) {
-  const hints = {
-    rsi:'과매수/과매도 구간',
-    ema:'추세 필터',
-    macd:'모멘텀 변화',
-    atr:'손절/익절 거리',
-    volume:'거래량 돌파',
-  };
-  return hints[id] || 'custom';
+  const c = INDICATOR_CATALOG[id];
+  return c ? c.hint : 'custom';
+}
+
+function addIndicator(type) {
+  if (!INDICATOR_CATALOG[type]) return;
+  if (indicators.some(i => i.type === type)) return; // 중복 방지
+  indicators.push(makeIndicator(type, true));
+  renderStrategyBuilder();
+}
+
+function removeIndicator(index) {
+  indicators.splice(index, 1);
+  renderStrategyBuilder();
 }
 
 function selected(a, b) {
@@ -1356,9 +1561,15 @@ function toggleIndicator(index) {
   renderStrategyBuilder();
 }
 
-function setIndicatorParam(index, paramIndex, value) {
+function setIndicatorParam(index, paramIndex, value, el) {
   indicators[index].params[paramIndex][1] = Number(value);
-  renderStrategyBuilder();
+  // 같은 행의 짝(range<->number) 동기화 + 요약만 갱신 → 드래그 중 리렌더 안 함.
+  if (el) {
+    const row = el.closest('.param-row');
+    if (row) row.querySelectorAll('input').forEach(inp => { if (inp !== el) inp.value = value; });
+  }
+  const sum = $('indSummary' + index);
+  if (sum) sum.textContent = indicatorSummary(indicators[index]);
 }
 
 function setCondition(index, key, value) {
@@ -1554,6 +1765,8 @@ function buildStrategyConfig(overrides = {}) {
       atr14:{ type:'ATR', period:Number(getParam(atr, 'period', 14)) },
       ema200:{ type:'EMA', period:Number(overrides.emaPeriod ?? getParam(ema, 'period', 200)) },
       volumeMA20:{ type:'SMA', source:'volume', period:Number(getParam(volume, 'sma', 20)) },
+      ...(getIndicator('fvg') ? { fvg:{ type:'FVG' } } : {}),
+      ...(getIndicator('ob') ? { ob:{ type:'OB', minBodyRatio:Number(getParam(getIndicator('ob'), 'body ratio', 0)) } } : {}),
     },
     entry:{
       long:{
@@ -1637,6 +1850,8 @@ function parseBacktestYears() {
 }
 
 async function previewBacktest() {
+  const runBtns = document.querySelectorAll('[onclick="previewBacktest()"]');
+  runBtns.forEach(b => { b.disabled = true; b.dataset.label = b.textContent; b.textContent = '실행 중…'; });
   try {
     const payload = {
       config: buildStrategyConfig(),
@@ -1651,9 +1866,12 @@ async function previewBacktest() {
     const body = await response.json();
     if (!response.ok || !body.ok) throw new Error(body.error || '백테스트 실패');
     lastBacktestResult = body.result;
+    lastBacktestCandles = body.candles || [];
   } catch (err) {
     alert('백테스트를 실행하지 못했습니다.\\n' + (err instanceof Error ? err.message : String(err)));
     return;
+  } finally {
+    runBtns.forEach(b => { b.disabled = false; if (b.dataset.label) b.textContent = b.dataset.label; });
   }
 
   const result = metricsFromResult(lastBacktestResult);
@@ -1680,11 +1898,12 @@ async function previewBacktest() {
   $('applyBtn').disabled = !backtestPassed;
   $('applyBtn').style.opacity = backtestPassed ? '1' : '.45';
   $('applyBtn').style.cursor = backtestPassed ? 'pointer' : 'not-allowed';
-  renderBacktestChart(lastBacktestResult);
+  location.hash = 'backtest';
+  // 뷰가 보인 뒤에 그려야 컨테이너 폭이 잡힌다.
+  requestAnimationFrame(() => renderBacktestChart(lastBacktestResult, lastBacktestCandles));
   savedVersions[0] = { name:'현재 후보', ret:returnPct, win:result.winRate, mdd, pf, tag:backtestPassed ? 'saved' : 'watch' };
   renderVersions();
   renderCompare();
-  location.hash = 'backtest';
 }
 
 function applyStrategy() {
@@ -1732,6 +1951,7 @@ load().catch(err => {
   $('pnlCopy').textContent = err.message;
 });
 window.addEventListener('hashchange', route);
+window.addEventListener('resize', resizeBacktestCharts);
 route();
 </script>
 </body>

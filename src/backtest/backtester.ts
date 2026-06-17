@@ -36,6 +36,12 @@ export interface BacktestResult {
   firstCandle: number;
   lastCandle: number;
   tradeList: Trade[];
+  equityCurve: EquityPoint[];
+}
+
+export interface EquityPoint {
+  time: number; // 캔들 openTime (ms)
+  equity: number;
 }
 
 export interface BacktestOptions {
@@ -65,7 +71,7 @@ export function runBacktest(
   const trades: Trade[] = [];
   let cumPnl = 0;
 
-  const equityCurve: number[] = [];
+  const equityCurve: EquityPoint[] = [];
 
   for (let i = warmup; i < candles.length; i++) {
     const window = candles.slice(0, i + 1); // [0..i], i가 "마감된" 마지막 캔들
@@ -141,7 +147,7 @@ export function runBacktest(
     const unrealized = position
       ? (price - position.avgEntryPrice) * position.totalSize
       : 0;
-    equityCurve.push(startEquity + cumPnl + unrealized);
+    equityCurve.push({ time: candles[i].openTime, equity: startEquity + cumPnl + unrealized });
   }
 
   return summarize(trades, equityCurve, startEquity, candles, !!position, warmup);
@@ -149,7 +155,7 @@ export function runBacktest(
 
 function summarize(
   trades: Trade[],
-  equityCurve: number[],
+  equityCurve: EquityPoint[],
   startEquity: number,
   candles: Candle[],
   openAtEnd: boolean,
@@ -182,12 +188,12 @@ function summarize(
 
   let peak = -Infinity;
   let maxDd = 0;
-  for (const e of equityCurve) {
-    peak = Math.max(peak, e);
-    if (peak > 0) maxDd = Math.max(maxDd, (peak - e) / peak);
+  for (const point of equityCurve) {
+    peak = Math.max(peak, point.equity);
+    if (peak > 0) maxDd = Math.max(maxDd, (peak - point.equity) / peak);
   }
 
-  const endEquity = equityCurve.length ? equityCurve[equityCurve.length - 1] : startEquity;
+  const endEquity = equityCurve.length ? equityCurve[equityCurve.length - 1].equity : startEquity;
   return {
     startEquity,
     endEquity,
@@ -206,6 +212,7 @@ function summarize(
     firstCandle: candles[warmup]?.openTime ?? 0,
     lastCandle: candles[candles.length - 1]?.openTime ?? 0,
     tradeList: trades,
+    equityCurve,
   };
 }
 

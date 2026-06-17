@@ -120,6 +120,104 @@ export function calculateATR(
   return out;
 }
 
+// FVG / Order Block 같은 가격 구역(zone) 지표의 공통 출력.
+// bullish/bearish/direction 은 0/1, -1/0/1. 구역 가격(low/high/mid/size)은 없으면 NaN.
+export interface ZoneResult {
+  bullish: number[];
+  bearish: number[];
+  direction: number[];
+  low: number[];
+  high: number[];
+  mid: number[];
+  size: number[];
+}
+
+function emptyZone(n: number): ZoneResult {
+  return {
+    bullish: new Array<number>(n).fill(0),
+    bearish: new Array<number>(n).fill(0),
+    direction: new Array<number>(n).fill(0),
+    low: new Array<number>(n).fill(NaN),
+    high: new Array<number>(n).fill(NaN),
+    mid: new Array<number>(n).fill(NaN),
+    size: new Array<number>(n).fill(NaN),
+  };
+}
+
+// Fair Value Gap. 3봉 구조만 사용(미래 봉 참조 없음). Python 엔진과 동일.
+//  - bullish FVG: low[i] > high[i-2]
+//  - bearish FVG: high[i] < low[i-2]
+export function calculateFVG(highs: number[], lows: number[]): ZoneResult {
+  const n = highs.length;
+  const z = emptyZone(n);
+  for (let i = 2; i < n; i++) {
+    const twoBackHigh = highs[i - 2];
+    const twoBackLow = lows[i - 2];
+    const bullish = lows[i] > twoBackHigh;
+    const bearish = highs[i] < twoBackLow;
+    if (bullish) {
+      z.bullish[i] = 1;
+      z.direction[i] = 1;
+      z.low[i] = twoBackHigh;
+      z.high[i] = lows[i];
+    } else if (bearish) {
+      z.bearish[i] = 1;
+      z.direction[i] = -1;
+      z.low[i] = highs[i];
+      z.high[i] = twoBackLow;
+    }
+    if (bullish || bearish) {
+      z.mid[i] = (z.low[i] + z.high[i]) / 2;
+      z.size[i] = z.high[i] - z.low[i];
+    }
+  }
+  return z;
+}
+
+// Order Block. 현재 봉이 직전 반대색 캔들을 변위 돌파하면 직전 캔들을 OB 구역으로 확정.
+//  - bullish OB: 직전 bearish + 현재 bullish + close > 직전 high
+//  - bearish OB: 직전 bullish + 현재 bearish + close < 직전 low
+// minBodyRatio = 현재 봉 몸통/레인지 최소값. Python 엔진과 동일.
+export function calculateOrderBlock(
+  opens: number[],
+  highs: number[],
+  lows: number[],
+  closes: number[],
+  minBodyRatio = 0,
+): ZoneResult {
+  const n = closes.length;
+  const z = emptyZone(n);
+  for (let i = 1; i < n; i++) {
+    const prevOpen = opens[i - 1];
+    const prevHigh = highs[i - 1];
+    const prevLow = lows[i - 1];
+    const prevClose = closes[i - 1];
+    const range = highs[i] - lows[i];
+    const body = Math.abs(closes[i] - opens[i]);
+    const bodyOk = (range > 0 ? body / range : 0) >= minBodyRatio;
+    const prevBearish = prevClose < prevOpen;
+    const prevBullish = prevClose > prevOpen;
+    const curBullish = closes[i] > opens[i];
+    const curBearish = closes[i] < opens[i];
+    const bullish = prevBearish && curBullish && closes[i] > prevHigh && bodyOk;
+    const bearish = prevBullish && curBearish && closes[i] < prevLow && bodyOk;
+    if (bullish) {
+      z.bullish[i] = 1;
+      z.direction[i] = 1;
+    } else if (bearish) {
+      z.bearish[i] = 1;
+      z.direction[i] = -1;
+    }
+    if (bullish || bearish) {
+      z.low[i] = prevLow;
+      z.high[i] = prevHigh;
+      z.mid[i] = (prevLow + prevHigh) / 2;
+      z.size[i] = prevHigh - prevLow;
+    }
+  }
+  return z;
+}
+
 // 플러그인 레지스트리. 새 지표는 여기에 등록한다. (문서 7장)
 export const indicatorRegistry: Record<string, unknown> = {
   RSI: calculateRSI,
@@ -127,4 +225,7 @@ export const indicatorRegistry: Record<string, unknown> = {
   EMA: calculateEMA,
   SMA: calculateSMA,
   ATR: calculateATR,
+  FVG: calculateFVG,
+  OB: calculateOrderBlock,
+  ORDER_BLOCK: calculateOrderBlock,
 };
