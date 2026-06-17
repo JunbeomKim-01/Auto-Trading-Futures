@@ -1,0 +1,30 @@
+name = "auto-trading-futures"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# 4시간봉 마감 기준 판단을 위해 매분 실행. 실제 전략 판단은
+# 마지막 캔들 마감 + 미처리 여부 확인 후에만 수행한다. (문서 13장)
+[triggers]
+crons = ["* * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "trading_db"
+database_id = "7411e1ef-6ac0-4cb6-8159-deb61dc7eae3"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "e42b14f9790c43d3a8dd6b813b199bf0"
+
+[vars]
+# 운영 모드: OFF | ALERT_ONLY | PAPER | TESTNET | LIVE_SMALL | LIVE_FULL (문서 18장)
+# 런타임 ON/OFF는 KV의 system:mode 키가 우선한다. 아래는 기본값.
+DEFAULT_MODE = "TESTNET"
+BINANCE_TESTNET_BASE = "https://testnet.binancefuture.com"
+BINANCE_LIVE_BASE = "https://fapi.binance.com"
+
+# 시크릿은 `wrangler secret put` 으로 주입한다 (코드/설정에 두지 않는다):
+#   wrangler secret put BINANCE_API_KEY
+#   wrangler secret put BINANCE_API_SECRET
