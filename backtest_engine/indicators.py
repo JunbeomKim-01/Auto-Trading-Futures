@@ -85,6 +85,91 @@ def calculate_volume_ma(df: pl.DataFrame, output_name: str, period: int = 20,
     return calculate_sma(df, output_name, source="volume", period=period)
 
 
+def calculate_fvg(df: pl.DataFrame, output_name: str, **_: Any) -> pl.DataFrame:
+    """Fair Value Gap.
+
+    3봉 구조만 사용한다. 현재 봉 i 기준:
+    - bullish FVG: low[i] > high[i-2]
+    - bearish FVG: high[i] < low[i-2]
+
+    생성 컬럼:
+    {name}_bullish / {name}_bearish / {name}_direction(1/-1/0)
+    {name}_low / {name}_high / {name}_mid / {name}_size
+    """
+    two_back_high = pl.col("high").shift(2)
+    two_back_low = pl.col("low").shift(2)
+    bullish = pl.col("low") > two_back_high
+    bearish = pl.col("high") < two_back_low
+    gap_low = (
+        pl.when(bullish).then(two_back_high)
+        .when(bearish).then(pl.col("high"))
+        .otherwise(None)
+    )
+    gap_high = (
+        pl.when(bullish).then(pl.col("low"))
+        .when(bearish).then(two_back_low)
+        .otherwise(None)
+    )
+    direction = (
+        pl.when(bullish).then(1)
+        .when(bearish).then(-1)
+        .otherwise(0)
+    )
+    return df.with_columns(
+        bullish.fill_null(False).alias(f"{output_name}_bullish"),
+        bearish.fill_null(False).alias(f"{output_name}_bearish"),
+        direction.alias(f"{output_name}_direction"),
+        gap_low.alias(f"{output_name}_low"),
+        gap_high.alias(f"{output_name}_high"),
+        ((gap_low + gap_high) / 2).alias(f"{output_name}_mid"),
+        (gap_high - gap_low).alias(f"{output_name}_size"),
+    )
+
+
+def calculate_order_block(df: pl.DataFrame, output_name: str,
+                          min_body_ratio: float = 0.0, **_: Any) -> pl.DataFrame:
+    """Order Block.
+
+    현재 봉이 직전 반대색 캔들의 high/low 를 변위 돌파할 때, 직전 캔들을
+    order block zone 으로 확정한다. 미래 봉을 기다리지 않는다.
+
+    - bullish OB: 직전 봉 bearish + 현재 bullish + close > previous high
+    - bearish OB: 직전 봉 bullish + 현재 bearish + close < previous low
+
+    min_body_ratio 는 현재 봉 몸통 / 현재 봉 range 의 최소값이다.
+    생성 컬럼은 FVG 와 동일한 naming 계열을 쓴다.
+    """
+    prev_open = pl.col("open").shift(1)
+    prev_high = pl.col("high").shift(1)
+    prev_low = pl.col("low").shift(1)
+    prev_close = pl.col("close").shift(1)
+    candle_range = pl.col("high") - pl.col("low")
+    body = (pl.col("close") - pl.col("open")).abs()
+    body_ok = pl.when(candle_range > 0).then(body / candle_range).otherwise(0.0) >= min_body_ratio
+    prev_bearish = prev_close < prev_open
+    prev_bullish = prev_close > prev_open
+    current_bullish = pl.col("close") > pl.col("open")
+    current_bearish = pl.col("close") < pl.col("open")
+    bullish = prev_bearish & current_bullish & (pl.col("close") > prev_high) & body_ok
+    bearish = prev_bullish & current_bearish & (pl.col("close") < prev_low) & body_ok
+    zone_low = pl.when(bullish | bearish).then(prev_low).otherwise(None)
+    zone_high = pl.when(bullish | bearish).then(prev_high).otherwise(None)
+    direction = (
+        pl.when(bullish).then(1)
+        .when(bearish).then(-1)
+        .otherwise(0)
+    )
+    return df.with_columns(
+        bullish.fill_null(False).alias(f"{output_name}_bullish"),
+        bearish.fill_null(False).alias(f"{output_name}_bearish"),
+        direction.alias(f"{output_name}_direction"),
+        zone_low.alias(f"{output_name}_low"),
+        zone_high.alias(f"{output_name}_high"),
+        ((zone_low + zone_high) / 2).alias(f"{output_name}_mid"),
+        (zone_high - zone_low).alias(f"{output_name}_size"),
+    )
+
+
 # 설계서 5.2 인디케이터 레지스트리.
 INDICATOR_REGISTRY: dict[str, Callable[..., pl.DataFrame]] = {
     "RSI": calculate_rsi,
@@ -94,6 +179,9 @@ INDICATOR_REGISTRY: dict[str, Callable[..., pl.DataFrame]] = {
     "ATR": calculate_atr,
     "BOLLINGER": calculate_bollinger,
     "VOLUME_MA": calculate_volume_ma,
+    "FVG": calculate_fvg,
+    "ORDER_BLOCK": calculate_order_block,
+    "OB": calculate_order_block,
 }
 
 

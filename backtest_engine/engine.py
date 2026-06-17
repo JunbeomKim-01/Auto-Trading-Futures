@@ -21,6 +21,7 @@ class _Position:
     side: Side
     qty: float
     avg_entry: float  # 슬리피지 반영된 체결가
+    entry_fee: float
     entry_time: int
     entry_index: int
 
@@ -43,6 +44,11 @@ def _unrealized(pos: _Position | None, price: float) -> float:
     if pos is None:
         return 0.0
     return _gross_pnl(pos.side, pos.avg_entry, price, pos.qty)
+
+
+def _equity(cash: float, realized: float, pos: _Position | None, price: float) -> float:
+    open_entry_fee = pos.entry_fee if pos is not None else 0.0
+    return cash + realized + _unrealized(pos, price) - open_entry_fee
 
 
 def _check_tp_sl(pos: _Position, bar: dict[str, Any], strat: Strategy,
@@ -97,7 +103,7 @@ def run_backtest(df: pl.DataFrame, strategy: Strategy,
         nonlocal realized
         qty = p.qty
         gross = _gross_pnl(p.side, p.avg_entry, raw_exit, qty)
-        entry_fee = p.avg_entry * qty * cfg.fee
+        entry_fee = p.entry_fee
         exit_fee = raw_exit * qty * cfg.fee
         net = gross - entry_fee - exit_fee
         realized += net
@@ -134,12 +140,17 @@ def run_backtest(df: pl.DataFrame, strategy: Strategy,
             notional = (cfg.initial_cash + realized) * cfg.position_pct
             qty = notional / entry_price if entry_price > 0 else 0.0
             if qty > 0:
-                pos = _Position(strategy.entry_side, qty, entry_price,
+                entry_fee = entry_price * qty * cfg.fee
+                pos = _Position(strategy.entry_side, qty, entry_price, entry_fee,
                                 bar["open_time"], bar_index)
                 markers.append(ChartMarker(
                     time=bar["open_time"], price=entry_price, kind="entry",
                     side=strategy.entry_side, text=f"entry @ {entry_price:.2f}",
                 ))
+                tp_sl = _check_tp_sl(pos, bar, strategy, cfg)
+                if tp_sl is not None:
+                    close_position(pos, tp_sl[1], tp_sl[0], bar)
+                    pos, pending_exit = None, False
             pending_entry = False
 
         # 3. 이번 봉 종가 기준 신호 평가 → 다음 봉 예약
@@ -151,14 +162,18 @@ def run_backtest(df: pl.DataFrame, strategy: Strategy,
                 pending_exit = True
 
         # 4. 에쿼티 기록 (실현 + 미실현)
-        equity = cfg.initial_cash + realized + _unrealized(pos, bar["close"])
-        equity_curve.append((bar["open_time"], equity))
+        equity_curve.append((bar["open_time"], _equity(cfg.initial_cash, realized, pos, bar["close"])))
 
     open_at_end = pos is not None
     if pos is not None and n > 0:
         last = rows[n - 1]
         raw = _exit_fill(last["close"], pos.side, cfg.slippage)
         close_position(pos, raw, "end_of_data", last)
+        final_equity = cfg.initial_cash + realized
+        if equity_curve:
+            equity_curve[-1] = (equity_curve[-1][0], final_equity)
+        else:
+            equity_curve.append((last["open_time"], final_equity))
 
     return analyze_result(
         strategy_name=strategy.name,

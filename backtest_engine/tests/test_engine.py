@@ -60,6 +60,54 @@ def test_rsi_all_up_is_100():
     assert out["rsi"].to_list()[-1] == pytest.approx(100.0)
 
 
+def test_fvg_detects_three_candle_gaps_without_lookahead():
+    df = make_df([
+        (10, 12, 9, 11, 1),
+        (11, 12, 10, 11, 1),
+        (14, 15, 13, 14, 1),  # bullish FVG: low[2]=13 > high[0]=12
+        (9, 10, 8, 9, 1),     # bearish FVG: high[3]=10 < low[1]=10 is false
+        (7, 8, 6, 7, 1),      # bearish FVG: high[4]=8 < low[2]=13
+    ])
+    out = compute_indicators(df, {"fvg": {"type": "FVG"}})
+
+    assert out["fvg_bullish"].to_list() == [False, False, True, False, False]
+    assert out["fvg_bearish"].to_list() == [False, False, False, False, True]
+    assert out["fvg_direction"].to_list() == [0, 0, 1, 0, -1]
+    assert out["fvg_low"].to_list()[2] == pytest.approx(12.0)
+    assert out["fvg_high"].to_list()[2] == pytest.approx(13.0)
+    assert out["fvg_low"].to_list()[4] == pytest.approx(8.0)
+    assert out["fvg_high"].to_list()[4] == pytest.approx(13.0)
+
+
+def test_order_block_detects_previous_opposite_candle_zone():
+    df = make_df([
+        (10.0, 11.0, 9.0, 10.0, 1),
+        (10.0, 10.5, 8.0, 9.0, 1),   # bearish candle, potential bullish OB zone
+        (9.0, 12.0, 8.8, 11.0, 1),   # bullish displacement close > prev high
+        (11.0, 13.0, 10.0, 12.0, 1), # bullish candle, potential bearish OB zone
+        (12.0, 12.5, 9.0, 9.5, 1),   # bearish displacement close < prev low
+    ])
+    out = compute_indicators(df, {"ob": {"type": "OB"}})
+
+    assert out["ob_bullish"].to_list() == [False, False, True, False, False]
+    assert out["ob_bearish"].to_list() == [False, False, False, False, True]
+    assert out["ob_direction"].to_list() == [0, 0, 1, 0, -1]
+    assert out["ob_low"].to_list()[2] == pytest.approx(8.0)
+    assert out["ob_high"].to_list()[2] == pytest.approx(10.5)
+    assert out["ob_low"].to_list()[4] == pytest.approx(10.0)
+    assert out["ob_high"].to_list()[4] == pytest.approx(13.0)
+
+
+def test_order_block_min_body_ratio_filter():
+    df = make_df([
+        (10.0, 11.0, 9.0, 10.0, 1),
+        (10.0, 10.5, 8.0, 9.0, 1),
+        (9.0, 12.0, 8.8, 11.0, 1),
+    ])
+    out = compute_indicators(df, {"ob": {"type": "ORDER_BLOCK", "min_body_ratio": 0.9}})
+    assert out["ob_bullish"].to_list() == [False, False, False]
+
+
 # ---------- 조건 엔진 ----------
 
 def test_resolve_expression():
@@ -182,3 +230,72 @@ def test_no_lookahead_entry_on_next_open():
     ])
     r = run_backtest(df, Strategy.from_json(ALWAYS_LONG), NOCOST)
     assert r.trades[0].entry_price == pytest.approx(120.0)
+
+
+def test_entry_bar_take_profit_is_checked():
+    # bar0 신호 → bar1 시가(100) 진입. 같은 bar1 high=104 로 TP=103 즉시 터치.
+    df = make_df([
+        (100, 100.5, 99.5, 100, 1),
+        (100, 104, 99, 100, 1),
+        (100, 100, 99, 100, 1),
+    ])
+    r = run_backtest(df, Strategy.from_json(ALWAYS_LONG), NOCOST)
+    assert r.trades[0].exit_reason == "take_profit"
+    assert r.trades[0].entry_time == H4
+    assert r.trades[0].exit_time == H4
+    assert r.trades[0].pnl == pytest.approx(300.0)
+
+
+def test_entry_bar_stop_loss_is_checked():
+    # bar0 신호 → bar1 시가(100) 진입. 같은 bar1 low=97 로 SL=98 즉시 터치.
+    df = make_df([
+        (100, 100.5, 99.5, 100, 1),
+        (100, 101, 97, 100, 1),
+        (100, 100, 99, 100, 1),
+    ])
+    r = run_backtest(df, Strategy.from_json(ALWAYS_LONG), NOCOST)
+    assert r.trades[0].exit_reason == "stop_loss"
+    assert r.trades[0].entry_time == H4
+    assert r.trades[0].exit_time == H4
+    assert r.trades[0].pnl == pytest.approx(-200.0)
+
+
+def test_entry_bar_simultaneous_touch_is_conservative_loss():
+    df = make_df([
+        (100, 100.5, 99.5, 100, 1),
+        (100, 104, 97, 100, 1),  # TP(103)·SL(98) 동시 터치 → 보수적=손실
+        (100, 100, 99, 100, 1),
+    ])
+    r = run_backtest(df, Strategy.from_json(ALWAYS_LONG), NOCOST)
+    assert r.trades[0].exit_reason == "stop_loss"
+
+
+def test_end_of_data_close_updates_final_equity_with_costs():
+    no_exit = {
+        "name": "t", "indicators": {},
+        "entry": {"side": "LONG", "rule": {"logic": "AND",
+                  "conditions": [{"left": "close", "operator": ">", "right": 0}]}},
+        "exit": {},
+    }
+    df = make_df([
+        (100, 100, 100, 100, 1),
+        (100, 101, 99, 100, 1),
+        (110, 111, 109, 110, 1),
+    ])
+    cfg = BacktestConfig(initial_cash=10_000, fee=0.001, slippage=0.01, warmup_bars=0)
+    r = run_backtest(df, Strategy.from_json(no_exit), cfg)
+    assert r.open_at_end is True
+    assert r.trades[0].exit_reason == "end_of_data"
+    assert r.final_equity == pytest.approx(r.initial_cash + sum(t.pnl for t in r.trades))
+    assert r.equity_curve[-1].equity == pytest.approx(r.final_equity)
+
+
+def test_open_equity_curve_includes_entry_fee():
+    df = make_df([
+        (100, 100.5, 99.5, 100, 1),
+        (100, 101, 99, 100, 1),  # 진입 후 아직 TP/SL 없음. 진입 수수료만 반영되어야 함.
+        (100, 101, 99, 100, 1),
+    ])
+    cfg = BacktestConfig(initial_cash=10_000, fee=0.001, slippage=0.0, warmup_bars=0)
+    r = run_backtest(df, Strategy.from_json(ALWAYS_LONG), cfg)
+    assert r.equity_curve[1].equity == pytest.approx(9_990.0)

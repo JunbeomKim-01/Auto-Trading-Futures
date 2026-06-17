@@ -16,8 +16,10 @@
 | 7 | 수익률 / MDD / 승률 / PF / 기대값 | `metrics.py` |
 | 8 | 차트 진입·청산 마커 | `engine.py` (`--markers`) |
 
-> 미구현(설계서 16~17장, MVP 2차+): 분할매수/매도, 커스텀 스크립트 샌드박스,
-> Grid Search, Walk-Forward, 멀티 심볼.
+| 9 | 파라미터 Grid Search + 랭킹 + CSV/JSON 출력 | `optimization.py` |
+
+> 미구현(설계서 17장, MVP 3차+): Walk-Forward, In/Out-of-Sample 분리,
+> 분할매수/매도, 커스텀 스크립트 샌드박스, 멀티 심볼.
 
 ## 설치
 
@@ -40,6 +42,27 @@ python3 -m venv .venv
 ```
 
 `--markers` 는 차트용 마커 + 에쿼티 커브 + 거래 내역을 JSON 으로 저장한다.
+
+## Grid Search 최적화 (설계서 16장)
+
+전략 템플릿에 `$placeholder` 를 두고 param_grid 의 모든 조합을 백테스트한다.
+
+```bash
+.venv/bin/python -m backtest_engine.optimization \
+    --data data/candles/BTCUSDT/4h \
+    --strategy backtest_engine/strategies/btc_4h_rsi_template.json \
+    --grid backtest_engine/strategies/example_grid.json \
+    --min-trades 10 --out result/opt
+```
+
+- 템플릿: `"period": "$rsi_period"`, `"right": "$rsi_oversold"` 처럼 토큰 사용.
+  토큰이 문자열 전체면 숫자 타입 그대로 주입, 식 중간이면(`"atr14 * $k"`) 보간.
+- `--grid`: `{ "rsi_period": [7,14,21], "rsi_oversold": [25,30,35], ... }`.
+- `--out result/opt` → `result/opt.csv` + `result/opt.json` 저장.
+
+**랭킹 순서**: ① 거래 횟수 `--min-trades` 통과 전략이 항상 위(설계서 17.4 과최적화
+방지) → ② Profit Factor ↓ → ③ MDD ↑ → ④ 총 수익률 ↓ → ⑤ 최대 연속 손실 ↑.
+단순 수익률순 정렬은 표본 부족·과최적화 전략을 상위로 끌어올리므로 쓰지 않는다.
 
 ## 전략 JSON 스키마
 

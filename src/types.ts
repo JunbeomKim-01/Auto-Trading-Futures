@@ -74,6 +74,7 @@ export interface IndicatorSpec {
   slow?: number;
   signal?: number;
   source?: string;
+  minBodyRatio?: number; // Order Block: 현재 봉 몸통/레인지 최소 비율
 }
 
 export interface StrategyConfig {

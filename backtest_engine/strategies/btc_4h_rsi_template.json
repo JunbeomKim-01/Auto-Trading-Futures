@@ -1,0 +1,23 @@
+{
+  "name": "BTC 4H RSI 역추세 (그리드 템플릿)",
+  "symbol": "BTCUSDT",
+  "timeframe": "4h",
+  "indicators": {
+    "rsi": { "type": "RSI", "source": "close", "period": "$rsi_period" },
+    "ema200": { "type": "EMA", "source": "close", "period": 200 }
+  },
+  "entry": {
+    "side": "LONG",
+    "rule": {
+      "logic": "AND",
+      "conditions": [
+        { "left": "close", "operator": ">", "right": "ema200" },
+        { "left": "rsi", "operator": "<=", "right": "$rsi_oversold" }
+      ]
+    }
+  },
+  "exit": {
+    "take_profit_pct": "$take_profit",
+    "stop_loss_pct": "$stop_loss"
+  }
+}

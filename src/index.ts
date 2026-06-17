@@ -29,8 +29,9 @@ export default {
     if (path === '/api/status') return json(await status(env));
     if (path === '/api/signals') return json(await new D1Repository(env).recentSignals(30));
     if (path === '/api/orders') return json(await new D1Repository(env).recentOrders(30));
+    if (path === '/api/klines') return handleKlines(url, env);
     if (path === '/api/backtest' && req.method === 'POST') {
-      return handleBacktest(req);
+      return handleBacktest(req, env);
     }
 
     if (path === '/api/mode' && req.method === 'POST') {
@@ -52,7 +53,7 @@ export default {
   },
 };
 
-async function handleBacktest(req: Request): Promise<Response> {
+async function handleBacktest(req: Request, env: Env): Promise<Response> {
   try {
     const body = (await req.json()) as {
       config?: StrategyConfig;
@@ -63,7 +64,7 @@ async function handleBacktest(req: Request): Promise<Response> {
 
     const config = body.config;
     const years = clamp(Number(body.years ?? 3), 0.25, 8);
-    const candles = await fetchHistoricalCandles(config.symbol, config.timeframe, years);
+    const candles = await fetchHistoricalCandles(env, config.symbol, config.timeframe, years);
     if (candles.length < 250) {
       return json({ error: `캔들 데이터 부족: ${candles.length}개` }, 400);
     }
@@ -71,13 +72,45 @@ async function handleBacktest(req: Request): Promise<Response> {
     const result = runBacktest(config, candles, {
       startEquity: Number(body.startEquity ?? 10000),
     });
-    return json({ ok: true, result });
+    // 차트(Lightweight Charts)용 가격 시리즈. 진입/청산 마커를 실제 가격축에 그린다.
+    const series = candles.map((c) => ({
+      t: c.openTime,
+      o: c.open,
+      h: c.high,
+      l: c.low,
+      c: c.close,
+    }));
+    return json({ ok: true, result, candles: series });
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
 }
 
-async function fetchHistoricalCandles(symbol: string, interval: string, years: number): Promise<Candle[]> {
+// 라이브 차트용 최근 캔들. Lightweight Charts 가격축에 주문 마커를 그린다.
+async function handleKlines(url: URL, env: Env): Promise<Response> {
+  try {
+    const symbol = (url.searchParams.get('symbol') || 'BTCUSDT').toUpperCase();
+    const interval = url.searchParams.get('interval') || '4h';
+    const limit = clamp(Number(url.searchParams.get('limit') ?? 200), 10, 1000);
+    const raw = await fetchKlines(env, {
+      symbol,
+      interval,
+      limit: Math.floor(limit),
+    });
+    const candles = raw.map((k) => ({
+      t: Number(k[0]),
+      o: Number(k[1]),
+      h: Number(k[2]),
+      l: Number(k[3]),
+      c: Number(k[4]),
+    }));
+    return json({ ok: true, candles });
+  } catch (e) {
+    return json({ ok: false, error: e instanceof Error ? e.message : String(e) }, 500);
+  }
+}
+
+async function fetchHistoricalCandles(env: Env, symbol: string, interval: string, years: number): Promise<Candle[]> {
   const intervalMs = intervalToMs(interval);
   const endTime = Date.now();
   const startTime = endTime - years * 365 * 86400_000;
@@ -85,16 +118,13 @@ async function fetchHistoricalCandles(symbol: string, interval: string, years: n
   let cursor = startTime;
 
   while (cursor < endTime) {
-    const url = new URL('https://fapi.binance.com/fapi/v1/klines');
-    url.searchParams.set('symbol', symbol);
-    url.searchParams.set('interval', interval);
-    url.searchParams.set('startTime', String(Math.floor(cursor)));
-    url.searchParams.set('endTime', String(endTime));
-    url.searchParams.set('limit', '1500');
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Binance klines ${res.status}: ${await res.text()}`);
-    const raw = (await res.json()) as unknown[][];
+    const raw = await fetchKlines(env, {
+      symbol,
+      interval,
+      startTime: Math.floor(cursor),
+      endTime,
+      limit: 1500,
+    });
     if (!raw.length) break;
 
     for (const k of raw) {
@@ -119,6 +149,47 @@ async function fetchHistoricalCandles(symbol: string, interval: string, years: n
   const deduped = new Map<number, Candle>();
   for (const c of out) deduped.set(c.openTime, c);
   return [...deduped.values()].sort((a, b) => a.openTime - b.openTime);
+}
+
+async function fetchKlines(
+  env: Env,
+  params: {
+    symbol: string;
+    interval: string;
+    limit: number;
+    startTime?: number;
+    endTime?: number;
+  },
+): Promise<unknown[][]> {
+  const query = new URLSearchParams({
+    symbol: params.symbol,
+    interval: params.interval,
+    limit: String(params.limit),
+  });
+  if (params.startTime != null) query.set('startTime', String(params.startTime));
+  if (params.endTime != null) query.set('endTime', String(params.endTime));
+
+  const executor = env.EXECUTOR_URL?.replace(/\/$/, '');
+  if (executor) {
+    const res = await fetch(`${executor}/klines?${query.toString()}`, {
+      headers: { authorization: `Bearer ${env.PROXY_TOKEN ?? ''}` },
+    });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`Executor klines ${res.status}: ${text}`);
+    return JSON.parse(text) as unknown[][];
+  }
+
+  const url = new URL('https://fapi.binance.com/fapi/v1/klines');
+  for (const [key, value] of query.entries()) url.searchParams.set(key, value);
+  const res = await fetch(url);
+  const text = await res.text();
+  if (!res.ok) {
+    const hint = res.status === 403
+      ? 'Cloudflare Worker에서 Binance 직접 호출이 차단되었습니다. EXECUTOR_URL/PROXY_TOKEN을 설정하세요.'
+      : 'Binance 요청 실패';
+    throw new Error(`${hint} Binance klines ${res.status}: ${text}`);
+  }
+  return JSON.parse(text) as unknown[][];
 }
 
 function intervalToMs(interval: string): number {
