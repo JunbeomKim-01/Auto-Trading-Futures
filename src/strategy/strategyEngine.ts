@@ -12,9 +12,23 @@ import {
 import { evaluateEntry, type ScoreResult } from './scoreEngine';
 import { evaluateTrigger } from './conditionParser';
 
-// MVP 지표는 전략 JSON에 선언되지만, 계산은 표준 세트로 고정한다
-// (RSI14 / MACD / ATR14 / EMA200 / volumeMA20). 문서 19장.
-export function buildContext(config: StrategyConfig, candles: Candle[], position: Position | null): EvalContext {
+// 전체 캔들에 대해 표준 지표 세트를 한 번만 계산해 둔다.
+// 백테스트는 이를 바별로 인덱싱해 O(n)으로 평가한다 (바마다 재계산 X). 문서 19장.
+export interface PrecomputedIndicators {
+  closes: number[];
+  highs: number[];
+  lows: number[];
+  volumes: number[];
+  rsi: number[];
+  atr: number[];
+  ema: number[];
+  volMa: number[];
+  macd: ReturnType<typeof calculateMACD>;
+  fvg: ReturnType<typeof calculateFVG>;
+  ob: ReturnType<typeof calculateOrderBlock>;
+}
+
+export function precomputeIndicators(config: StrategyConfig, candles: Candle[]): PrecomputedIndicators {
   const closes = candles.map((c) => c.close);
   const opens = candles.map((c) => c.open);
   const highs = candles.map((c) => c.high);
@@ -27,47 +41,62 @@ export function buildContext(config: StrategyConfig, candles: Candle[], position
   const volMaPeriod = config.indicators.volumeMA20?.period ?? 20;
   const macdSpec = config.indicators.macd ?? { type: 'MACD', fast: 12, slow: 26, signal: 9 };
 
-  const rsi = calculateRSI(closes, rsiPeriod);
-  const atr = calculateATR(highs, lows, closes, atrPeriod);
-  const ema = calculateEMA(closes, emaPeriod);
-  const volMa = calculateSMA(volumes, volMaPeriod);
-  const macd = calculateMACD(closes, macdSpec.fast ?? 12, macdSpec.slow ?? 26, macdSpec.signal ?? 9);
-  // FVG / Order Block: 가격 구역 지표. 조건식에서 fvg.* / ob.* 로 참조한다.
-  const fvg = calculateFVG(highs, lows);
   const obSpec = config.indicators.ob ?? config.indicators.orderBlock;
-  const ob = calculateOrderBlock(opens, highs, lows, closes, obSpec?.minBodyRatio ?? 0);
-
-  const i = candles.length - 1; // 마지막(=마감) 캔들 인덱스
 
   return {
-    close: closes[i],
-    previousClose: closes[i - 1],
-    high: highs[i],
-    low: lows[i],
-    volume: volumes[i],
-    rsi14: rsi[i],
-    ema200: ema[i],
-    atr14: atr[i],
-    volumeMA20: volMa[i],
-    'macd.histogram': macd.histogram[i],
-    'macd.histogram.previous': macd.histogram[i - 1],
-    'fvg.bullish': fvg.bullish[i],
-    'fvg.bearish': fvg.bearish[i],
-    'fvg.direction': fvg.direction[i],
-    'fvg.low': fvg.low[i],
-    'fvg.high': fvg.high[i],
-    'fvg.mid': fvg.mid[i],
-    'fvg.size': fvg.size[i],
-    'ob.bullish': ob.bullish[i],
-    'ob.bearish': ob.bearish[i],
-    'ob.direction': ob.direction[i],
-    'ob.low': ob.low[i],
-    'ob.high': ob.high[i],
-    'ob.mid': ob.mid[i],
-    'ob.size': ob.size[i],
-    avgEntry: position ? position.avgEntryPrice : NaN,
-    price: closes[i],
+    closes,
+    highs,
+    lows,
+    volumes,
+    rsi: calculateRSI(closes, rsiPeriod),
+    atr: calculateATR(highs, lows, closes, atrPeriod),
+    ema: calculateEMA(closes, emaPeriod),
+    volMa: calculateSMA(volumes, volMaPeriod),
+    macd: calculateMACD(closes, macdSpec.fast ?? 12, macdSpec.slow ?? 26, macdSpec.signal ?? 9),
+    // FVG / Order Block: 가격 구역 지표. 조건식에서 fvg.* / ob.* 로 참조한다.
+    fvg: calculateFVG(highs, lows),
+    ob: calculateOrderBlock(opens, highs, lows, closes, obSpec?.minBodyRatio ?? 0),
   };
+}
+
+// 미리 계산된 지표 배열에서 인덱스 i 시점의 EvalContext를 만든다.
+export function contextAt(p: PrecomputedIndicators, i: number, position: Position | null): EvalContext {
+  return {
+    close: p.closes[i],
+    previousClose: p.closes[i - 1],
+    high: p.highs[i],
+    low: p.lows[i],
+    volume: p.volumes[i],
+    rsi14: p.rsi[i],
+    ema200: p.ema[i],
+    atr14: p.atr[i],
+    volumeMA20: p.volMa[i],
+    'macd.histogram': p.macd.histogram[i],
+    'macd.histogram.previous': p.macd.histogram[i - 1],
+    'fvg.bullish': p.fvg.bullish[i],
+    'fvg.bearish': p.fvg.bearish[i],
+    'fvg.direction': p.fvg.direction[i],
+    'fvg.low': p.fvg.low[i],
+    'fvg.high': p.fvg.high[i],
+    'fvg.mid': p.fvg.mid[i],
+    'fvg.size': p.fvg.size[i],
+    'ob.bullish': p.ob.bullish[i],
+    'ob.bearish': p.ob.bearish[i],
+    'ob.direction': p.ob.direction[i],
+    'ob.low': p.ob.low[i],
+    'ob.high': p.ob.high[i],
+    'ob.mid': p.ob.mid[i],
+    'ob.size': p.ob.size[i],
+    avgEntry: position ? position.avgEntryPrice : NaN,
+    price: p.closes[i],
+  };
+}
+
+// MVP 지표는 전략 JSON에 선언되지만, 계산은 표준 세트로 고정한다
+// (RSI14 / MACD / ATR14 / EMA200 / volumeMA20). 문서 19장.
+export function buildContext(config: StrategyConfig, candles: Candle[], position: Position | null): EvalContext {
+  const p = precomputeIndicators(config, candles);
+  return contextAt(p, candles.length - 1, position); // 마지막(=마감) 캔들
 }
 
 export type Decision =

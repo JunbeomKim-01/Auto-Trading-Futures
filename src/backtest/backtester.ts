@@ -2,7 +2,7 @@
 // 라이브와 동일한 buildContext/decide/상태머신을 과거 4시간봉에 바-바이-바로 적용해,
 // 실거래 판단과 일치하는 결과를 낸다. 체결은 해당 캔들 종가로 가정.
 import type { Candle, Position, StrategyConfig, StrategyRecord } from '../types';
-import { buildContext, decide } from '../strategy/strategyEngine';
+import { precomputeIndicators, contextAt, decide } from '../strategy/strategyEngine';
 import { computeQuantity } from '../execution/orderExecutor';
 import { addToPosition, openPosition, reducePosition } from '../position/positionStateMachine';
 
@@ -73,10 +73,12 @@ export function runBacktest(
 
   const equityCurve: EquityPoint[] = [];
 
+  // 지표는 전체 캔들에 대해 한 번만 계산하고 바별로 인덱싱한다 (O(n)).
+  const indicators = precomputeIndicators(config, candles);
+
   for (let i = warmup; i < candles.length; i++) {
-    const window = candles.slice(0, i + 1); // [0..i], i가 "마감된" 마지막 캔들
     const price = candles[i].close;
-    const ctx = buildContext(config, window, position);
+    const ctx = contextAt(indicators, i, position); // [0..i], i가 "마감된" 마지막 캔들
     const decision = decide(config, ctx, position);
 
     if (decision.action === 'enter') {

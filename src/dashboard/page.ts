@@ -1863,7 +1863,10 @@ async function previewBacktest() {
       headers:{ 'content-type':'application/json' },
       body:JSON.stringify(payload),
     });
-    const body = await response.json();
+    const text = await response.text();
+    let body;
+    try { body = JSON.parse(text); }
+    catch { throw new Error('서버가 JSON이 아닌 응답을 반환했습니다 (' + response.status + '). 기간이 길어 백테스트가 시간 초과되었을 수 있습니다. ' + text.slice(0, 200)); }
     if (!response.ok || !body.ok) throw new Error(body.error || '백테스트 실패');
     lastBacktestResult = body.result;
     lastBacktestCandles = body.candles || [];
