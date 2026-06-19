@@ -1,7 +1,7 @@
 // Worker 엔트리: cron 전략 실행 + 대시보드 API. 문서 13/14장.
 import type { Env, RunMode } from './types';
 import type { Candle, StrategyConfig } from './types';
-import { runBacktest } from './backtest/backtester';
+import { runBacktest, runBacktestMTF } from './backtest/backtester';
 import { runStrategyTick } from './runner';
 import { D1Repository } from './storage/d1Repository';
 import { KvRepository } from './storage/kvRepository';
@@ -58,32 +58,94 @@ async function handleBacktest(req: Request, env: Env): Promise<Response> {
     const body = (await req.json()) as {
       config?: StrategyConfig;
       years?: number;
+      days?: number;
       startEquity?: number;
     };
     if (!body.config) return json({ error: 'config가 필요합니다' }, 400);
 
     const config = body.config;
+    const startEquity = Number(body.startEquity ?? 10000);
+
+    // MTF: executionTimeframe 있으면 멀티 스트림 + runBacktestMTF.
+    // 실행봉(5m 등)은 CPU 많이 먹어 기간을 일 단위로 캡한다(Workers CPU 한도).
+    if (config.executionTimeframe) {
+      return handleBacktestMtf(env, config, body.days, startEquity);
+    }
+
     const years = clamp(Number(body.years ?? 3), 0.25, 8);
     const candles = await fetchHistoricalCandles(env, config.symbol, config.timeframe, years);
     if (candles.length < 250) {
       return json({ error: `캔들 데이터 부족: ${candles.length}개` }, 400);
     }
 
-    const result = runBacktest(config, candles, {
-      startEquity: Number(body.startEquity ?? 10000),
-    });
+    const result = runBacktest(config, candles, { startEquity });
     // 차트(Lightweight Charts)용 가격 시리즈. 진입/청산 마커를 실제 가격축에 그린다.
-    const series = candles.map((c) => ({
-      t: c.openTime,
-      o: c.open,
-      h: c.high,
-      l: c.low,
-      c: c.close,
-    }));
+    const series = candles.map((c) => ({ t: c.openTime, o: c.open, h: c.high, l: c.low, c: c.close }));
     return json({ ok: true, result, candles: series });
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
+}
+
+// MTF 백테스트: 실행봉은 days로 캡, 상위봉은 워밍업 포함해 넉넉히 페치.
+async function handleBacktestMtf(
+  env: Env,
+  config: StrategyConfig,
+  daysRaw: number | undefined,
+  startEquity: number,
+): Promise<Response> {
+  const execTf = config.executionTimeframe as string;
+  const days = clamp(Number(daysRaw ?? 2), 1, 14);
+  const endTime = Date.now();
+  const execStart = endTime - days * 86400_000;
+
+  // 사용 TF 집합: 실행봉 + 각 지표 timeframe(없으면 config.timeframe).
+  const tfs = new Set<string>([execTf]);
+  for (const spec of Object.values(config.indicators)) tfs.add(spec.timeframe ?? config.timeframe);
+
+  const streams: Record<string, Candle[]> = {};
+  for (const tf of tfs) {
+    // 실행봉은 days만, 상위봉은 그 이전 워밍업(약 300봉)까지.
+    const start = tf === execTf ? execStart : execStart - 300 * intervalToMs(tf);
+    streams[tf] = await fetchHistoricalRange(env, config.symbol, tf, start, endTime);
+  }
+  const exec = streams[execTf];
+  if (!exec || exec.length < 50) {
+    return json({ error: `실행봉(${execTf}) 데이터 부족: ${exec?.length ?? 0}개` }, 400);
+  }
+
+  const result = runBacktestMTF(config, streams, { startEquity });
+  const series = exec.map((c) => ({ t: c.openTime, o: c.open, h: c.high, l: c.low, c: c.close }));
+  return json({
+    ok: true, result, candles: series,
+    note: `MTF 백테스트: 실행봉 ${execTf} ${days}일 구간. CPU 한도로 기간이 제한됩니다.`,
+  });
+}
+
+// startTime~endTime 구간 klines 페이징.
+async function fetchHistoricalRange(
+  env: Env, symbol: string, interval: string, startTime: number, endTime: number,
+): Promise<Candle[]> {
+  const intervalMs = intervalToMs(interval);
+  const out: Candle[] = [];
+  let cursor = startTime;
+  while (cursor < endTime) {
+    const raw = await fetchKlines(env, { symbol, interval, startTime: Math.floor(cursor), endTime, limit: 1500 });
+    if (!raw.length) break;
+    for (const k of raw) {
+      out.push({
+        openTime: Number(k[0]), open: Number(k[1]), high: Number(k[2]), low: Number(k[3]),
+        close: Number(k[4]), volume: Number(k[5]), closeTime: Number(k[6]), closed: true,
+      });
+    }
+    const lastOpen = Number(raw[raw.length - 1][0]);
+    const next = lastOpen + intervalMs;
+    if (next <= cursor || raw.length < 1500) break;
+    cursor = next;
+  }
+  const deduped = new Map<number, Candle>();
+  for (const c of out) deduped.set(c.openTime, c);
+  return [...deduped.values()].sort((a, b) => a.openTime - b.openTime);
 }
 
 // 라이브 차트용 최근 캔들. Lightweight Charts 가격축에 주문 마커를 그린다.
@@ -199,6 +261,7 @@ function intervalToMs(interval: string): number {
   if (unit === 'm') return value * 60_000;
   if (unit === 'h') return value * 3600_000;
   if (unit === 'd') return value * 86400_000;
+  if (unit === 'w') return value * 7 * 86400_000;
   return 14400_000;
 }
 
@@ -211,9 +274,13 @@ async function status(env: Env) {
   const kv = new KvRepository(env);
   const d1 = new D1Repository(env);
   const mode = await kv.getMode();
-  const position = await d1.getOpenPosition('BTCUSDT');
+  const positions = await d1.getOpenPositions('BTCUSDT');
   const lastCandle = await kv.getLastProcessedCandle('BTCUSDT');
-  return { mode, symbol: 'BTCUSDT', lastProcessedCandle: lastCandle, position };
+  // position: 단일 표시용 하위호환(롱 우선). positions: 헤지 슬롯 전체.
+  return {
+    mode, symbol: 'BTCUSDT', lastProcessedCandle: lastCandle,
+    position: positions.long ?? positions.short, positions,
+  };
 }
 
 function json(data: unknown, status = 200): Response {

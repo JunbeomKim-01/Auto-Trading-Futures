@@ -1,5 +1,5 @@
 // D1: 전략/포지션/주문로그/신호로그 저장 및 리스크 집계. 문서 9/12장.
-import type { Env, Position, PositionState, StrategyConfig, StrategyRecord } from '../types';
+import type { Env, Position, PositionBook, PositionState, StrategyConfig, StrategyRecord } from '../types';
 import type { RiskSnapshot } from '../risk/riskEngine';
 
 interface PositionRow {
@@ -72,14 +72,22 @@ export class D1Repository {
     };
   }
 
-  async getOpenPosition(symbol: string): Promise<Position | null> {
-    const row = await this.env.DB.prepare(
+  // 헤지: 심볼당 롱/숏 각 1개의 오픈 포지션을 슬롯으로 반환. 같은 방향에 복수 오픈이
+  // 있으면 최신(id DESC) 1개만 사용한다.
+  async getOpenPositions(symbol: string): Promise<PositionBook> {
+    const res = await this.env.DB.prepare(
       `SELECT * FROM positions WHERE symbol = ? AND state != 'CLOSED'
-       ORDER BY id DESC LIMIT 1`,
+       ORDER BY id DESC`,
     )
       .bind(symbol)
-      .first<PositionRow>();
-    return row ? rowToPosition(row) : null;
+      .all<PositionRow>();
+    const book: PositionBook = { long: null, short: null };
+    for (const row of res.results ?? []) {
+      const pos = rowToPosition(row);
+      if (pos.side === 'LONG' && !book.long) book.long = pos;
+      else if (pos.side === 'SHORT' && !book.short) book.short = pos;
+    }
+    return book;
   }
 
   async upsertPosition(p: Position): Promise<void> {

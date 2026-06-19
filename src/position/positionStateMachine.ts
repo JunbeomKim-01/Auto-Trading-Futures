@@ -16,7 +16,7 @@ export function newPositionId(symbol: string, now: Date): string {
 // 1단계 신규 진입.
 export function openPosition(
   strategy: StrategyRecord,
-  side: 'LONG',
+  side: 'LONG' | 'SHORT',
   fillPrice: number,
   fillQty: number,
   now: Date,

@@ -54,17 +54,27 @@ export interface EntrySide {
   minimumScore: number;
   hardFilters: HardFilter[];
   scoreRules: ScoreRule[];
+  // MTF: HTF 게이트(위 필터/룰) 통과 후, 실행봉(예: 5m)에서 추가로 만족해야 진입하는
+  // 확인 트리거. 비교/논리식. 없으면 게이트 통과 즉시 진입.
+  confirmTrigger?: string;
 }
 
 export interface SizingStep {
   step: number;
   sizePercent: number;
-  trigger: string;
+  // 분할 진입: 평단 대비 "불리" 방향 거리. step1은 초기 진입이라 생략.
+  // LONG은 하락, SHORT는 상승 시 추가. pct가 있으면 % 거리, 없으면 atrMult * ATR.
+  atrMult?: number;
+  pct?: number;
 }
 
 export interface ExitStep {
   sizePercent: number;
-  trigger: string;
+  // 평단 대비 거리. TP=유리 방향, SL=불리 방향 (side에 따라 엔진이 부호 적용).
+  // pnlPercent는 레버리지 적용 PnL/ROE % 기준, pct는 가격 %, 없으면 atrMult * ATR.
+  pnlPercent?: number;
+  atrMult?: number;
+  pct?: number;
 }
 
 export interface IndicatorSpec {
@@ -75,6 +85,8 @@ export interface IndicatorSpec {
   signal?: number;
   source?: string;
   minBodyRatio?: number; // Order Block: 현재 봉 몸통/레인지 최소 비율
+  std?: number; // Bollinger: 표준편차 배수
+  timeframe?: string; // MTF: 이 지표를 계산할 봉. 없으면 config.timeframe(신호봉).
 }
 
 export interface StrategyConfig {
@@ -83,6 +95,9 @@ export interface StrategyConfig {
   symbol: string;
   market: string;
   timeframe: string;
+  // MTF: 진입/청산 판단·체결 봉. 설정 시 지표는 각자 timeframe(상위봉)으로 계산하고
+  // 이 봉(예: 5m)마다 평가한다. 없으면 단일TF(=timeframe) 동작.
+  executionTimeframe?: string;
   mode: string;
   indicators: Record<string, IndicatorSpec>;
   entry: { long?: EntrySide; short?: EntrySide };
@@ -144,6 +159,12 @@ export interface Position {
   updatedAt: string;
 }
 
+// 헤지 모드: 한 심볼에 롱/숏 포지션을 동시에 한 개씩 보유. 각 슬롯 독립.
+export interface PositionBook {
+  long: Position | null;
+  short: Position | null;
+}
+
 // 룰/트리거 평가용 변수 컨텍스트. conditionParser가 참조한다.
 export interface EvalContext {
   close: number;
@@ -151,10 +172,10 @@ export interface EvalContext {
   high: number;
   low: number;
   volume: number;
-  rsi14: number;
-  ema200: number;
-  atr14: number;
-  volumeMA20: number;
+  rsi: number;
+  ema: number;
+  atr: number;
+  volMa: number;
   'macd.histogram': number;
   'macd.histogram.previous': number;
   // 포지션 의존 변수 (없으면 NaN)

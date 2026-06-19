@@ -1,0 +1,67 @@
+{
+  "strategyId": "btc_5m_mtf_scalp_v1",
+  "name": "BTC 멀티TF 스캘핑 (지표 4h/1d/1w · 실행 5m)",
+  "symbol": "BTCUSDT",
+  "market": "BINANCE_USDM_FUTURES",
+  "timeframe": "4h",
+  "executionTimeframe": "5m",
+  "mode": "backtest",
+  "indicators": {
+    "boll": { "type": "BOLL", "timeframe": "4h", "period": 20, "std": 2 },
+    "ob4h": { "type": "OB", "timeframe": "4h" },
+    "ob1d": { "type": "OB", "timeframe": "1d" },
+    "ob1w": { "type": "OB", "timeframe": "1w" },
+    "fvg4h": { "type": "FVG", "timeframe": "4h" },
+    "fvg1d": { "type": "FVG", "timeframe": "1d" },
+    "fvg1w": { "type": "FVG", "timeframe": "1w" }
+  },
+  "entry": {
+    "long": {
+      "enabled": true,
+      "minimumScore": 0,
+      "hardFilters": [
+        {
+          "left": "ob4h.activeBullish + ob1d.activeBullish + ob1w.activeBullish + fvg4h.activeBullish + fvg1d.activeBullish + fvg1w.activeBullish",
+          "operator": ">=",
+          "right": 2,
+          "description": "상위봉(4h/1d/1w) 강세 OB·FVG 구역이 최소 2개 합류"
+        }
+      ],
+      "scoreRules": [],
+      "confirmTrigger": "close <= boll.lower"
+    },
+    "short": {
+      "enabled": true,
+      "minimumScore": 0,
+      "hardFilters": [
+        {
+          "left": "ob4h.activeBearish + ob1d.activeBearish + ob1w.activeBearish + fvg4h.activeBearish + fvg1d.activeBearish + fvg1w.activeBearish",
+          "operator": ">=",
+          "right": 2,
+          "description": "상위봉(4h/1d/1w) 약세 OB·FVG 구역이 최소 2개 합류"
+        }
+      ],
+      "scoreRules": [],
+      "confirmTrigger": "close >= boll.upper"
+    }
+  },
+  "positionSizing": {
+    "type": "fixed",
+    "maxPositionValuePercent": 20,
+    "leverage": 5,
+    "entries": [{ "step": 1, "sizePercent": 100 }]
+  },
+  "exit": {
+    "takeProfit": [{ "sizePercent": 100, "pct": 1.5 }],
+    "stopLoss": { "sizePercent": 100, "pct": 0.6 },
+    "trailingStop": { "enabled": false, "sizePercent": 0, "atrMultiplier": 1.5 }
+  },
+  "risk": {
+    "maxDailyLossPercent": 3,
+    "maxWeeklyLossPercent": 8,
+    "maxConsecutiveLosses": 5,
+    "minLiquidationDistancePercent": 3,
+    "maxOpenPositions": 2,
+    "disableNewEntryWhenOrderPending": true
+  }
+}

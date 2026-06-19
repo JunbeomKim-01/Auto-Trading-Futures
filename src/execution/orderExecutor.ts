@@ -10,6 +10,7 @@ export interface OrderRequest {
   reduceOnly: boolean;
   refPrice: number; // 수량 산출/가상 체결 기준가
   mode: RunMode;
+  positionSide?: 'LONG' | 'SHORT'; // 헤지 모드: 어느 슬롯 주문인지. 지정 시 reduceOnly 무시.
 }
 
 export interface OrderResult {
@@ -62,7 +63,7 @@ export class OrderExecutor {
     // TESTNET / LIVE_*: 실제 시장가 주문.
     try {
       const res = (await this.client.marketOrder(
-        req.symbol, req.side, req.quantity, req.reduceOnly,
+        req.symbol, req.side, req.quantity, req.reduceOnly, req.positionSide,
       )) as Record<string, unknown>;
       const avgPrice = Number(res.avgPrice ?? res.price ?? 0) || req.refPrice;
       const executedQty = Number(res.executedQty ?? req.quantity) || req.quantity;

@@ -633,15 +633,212 @@ export function dashboardHtml(): string {
   }
   .condition-row {
     display:grid;
-    grid-template-columns:64px minmax(130px, 1fr) 92px minmax(84px, .7fr) 38px;
+    grid-template-columns:62px minmax(120px, .85fr) minmax(150px, 1.1fr) minmax(118px, .75fr) minmax(120px, .85fr) 38px;
     gap:8px;
-    align-items:center;
+    align-items:end;
   }
   .condition-row select, .condition-row input {
     height:36px;
     padding:0 9px;
     font-size:12px;
   }
+  .condition-field {
+    display:grid;
+    gap:4px;
+  }
+  .condition-field span {
+    color:var(--muted);
+    font-size:11px;
+    font-weight:650;
+  }
+  .exit-row {
+    display:grid;
+    grid-template-columns:72px minmax(130px, 1fr) minmax(110px, .8fr) 38px;
+    gap:8px;
+    align-items:end;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#11161c;
+  }
+  .exit-row.stop {
+    grid-template-columns:72px minmax(130px, 1fr) minmax(130px, 1fr);
+  }
+  .exit-field {
+    display:grid;
+    gap:4px;
+  }
+  .exit-field span {
+    color:var(--muted);
+    font-size:11px;
+    font-weight:650;
+  }
+  .exit-field input {
+    height:36px;
+    padding:0 9px;
+    font-size:12px;
+  }
+  .exit-note {
+    margin-top:8px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.45;
+  }
+  .sizing-row {
+    display:grid;
+    grid-template-columns:58px minmax(92px, .8fr) minmax(110px, 1fr) 38px;
+    gap:8px;
+    align-items:center;
+  }
+  .sizing-row input {
+    height:36px;
+    padding:0 9px;
+    font-size:12px;
+  }
+  .sizing-grid {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .wizard {
+    display:grid;
+    gap:14px;
+  }
+  .wizard-steps {
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:8px;
+  }
+  .wizard-step {
+    min-height:58px;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#11161c;
+    color:var(--muted-strong);
+    text-align:left;
+  }
+  .wizard-step span {
+    display:block;
+    margin-bottom:4px;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:650;
+  }
+  .wizard-step b {
+    font-size:13px;
+    font-weight:650;
+  }
+  .wizard-step.active {
+    border-color:var(--primary);
+    color:var(--text);
+    background:rgba(252,213,53,.08);
+  }
+  .wizard-panel { display:none; }
+  .wizard-panel.active {
+    display:grid;
+    gap:12px;
+  }
+  .wizard-actions {
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:2px;
+  }
+  .preset-grid {
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:10px;
+  }
+  .preset-card {
+    min-height:132px;
+    padding:14px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#11161c;
+    color:var(--text);
+    text-align:left;
+  }
+  .preset-card.active {
+    border-color:var(--primary);
+    background:rgba(252,213,53,.08);
+  }
+  .preset-card b {
+    display:block;
+    margin-bottom:8px;
+    font-size:15px;
+    font-weight:650;
+  }
+  .preset-card span {
+    color:var(--muted-strong);
+    font-size:12px;
+    line-height:1.45;
+  }
+  details.advanced {
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#171c22;
+  }
+  details.advanced summary {
+    min-height:42px;
+    padding:12px 14px;
+    cursor:pointer;
+    color:var(--text);
+    font-size:13px;
+    font-weight:650;
+  }
+  details.advanced > .advanced-body {
+    padding:0 14px 14px;
+  }
+  .bt-summary {
+    display:grid;
+    grid-template-columns:minmax(0, 1.1fr) minmax(260px, .9fr);
+    gap:12px;
+    margin-bottom:14px;
+    padding:16px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#171c22;
+  }
+  .bt-summary.ok { border-color:rgba(14,203,129,.45); }
+  .bt-summary.warn { border-color:rgba(240,185,11,.45); }
+  .bt-summary h3 {
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+  }
+  .bt-summary p {
+    margin:8px 0 0;
+    color:var(--muted-strong);
+    font-size:13px;
+    line-height:1.45;
+  }
+  .criteria-row {
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:7px;
+  }
+  .criteria {
+    min-height:54px;
+    padding:9px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#11161c;
+  }
+  .criteria span {
+    display:block;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:650;
+  }
+  .criteria b {
+    display:block;
+    margin-top:5px;
+    font-size:13px;
+  }
+  .criteria.ok b { color:var(--up); }
+  .criteria.warn b, .criteria.bad b { color:var(--primary-active); }
   .icon-btn {
     width:38px;
     height:36px;
@@ -766,8 +963,9 @@ export function dashboardHtml(): string {
   .mobile-actions { display:none; }
   @media (max-width: 1100px) {
     .grid, .pnl-panel, .lab-grid { grid-template-columns:1fr; }
-    .flow, .result-grid, .dashboard-cards { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .flow, .result-grid, .dashboard-cards, .preset-grid, .criteria-row { grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .form-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .bt-summary { grid-template-columns:1fr; }
     .compare-grid { grid-template-columns:1fr; }
   }
   @media (max-width: 720px) {
@@ -775,9 +973,11 @@ export function dashboardHtml(): string {
     .nav { order:3; width:100%; }
     .top-actions .btn.ghost { display:none; }
     .page { padding:14px 12px 82px; }
-    .flow, .result-grid, .form-grid, .two-col, .dashboard-cards, .indicator-grid, .search-grid { grid-template-columns:1fr; }
-    .condition-row { grid-template-columns:1fr 1fr; }
-    .condition-row .icon-btn { width:100%; }
+    .flow, .result-grid, .form-grid, .two-col, .dashboard-cards, .indicator-grid, .search-grid, .wizard-steps, .preset-grid, .criteria-row, .sizing-grid { grid-template-columns:1fr; }
+    .condition-row, .exit-row, .exit-row.stop { grid-template-columns:1fr; }
+    .sizing-row { grid-template-columns:1fr 1fr; }
+    .condition-row .icon-btn, .sizing-row .icon-btn { width:100%; }
+    .wizard-actions { flex-direction:column; }
     h1 { font-size:24px; }
     .pnl-number { font-size:46px; }
     .mobile-actions {
@@ -858,6 +1058,31 @@ export function dashboardHtml(): string {
   .indicator-card.on .ind-summary { color:var(--text); }
   .ind-params { display:grid; gap:7px; }
   .indicator-card.off .ind-params { display:none; }
+  .ind-tf { width:auto; min-width:64px; height:24px; padding:0 6px; font-size:11px; flex:0 0 auto; }
+  .recipe-select {
+    width:100%; height:42px; padding:0 12px; border-radius:8px;
+    border:1px solid var(--primary); background:rgba(252,213,53,.08);
+    color:var(--text); font-size:13px; font-weight:600;
+  }
+  /* ── 지표 설명 툴팁 (? 호버) ── */
+  .ind-help {
+    position:relative; flex:0 0 auto; width:16px; height:16px;
+    display:grid; place-items:center; border-radius:50%;
+    border:1px solid var(--line); background:#11161c;
+    color:var(--muted-strong); font-size:10px; font-weight:700; cursor:help;
+  }
+  .ind-help:hover { color:var(--text); border-color:var(--primary); }
+  .ind-help::after {
+    content:attr(data-tip);
+    position:absolute; left:0; top:130%; z-index:60;
+    width:230px; padding:9px 11px;
+    border:1px solid var(--line); border-radius:7px;
+    background:#0b0e11; color:var(--text);
+    font-size:11px; font-weight:500; line-height:1.5; white-space:normal;
+    box-shadow:0 6px 20px rgba(0,0,0,.45);
+    opacity:0; visibility:hidden; transform:translateY(-3px); transition:.12s ease;
+  }
+  .ind-help:hover::after { opacity:1; visibility:visible; transform:translateY(0); }
 </style>
 </head>
 <body>
@@ -963,14 +1188,68 @@ export function dashboardHtml(): string {
       <section id="strategy-lab" class="card view-strategy">
         <div class="card-head">
           <div>
-            <h2>무한 백테스트 전략 빌더</h2>
-            <p class="muted">기본 인디케이터의 파라미터를 조정하고, 조건을 조합한 뒤, 직접 만든 스크립트를 함께 검증합니다.</p>
+            <h2>전략 생성 마법사</h2>
+            <p class="muted">프리셋을 고른 뒤 진입, 청산, 수량, 백테스트 설정만 순서대로 확인합니다.</p>
           </div>
           <span id="builderStatus" class="status warn">draft</span>
         </div>
-        <div class="lab-grid">
-          <div class="stack">
+
+        <div class="wizard">
+          <div id="wizardSteps" class="wizard-steps"></div>
+
+          <section class="wizard-panel active" data-step="1">
             <div class="tool-panel">
+              <div class="tool-head">
+                <div>
+                  <h3>프리셋 선택</h3>
+                  <p class="muted">전략의 출발점을 고르면 조건, 청산, 수량 기본값이 함께 바뀝니다.</p>
+                </div>
+              </div>
+              <div id="presetGrid" class="preset-grid"></div>
+            </div>
+          </section>
+
+          <section class="wizard-panel" data-step="2">
+            <div class="tool-panel">
+              <div class="tool-head">
+                <div>
+                  <h3>매수(롱) 조건</h3>
+                  <p class="muted">모든 조건이 만족되는 캔들에서 롱 진입합니다.</p>
+                </div>
+                <button class="btn ghost" type="button" onclick="addCondition('long')">직접 추가 (고급)</button>
+              </div>
+              <select id="longRecipe" class="recipe-select" onchange="addRecipe('long', this.value)"></select>
+              <p class="muted" style="margin:6px 0 12px;">말로 고르면 조건이 자동 추가됩니다. 추가한 조건이 <b>모두 만족</b>될 때 매수합니다.</p>
+              <div id="conditionList" class="condition-list"></div>
+              <div class="field" style="margin-top:10px;">
+                <label>5분봉 확인 트리거 (MTF · 선택)</label>
+                <input id="longConfirmTrigger" placeholder="예: close <= boll.lower (위 조건은 상위봉 게이트, 이 식은 실행봉에서 확인)" />
+              </div>
+            </div>
+
+            <details class="advanced">
+              <summary>숏 조건 설정</summary>
+              <div class="advanced-body">
+                <div class="tool-head">
+                  <div>
+                    <h3>매도(숏) 조건</h3>
+                    <p class="muted">비우면 숏 진입은 사용하지 않습니다.</p>
+                  </div>
+                  <button class="btn ghost" type="button" onclick="addCondition('short')">직접 추가 (고급)</button>
+                </div>
+                <select id="shortRecipe" class="recipe-select" onchange="addRecipe('short', this.value)"></select>
+                <p class="muted" style="margin:6px 0 12px;">말로 고르면 조건이 자동 추가됩니다. 비우면 매도(숏)는 사용 안 함.</p>
+                <div id="shortConditionList" class="condition-list"></div>
+                <div class="field" style="margin-top:10px;">
+                  <label>5분봉 확인 트리거 (MTF · 선택)</label>
+                  <input id="shortConfirmTrigger" placeholder="예: close >= boll.upper" />
+                </div>
+              </div>
+            </details>
+
+            <details class="advanced">
+              <summary>지표 세부 설정</summary>
+              <div class="advanced-body">
               <div class="tool-head">
                 <div>
                   <h3>기본 인디케이터</h3>
@@ -980,48 +1259,85 @@ export function dashboardHtml(): string {
               </div>
               <div id="indicatorAddBar" class="ind-add-bar"></div>
               <div id="indicatorGrid" class="indicator-grid"></div>
+              </div>
+            </details>
+          </section>
+
+          <section class="wizard-panel" data-step="3">
+            <div class="two-col">
+            <div class="tool-panel">
+              <div class="tool-head">
+                <div>
+                  <h3>청산 규칙</h3>
+                  <p class="muted">PNL/ROE가 몇 %가 되면 몇 %를 팔지, 몇 % 손실이면 정리할지 정합니다.</p>
+                </div>
+                <button class="btn ghost" type="button" onclick="addExitTp()">TP 추가</button>
+              </div>
+              <div id="exitRulesBody" class="condition-list"></div>
             </div>
 
             <div class="tool-panel">
               <div class="tool-head">
                 <div>
-                  <h3>조건 조합기</h3>
-                  <p class="muted">모든 조건이 만족되는 캔들에서 진입하고, 청산 조건은 차트에 별도 마커로 표시합니다.</p>
+                  <h3>매매 수량</h3>
+                  <p class="muted">계좌 기준 포지션 한도와 단계별 진입 비중을 조정합니다.</p>
                 </div>
-                <button class="btn ghost" type="button" onclick="addCondition()">조건 추가</button>
+                <button class="btn ghost" type="button" onclick="addSizingStep()">단계 추가</button>
               </div>
-              <div id="conditionList" class="condition-list"></div>
+              <div class="sizing-grid">
+                <div class="field"><label>최대 포지션 비중 %</label><input id="maxPositionPercent" type="number" step="1" min="1" max="100" value="25" oninput="setMaxPositionPercent(this.value)" /></div>
+                <div class="field"><label>레버리지</label><input id="sizingLeverage" type="number" step="0.1" min="1" value="2" oninput="setSizingLeverage(this.value)" /></div>
+              </div>
+              <div id="sizingRulesBody" class="condition-list"></div>
             </div>
-          </div>
+            </div>
+          </section>
 
-          <div class="stack">
+          <section class="wizard-panel" data-step="4">
             <div class="tool-panel">
               <div class="tool-head">
                 <div>
-                  <h3>직접 만든 스크립트</h3>
-                  <p class="muted">내장 조건으로 부족한 로직을 안전한 DSL 형태로 추가합니다.</p>
+                  <h3>백테스트 설정</h3>
+                  <p class="muted">검증할 종목과 기간, 초기 자본을 확인한 뒤 실행합니다.</p>
                 </div>
               </div>
+              <div class="form-grid">
+                <div class="field"><label>심볼</label><input id="btSymbol" value="BTCUSDT" /></div>
+                <div class="field"><label>기간</label><input id="btRange" value="2020-01-01 ~ 2026-06-17" /></div>
+                <div class="field"><label>초기 자본</label><input id="btCapital" value="10000 USDT" /></div>
+                <div class="field"><label>레버리지</label><input id="btLev" value="2x" oninput="setSizingLeverage(this.value)" /></div>
+                <div class="field"><label>실행봉 (MTF)</label><select id="btExecTf"><option value="">단일TF (신호봉)</option><option value="1m">1m</option><option value="3m">3m</option><option value="5m">5m</option><option value="15m">15m</option><option value="1h">1h</option></select></div>
+                <div class="field"><label>MTF 기간(일)</label><input id="btDays" value="2" /></div>
+              </div>
+              <div class="actions" style="margin-top:12px;">
+                <button class="btn primary" type="button" onclick="previewBacktest()">백테스트 실행</button>
+                <a class="btn ghost" href="#backtest" style="display:inline-flex;align-items:center;text-decoration:none;">결과 보기</a>
+              </div>
+            </div>
+
+            <details class="advanced">
+              <summary>고급 옵션: 직접 만든 스크립트</summary>
+              <div class="advanced-body">
               <div class="editor-tabs">
                 <button id="scriptTab" class="tab active" type="button" onclick="setEditorMode('script')">스크립트</button>
                 <button id="mathTab" class="tab" type="button" onclick="setEditorMode('math')">수학 원리</button>
               </div>
-              <textarea id="strategyText">IF rsi14 <= 35
-AND close > ema200
+              <textarea id="strategyText">IF rsi <= 35
+AND close > ema
 AND macd.histogram > macd.histogram.previous
 THEN long_score += 70
 
 EXIT:
-take_profit when close >= avgEntry + atr14 * 1.8
-stop_loss when close <= avgEntry - atr14 * 1.1
+take_profit when close >= avgEntry + atr * 1.8
+stop_loss when close <= avgEntry - atr * 1.1
 
 RISK:
 stop new entries when dailyLoss <= -2%</textarea>
               <div class="actions">
-                <button class="btn primary" type="button" onclick="previewBacktest()">백테스트 실행</button>
                 <button class="btn ghost" type="button" onclick="generateStrategyDsl()">조건을 스크립트로 변환</button>
               </div>
-            </div>
+              </div>
+            </details>
 
             <div class="tool-panel">
               <div class="tool-head">
@@ -1033,13 +1349,12 @@ stop new entries when dailyLoss <= -2%</textarea>
               </div>
               <div id="versionList" class="mini-list"></div>
             </div>
+          </section>
+
+          <div class="wizard-actions">
+            <button id="wizardPrev" class="btn ghost" type="button" onclick="setWizardStep(wizardStep - 1)">이전</button>
+            <button id="wizardNext" class="btn primary" type="button" onclick="setWizardStep(wizardStep + 1)">다음</button>
           </div>
-        </div>
-        <div class="form-grid">
-          <div class="field"><label>심볼</label><input id="btSymbol" value="BTCUSDT" /></div>
-          <div class="field"><label>기간</label><input id="btRange" value="2020-01-01 ~ 2026-06-17" /></div>
-          <div class="field"><label>초기 자본</label><input id="btCapital" value="10000 USDT" /></div>
-          <div class="field"><label>레버리지</label><input id="btLev" value="2x" /></div>
         </div>
       </section>
 
@@ -1052,6 +1367,20 @@ stop new entries when dailyLoss <= -2%</textarea>
           <button id="btRunBtn" class="btn primary" type="button" onclick="previewBacktest()">백테스트 실행</button>
         </div>
 
+        <div id="btSummaryBox" class="bt-summary warn">
+          <div>
+            <span id="btSummaryStatus" class="status warn">대기</span>
+            <h3 id="btSummaryTitle">아직 백테스트 전입니다</h3>
+            <p id="btSummaryCopy">전략 생성 마법사의 마지막 단계에서 백테스트를 실행하면 통과 여부와 핵심 기준을 먼저 보여줍니다.</p>
+          </div>
+          <div id="btCriteria" class="criteria-row">
+            <div class="criteria warn"><span>수익률</span><b>대기</b></div>
+            <div class="criteria warn"><span>MDD</span><b>대기</b></div>
+            <div class="criteria warn"><span>PF</span><b>대기</b></div>
+            <div class="criteria warn"><span>거래 수</span><b>대기</b></div>
+          </div>
+        </div>
+
         <div class="bt-chart-head">
           <span class="label">가격 · 진입/청산</span>
           <span id="btChartHint" class="muted">실행하면 실제 캔들 위에 진입(▲)·청산(▼) 위치가 표시됩니다.</span>
@@ -1060,9 +1389,10 @@ stop new entries when dailyLoss <= -2%</textarea>
           <div class="chart-empty-abs">백테스트 실행 후 실제 4시간봉 차트에 진입/청산 타점이 가격축 그대로 표시됩니다.</div>
         </div>
         <div class="bt-legend">
-          <span><i class="in"></i>진입</span>
-          <span><i class="win"></i>익절 청산</span>
-          <span><i class="loss"></i>손절 청산</span>
+          <span><i class="in"></i>롱 진입 ▲</span>
+          <span><i class="loss"></i>숏 진입 ▼</span>
+          <span><i class="win"></i>이익 청산</span>
+          <span><i class="loss"></i>손실 청산</span>
         </div>
 
         <div class="result-grid" style="margin-top:14px;">
@@ -1085,15 +1415,15 @@ stop new entries when dailyLoss <= -2%</textarea>
         <div class="tool-panel" style="margin-top:14px;">
           <div class="tool-head">
             <div>
-              <h3>파라미터 자동 탐색</h3>
-              <p class="muted">범위를 지정해 RSI, EMA, ATR 배수 조합을 빠르게 훑고 상위 결과를 남깁니다.</p>
+              <h3>지표 조합 자동 탐색</h3>
+              <p class="muted">전략 생성 마법사에서 켜둔 보조지표들을 조합해 후보 조건을 만들고 백테스트로 랭킹합니다.</p>
             </div>
             <button class="btn ghost" type="button" onclick="runParameterSearch()">탐색 시작</button>
           </div>
           <div class="search-grid">
-            <div class="field"><label>RSI 기간</label><input id="searchRsi" value="10,14,21" /></div>
-            <div class="field"><label>EMA 기간</label><input id="searchEma" value="100,200" /></div>
-            <div class="field"><label>ATR 손절 배수</label><input id="searchAtr" value="1.0,1.3,1.8" /></div>
+            <div class="field"><label>탐색 성향</label><select id="searchProfile"><option value="balanced">균형형</option><option value="highWin">고승률형</option><option value="highReturn">고수익형</option></select></div>
+            <div class="field"><label>손익비 R</label><input id="searchRr" value="1.5" /></div>
+            <div class="field"><label>최대 후보 수</label><input id="searchMaxCombos" value="18" /></div>
           </div>
           <div id="searchResults" class="mini-list" style="margin-top:12px;"></div>
         </div>
@@ -1181,21 +1511,163 @@ let backtestPassed = false;
 let lastBacktestResult = null;
 let lastBacktestCandles = null;
 let savedVersionCounter = 4;
+let wizardStep = 1;
+let activePreset = 'rsi_reversion';
+const WIZARD_STEPS = [
+  { step:1, title:'프리셋' },
+  { step:2, title:'진입 조건' },
+  { step:3, title:'청산/수량' },
+  { step:4, title:'백테스트' },
+];
+const STRATEGY_PRESETS = [
+  {
+    id:'rsi_reversion',
+    name:'RSI 평균회귀',
+    desc:'과매도 반등을 노리고 ATR 기준으로 분할 진입합니다.',
+    indicators:['rsi','ema','macd','atr','volume'],
+    long:[
+      { join:'AND', left:'rsi', op:'<=', right:'35' },
+      { join:'AND', left:'close', op:'>', right:'ema' },
+      { join:'AND', left:'macd.histogram', op:'>', right:'macd.histogram.previous' },
+    ],
+    short:[],
+    exit:{ tp:[ { pnlPercent:3, sizePercent:30 }, { pnlPercent:6, sizePercent:30 }, { pnlPercent:10, sizePercent:40 } ], slPnlPercent:4 },
+    sizing:{ maxPositionValuePercent:25, leverage:2, entries:[ { step:1, sizePercent:25 }, { step:2, sizePercent:25, atrMult:0.7 }, { step:3, sizePercent:25, atrMult:1.2 }, { step:4, sizePercent:25, atrMult:2.0 } ] },
+  },
+  {
+    id:'trend_following',
+    name:'추세추종',
+    desc:'EMA 위에서 모멘텀과 거래량이 함께 살아날 때 진입합니다.',
+    indicators:['ema','macd','atr','volume','rsi'],
+    long:[
+      { join:'AND', left:'close', op:'>', right:'ema' },
+      { join:'AND', left:'macd.histogram', op:'>', right:'0' },
+      { join:'AND', left:'volume', op:'>', right:'volMa * 1.2' },
+    ],
+    short:[
+      { join:'AND', left:'close', op:'<', right:'ema' },
+      { join:'AND', left:'macd.histogram', op:'<', right:'0' },
+    ],
+    exit:{ tp:[ { pnlPercent:4, sizePercent:35 }, { pnlPercent:8, sizePercent:35 }, { pnlPercent:14, sizePercent:30 } ], slPnlPercent:5 },
+    sizing:{ maxPositionValuePercent:20, leverage:2, entries:[ { step:1, sizePercent:40 }, { step:2, sizePercent:30, atrMult:1.0 }, { step:3, sizePercent:30, atrMult:1.8 } ] },
+  },
+  {
+    id:'vol_breakout',
+    name:'변동성 돌파',
+    desc:'가격이 이전 고점과 거래량 기준을 함께 돌파할 때 진입합니다.',
+    indicators:['atr','volume','ema','rsi'],
+    long:[
+      { join:'AND', left:'close', op:'>', right:'previousClose + atr * 1.0' },
+      { join:'AND', left:'volume', op:'>', right:'volMa * 1.5' },
+      { join:'AND', left:'close', op:'>', right:'ema' },
+    ],
+    short:[],
+    exit:{ tp:[ { pnlPercent:5, sizePercent:50 }, { pnlPercent:10, sizePercent:50 } ], slPnlPercent:4 },
+    sizing:{ maxPositionValuePercent:18, leverage:2, entries:[ { step:1, sizePercent:60 }, { step:2, sizePercent:40, atrMult:1.2 } ] },
+  },
+  {
+    id:'smc_ob_fvg',
+    name:'SMC OB/FVG 자리선별',
+    desc:'활성 OB/FVG 구역 안에서 거래량과 모멘텀 확인 후 분할 진입합니다.',
+    indicators:['ob','fvg','atr','volume','macd','ema','rsi'],
+    long:[
+      { join:'AND', left:'(ob.activeBullish == 1 OR fvg.activeBullish == 1)', op:'==', right:'1' },
+      { join:'AND', left:'volume', op:'>', right:'volMa * 1.2' },
+      { join:'AND', left:'macd.histogram', op:'>', right:'macd.histogram.previous' },
+      { join:'AND', left:'close', op:'>=', right:'previousClose - atr * 0.5' },
+    ],
+    short:[
+      { join:'AND', left:'(ob.activeBearish == 1 OR fvg.activeBearish == 1)', op:'==', right:'1' },
+      { join:'AND', left:'volume', op:'>', right:'volMa * 1.2' },
+      { join:'AND', left:'macd.histogram', op:'<', right:'macd.histogram.previous' },
+      { join:'AND', left:'close', op:'<=', right:'previousClose + atr * 0.5' },
+    ],
+    exit:{ tp:[ { pnlPercent:3, sizePercent:35 }, { pnlPercent:6, sizePercent:35 }, { pnlPercent:10, sizePercent:30 } ], slPnlPercent:4 },
+    sizing:{ maxPositionValuePercent:18, leverage:2, entries:[ { step:1, sizePercent:35 }, { step:2, sizePercent:35, atrMult:0.7 }, { step:3, sizePercent:30, atrMult:1.2 } ] },
+  },
+  {
+    id:'ob_x3_mtf',
+    name:'OB × 3 MTF',
+    desc:'4h/1d/1w Order Block 합류를 5분봉 볼린저 터치로 확인합니다.',
+    indicators:[
+      { type:'bollinger', key:'boll', tf:'4h', enabled:true },
+      { type:'ob', key:'ob4h', tf:'4h', enabled:true },
+      { type:'ob', key:'ob1d', tf:'1d', enabled:true },
+      { type:'ob', key:'ob1w', tf:'1w', enabled:true },
+    ],
+    long:[
+      { join:'AND', left:'ob4h.activeBullish + ob1d.activeBullish + ob1w.activeBullish', op:'>=', right:'2' },
+    ],
+    short:[
+      { join:'AND', left:'ob4h.activeBearish + ob1d.activeBearish + ob1w.activeBearish', op:'>=', right:'2' },
+    ],
+    longTrigger:'close <= boll.lower',
+    shortTrigger:'close >= boll.upper',
+    execTf:'5m',
+    days:2,
+    exit:{ tp:[ { pnlPercent:3, sizePercent:50 }, { pnlPercent:6, sizePercent:50 } ], slPnlPercent:4 },
+    sizing:{ maxPositionValuePercent:20, leverage:5, entries:[ { step:1, sizePercent:100 } ] },
+  },
+  {
+    id:'ob_fvg_htf_timing',
+    name:'OB/FVG 12H·4H·1H',
+    desc:'상위 OB/FVG는 자리, 5분봉 RSI·거래량·종가 반전은 타이밍으로 씁니다.',
+    indicators:[
+      { type:'ob', key:'ob12h', tf:'12h', enabled:true },
+      { type:'ob', key:'ob4h', tf:'4h', enabled:true },
+      { type:'ob', key:'ob1h', tf:'1h', enabled:true },
+      { type:'fvg', key:'fvg12h', tf:'12h', enabled:true },
+      { type:'fvg', key:'fvg4h', tf:'4h', enabled:true },
+      { type:'fvg', key:'fvg1h', tf:'1h', enabled:true },
+      { type:'rsi', key:'rsi5m', tf:'5m', enabled:true },
+      { type:'volume', key:'vol5m', tf:'5m', enabled:true },
+    ],
+    long:[
+      { join:'AND', left:'ob12h.activeBullish * 3 + fvg12h.activeBullish * 3 + ob4h.activeBullish * 2 + fvg4h.activeBullish * 2 + ob1h.activeBullish + fvg1h.activeBullish', op:'>=', right:'2' },
+    ],
+    short:[
+      { join:'AND', left:'ob12h.activeBearish * 3 + fvg12h.activeBearish * 3 + ob4h.activeBearish * 2 + fvg4h.activeBearish * 2 + ob1h.activeBearish + fvg1h.activeBearish', op:'>=', right:'2' },
+    ],
+    longTrigger:'close > previousClose AND volume > vol5m * 1.2 AND rsi5m > 30',
+    shortTrigger:'close < previousClose AND volume > vol5m * 1.2 AND rsi5m < 70',
+    execTf:'5m',
+    days:2,
+    exit:{ tp:[ { pnlPercent:3, sizePercent:50 }, { pnlPercent:6, sizePercent:50 } ], slPnlPercent:4 },
+    sizing:{ maxPositionValuePercent:20, leverage:5, entries:[ { step:1, sizePercent:100 } ] },
+  },
+];
 // 보조지표 카탈로그. '지표 추가'에서 선택 가능한 전체 목록.
 const INDICATOR_CATALOG = {
-  rsi:       { name:'RSI', hint:'과매수/과매도 구간', params:[['period', 14, 2, 50], ['oversold', 35, 5, 50]] },
-  ema:       { name:'EMA', hint:'추세 필터', params:[['period', 200, 20, 400]] },
-  sma:       { name:'SMA', hint:'단순 이동평균', params:[['period', 50, 5, 300]] },
-  macd:      { name:'MACD', hint:'모멘텀 변화', params:[['fast', 12, 2, 40], ['slow', 26, 5, 80], ['signal', 9, 2, 30]] },
-  atr:       { name:'ATR', hint:'손절/익절 거리', params:[['period', 14, 2, 50], ['stop x', 1.1, 0.5, 4]] },
-  bollinger: { name:'Bollinger', hint:'변동성 밴드', params:[['period', 20, 5, 80], ['std', 2, 1, 4]] },
-  volume:    { name:'Volume', hint:'거래량 돌파', params:[['sma', 20, 5, 80], ['spike x', 1.5, 1, 4]] },
-  fvg:       { name:'FVG', hint:'공정가치 갭 · fvg.bullish / fvg.mid', params:[] },
-  ob:        { name:'Order Block', hint:'주문 블록 · ob.bullish / ob.high', params:[['body ratio', 0.3, 0, 1]] },
+  rsi:       { name:'RSI', hint:'과매수/과매도 구간', desc:'0~100 사이로 상승 압력의 세기를 나타냅니다. 30 아래면 과매도(낙폭 과대 → 반등 가능), 70 위면 과매수입니다. 역추세 매수는 보통 rsi <= 35 같은 조건을 씁니다.', params:[['period', 14, 2, 50], ['oversold', 35, 5, 50]] },
+  ema:       { name:'EMA', hint:'추세 필터', desc:'지수이동평균. 최근 가격에 가중치를 더 줍니다. close > ema 면 상승 추세, 아래면 하락 추세로 봅니다. 추세를 거스르는 진입을 막는 필터로 자주 씁니다.', params:[['period', 200, 20, 400]] },
+  sma:       { name:'SMA', hint:'단순 이동평균', desc:'정해진 기간의 단순 평균값입니다. EMA보다 느리게 반응해 큰 추세선이나 거래량 평균(volMa) 기준선으로 씁니다.', params:[['period', 50, 5, 300]] },
+  macd:      { name:'MACD', hint:'모멘텀 변화', desc:'빠른 EMA−느린 EMA로 모멘텀을 봅니다. 히스토그램(macd.histogram)이 양수면 상승, 음수면 하락 힘입니다. 히스토그램이 직전 봉보다 커지면 하락 둔화/상승 가속 신호입니다.', params:[['fast', 12, 2, 40], ['slow', 26, 5, 80], ['signal', 9, 2, 30]] },
+  atr:       { name:'ATR', hint:'손절/익절 거리', desc:'평균 캔들 변동폭(가격 단위)입니다. 방향이 아니라 변동성 크기만 나타냅니다. 손절·익절 거리나 분할매수 간격을 ATR 배수로 잡을 때 씁니다.', params:[['period', 14, 2, 50], ['stop x', 1.1, 0.5, 4]] },
+  bollinger: { name:'Bollinger', hint:'변동성 밴드 · boll.upper / boll.lower / boll.percentB', desc:'이동평균을 중심으로 표준편차만큼 위아래 밴드를 그립니다. percentB는 밴드 내 위치로 0=하단, 1=상단입니다. 밴드 이탈/복귀로 변동성 매매를 합니다.', params:[['period', 20, 5, 80], ['std', 2, 1, 4]] },
+  volume:    { name:'Volume', hint:'거래량 돌파', desc:'거래량과 그 이동평균(volMa)을 봅니다. volume > volMa * 1.5 처럼 평소보다 거래가 급증하면 움직임에 힘이 실린 것으로 해석합니다.', params:[['sma', 20, 5, 80], ['spike x', 1.5, 1, 4]] },
+  fvg:       { name:'FVG', hint:'공정가치 갭 · fvg.bullish / fvg.mid', desc:'Fair Value Gap. 캔들 3개 사이에 메워지지 않은 가격 공백입니다. 가격이 되돌아와 갭을 채우는 경향을 이용합니다. active* 는 아직 안 채워진 살아있는 갭을 뜻합니다.', params:[] },
+  ob:        { name:'Order Block', hint:'주문 블록 · ob.bullish / ob.high', desc:'급등·급락 직전의 마지막 반대 방향 캔들 구역입니다. 세력 주문이 쌓인 지지/저항으로 보고 그 구역에서 반응을 노립니다. active* 는 아직 유효한 블록입니다.', params:[['body ratio', 0.3, 0, 1]] },
 };
-function makeIndicator(type, enabled) {
+const DEFAULT_INDICATOR_KEYS = {
+  rsi:'rsi14',
+  ema:'ema200',
+  atr:'atr14',
+  volume:'volumeMA20',
+  bollinger:'boll',
+  fvg:'fvg',
+  ob:'ob',
+};
+const MULTI_INSTANCE_TYPES = new Set(['ob','fvg','bollinger']);
+const ZONE_FIELDS = ['bullish','bearish','direction','low','high','mid','size','activeBullish','activeBearish','activeDirection','activeLow','activeHigh','activeMid','activeSize'];
+const BOLL_FIELDS = ['upper','lower','mid','percentB'];
+const MACD_FIELDS = ['histogram','histogram.previous'];
+
+function makeIndicator(input, enabled) {
+  const spec = typeof input === 'string' ? { type:input, enabled } : { ...input };
+  const type = spec.type;
   const c = INDICATOR_CATALOG[type];
-  return { id:type, type, name:c.name, enabled:!!enabled, params:c.params.map(p => p.slice()) };
+  const key = spec.key || defaultIndicatorKey(type, spec.tf);
+  return { id:key, key, type, name:c.name, enabled:spec.enabled ?? !!enabled, tf:spec.tf || '', params:c.params.map(p => p.slice()) };
 }
 const indicators = [
   makeIndicator('rsi', true),
@@ -1204,11 +1676,57 @@ const indicators = [
   makeIndicator('atr', true),
   makeIndicator('volume', false),
 ];
+// 매수(롱) 진입 조건.
 let conditions = [
-  { join:'AND', left:'rsi14', op:'<=', right:'35' },
-  { join:'AND', left:'close', op:'>', right:'ema200' },
+  { join:'AND', left:'rsi', op:'<=', right:'35' },
+  { join:'AND', left:'close', op:'>', right:'ema' },
   { join:'AND', left:'macd.histogram', op:'>', right:'macd.histogram.previous' },
 ];
+// 매도(숏) 진입 조건. 롱의 거울(역추세). 비우면 숏 비활성.
+let shortConditions = [
+  { join:'AND', left:'rsi', op:'>=', right:'65' },
+  { join:'AND', left:'close', op:'<', right:'ema' },
+  { join:'AND', left:'macd.histogram', op:'<', right:'macd.histogram.previous' },
+];
+// 청산 규칙(구조화). TP/SL을 평단 대비 ATR 배수 거리로. 엔진이 롱/숏 방향 자동 적용.
+let exitRules = {
+  tp: [ { pnlPercent:3, sizePercent:30 }, { pnlPercent:6, sizePercent:30 }, { pnlPercent:10, sizePercent:40 } ],
+  slPnlPercent: 4,
+};
+// 포지션 수량 규칙. maxPositionValuePercent 안에서 entries 비중대로 분할 진입한다.
+let positionSizing = {
+  maxPositionValuePercent: 25,
+  leverage: 2,
+  entries: [
+    { step:1, sizePercent:25 },
+    { step:2, sizePercent:25, atrMult:0.7 },
+    { step:3, sizePercent:25, atrMult:1.2 },
+    { step:4, sizePercent:25, atrMult:2.0 },
+  ],
+};
+// 조건 조합기에서 쓸 수 있는 기본 신호 변수. 활성 지표 인스턴스 변수는 런타임에 더한다.
+const BASE_SIGNAL_VARS = [
+  ['가격', ['close','previousClose','high','low','price','avgEntry']],
+  ['거래량', ['volume','volMa']],
+  ['추세/모멘텀', ['rsi','ema','atr','macd.histogram','macd.histogram.previous']],
+  ['볼린저', ['boll.upper','boll.lower','boll.mid','boll.percentB']],
+  ['FVG', ['fvg.bullish','fvg.bearish','fvg.direction','fvg.low','fvg.high','fvg.mid','fvg.size']],
+  ['활성 FVG', ['fvg.activeBullish','fvg.activeBearish','fvg.activeDirection','fvg.activeLow','fvg.activeHigh','fvg.activeMid','fvg.activeSize']],
+  ['Order Block', ['ob.bullish','ob.bearish','ob.direction','ob.low','ob.high','ob.mid','ob.size']],
+  ['활성 Order Block', ['ob.activeBullish','ob.activeBearish','ob.activeDirection','ob.activeLow','ob.activeHigh','ob.activeMid','ob.activeSize']],
+  ['OB + FVG', ['obFvg.bullishConfluence','obFvg.bearishConfluence']],
+];
+const SIGNAL_VAR_LABELS = {
+  close:'종가', previousClose:'이전 종가', high:'고가', low:'저가', price:'현재가', avgEntry:'평단',
+  volume:'거래량', volMa:'평균 거래량',
+  rsi:'RSI', ema:'EMA', atr:'ATR', 'macd.histogram':'MACD 히스토그램', 'macd.histogram.previous':'이전 MACD 히스토그램',
+  'boll.upper':'볼린저 상단', 'boll.lower':'볼린저 하단', 'boll.mid':'볼린저 중앙', 'boll.percentB':'볼린저 %B',
+  'fvg.bullish':'FVG 상승', 'fvg.bearish':'FVG 하락', 'fvg.direction':'FVG 방향', 'fvg.low':'FVG 하단', 'fvg.high':'FVG 상단', 'fvg.mid':'FVG 중앙', 'fvg.size':'FVG 크기',
+  'fvg.activeBullish':'활성 Bullish FVG 안', 'fvg.activeBearish':'활성 Bearish FVG 안', 'fvg.activeDirection':'활성 FVG 방향', 'fvg.activeLow':'활성 FVG 하단', 'fvg.activeHigh':'활성 FVG 상단', 'fvg.activeMid':'활성 FVG 중앙', 'fvg.activeSize':'활성 FVG 크기',
+  'ob.bullish':'오더블록 상승', 'ob.bearish':'오더블록 하락', 'ob.direction':'오더블록 방향', 'ob.low':'오더블록 하단', 'ob.high':'오더블록 상단', 'ob.mid':'오더블록 중앙', 'ob.size':'오더블록 크기',
+  'ob.activeBullish':'활성 Bullish OB 안', 'ob.activeBearish':'활성 Bearish OB 안', 'ob.activeDirection':'활성 OB 방향', 'ob.activeLow':'활성 OB 하단', 'ob.activeHigh':'활성 OB 상단', 'ob.activeMid':'활성 OB 중앙', 'ob.activeSize':'활성 OB 크기',
+  'obFvg.bullishConfluence':'Bullish OB+FVG 중첩', 'obFvg.bearishConfluence':'Bearish OB+FVG 중첩',
+};
 const savedVersions = [
   { name:'Countertrend v3', ret:42.8, win:57.4, mdd:-11.9, pf:1.62, tag:'saved' },
   { name:'Breakout v2', ret:31.2, win:44.1, mdd:-18.7, pf:1.28, tag:'watch' },
@@ -1436,14 +1954,25 @@ function renderBacktestChart(result, candles) {
     .filter((b, i, a) => i === 0 || b.time > a[i - 1].time);
   btCandleSeries.setData(bars);
 
-  // 진입(▲)·청산(▼) 마커를 실제 가격 캔들 위에 표시.
+  // 진입·청산 마커. 롱은 초록 ▲(아래), 숏은 빨강 ▼(위)로 방향 구분. 청산은 손익색.
   const markers = [];
   for (const t of trades) {
-    markers.push({ time: sec(t.entryTime), position:'belowBar', color:'#2ebd85',
-      shape:'arrowUp', text:'IN ' + num(t.avgEntry) });
+    const isLong = t.side === 'LONG';
+    markers.push({
+      time: sec(t.entryTime),
+      position: isLong ? 'belowBar' : 'aboveBar',
+      color: isLong ? '#2ebd85' : '#f6465d',
+      shape: isLong ? 'arrowUp' : 'arrowDown',
+      text: (isLong ? 'LONG' : 'SHORT') + ' IN ' + num(t.avgEntry),
+    });
     const winCls = t.pnl >= 0;
-    markers.push({ time: sec(t.exitTime), position:'aboveBar', color: winCls ? '#2ebd85' : '#f6465d',
-      shape:'arrowDown', text:(t.pnl >= 0 ? '+' : '') + Math.round(t.pnl) });
+    markers.push({
+      time: sec(t.exitTime),
+      position: isLong ? 'aboveBar' : 'belowBar',
+      color: winCls ? '#2ebd85' : '#f6465d',
+      shape: isLong ? 'arrowDown' : 'arrowUp',
+      text: 'OUT ' + (t.pnl >= 0 ? '+' : '') + Math.round(t.pnl),
+    });
   }
   markers.sort((a, b) => a.time - b.time);
   btCandleSeries.setMarkers(markers);
@@ -1484,19 +2013,130 @@ function renderLogs() {
 
 function indicatorSummary(ind) {
   // 한눈에 보이는 현재 설정 요약. 예: "기간 14 · 과매도 35"
-  return ind.params.map(p => p[0] + ' ' + p[1]).join(' · ') || '파라미터 없음';
+  const tf = ind.tf ? 'TF ' + ind.tf : '신호봉';
+  const params = ind.params.map(p => p[0] + ' ' + p[1]).join(' · ');
+  return tf + (params ? ' · ' + params : ' · 파라미터 없음');
+}
+
+function defaultIndicatorKey(type, tf) {
+  if (MULTI_INSTANCE_TYPES.has(type) && tf) return typePrefix(type) + tf;
+  return DEFAULT_INDICATOR_KEYS[type] || type;
+}
+
+function typePrefix(type) {
+  return type === 'bollinger' ? 'boll' : type;
+}
+
+function uniqueIndicatorKey(base, ignoreIndex = -1) {
+  const clean = String(base || 'ind').replace(/[^a-zA-Z0-9_]/g, '') || 'ind';
+  if (!indicators.some((i, index) => index !== ignoreIndex && i.key === clean)) return clean;
+  let n = 2;
+  while (indicators.some((i, index) => index !== ignoreIndex && i.key === clean + n)) n++;
+  return clean + n;
+}
+
+function nextIndicatorTf(type) {
+  if (type === 'ob' || type === 'fvg') {
+    return ['12h','4h','1h'].find(tf => !indicators.some(i => i.type === type && i.tf === tf)) || '4h';
+  }
+  if (type === 'bollinger') return '4h';
+  return '';
+}
+
+function signalVarGroups() {
+  const groups = BASE_SIGNAL_VARS.map(g => [g[0], g[1].slice()]);
+  for (const ind of indicators.filter(i => i.enabled)) {
+    const key = ind.key;
+    if (!key) continue;
+    if (['ob','fvg'].includes(ind.type) && key !== ind.type) {
+      groups.push([ind.name + ' · ' + key, ZONE_FIELDS.map(f => key + '.' + f)]);
+    } else if (ind.type === 'bollinger' && key !== 'boll') {
+      groups.push([ind.name + ' · ' + key, BOLL_FIELDS.map(f => key + '.' + f)]);
+    } else if (ind.type === 'macd' && key !== 'macd') {
+      groups.push([ind.name + ' · ' + key, MACD_FIELDS.map(f => key + '.' + f)]);
+    }
+  }
+  return groups;
+}
+
+function signalVarsFlat() {
+  return signalVarGroups().reduce((a, g) => a.concat(g[1]), []);
+}
+
+function renderWizardShell() {
+  const steps = $('wizardSteps');
+  if (!steps) return;
+  steps.innerHTML = WIZARD_STEPS.map(s =>
+    '<button class="wizard-step ' + (wizardStep === s.step ? 'active' : '') + '" type="button" onclick="setWizardStep(' + s.step + ')">' +
+      '<span>Step ' + s.step + '</span><b>' + esc(s.title) + '</b>' +
+    '</button>'
+  ).join('');
+  document.querySelectorAll('.wizard-panel').forEach(panel => {
+    panel.classList.toggle('active', Number(panel.dataset.step) === wizardStep);
+  });
+  const prev = $('wizardPrev');
+  const next = $('wizardNext');
+  if (prev) prev.disabled = wizardStep <= 1;
+  if (next) {
+    next.textContent = wizardStep >= WIZARD_STEPS.length ? '백테스트 실행' : '다음';
+    next.onclick = wizardStep >= WIZARD_STEPS.length ? previewBacktest : () => setWizardStep(wizardStep + 1);
+  }
+}
+
+function setWizardStep(step) {
+  wizardStep = Math.max(1, Math.min(WIZARD_STEPS.length, Number(step) || 1));
+  renderWizardShell();
+}
+
+function renderPresetCards() {
+  const host = $('presetGrid');
+  if (!host) return;
+  host.innerHTML = STRATEGY_PRESETS.map(p =>
+    '<button class="preset-card ' + (activePreset === p.id ? 'active' : '') + '" type="button" onclick="applyPreset(\\'' + p.id + '\\')">' +
+      '<b>' + esc(p.name) + '</b><span>' + esc(p.desc) + '</span>' +
+    '</button>'
+  ).join('');
+}
+
+function applyPreset(id) {
+  const preset = STRATEGY_PRESETS.find(p => p.id === id) || STRATEGY_PRESETS[0];
+  activePreset = preset.id;
+  indicators.splice(0, indicators.length, ...preset.indicators.map((spec, index) => makeIndicator(spec, typeof spec === 'string' ? index < 4 : spec.enabled)));
+  conditions = cloneRows(preset.long);
+  shortConditions = cloneRows(preset.short);
+  exitRules = {
+    tp: preset.exit.tp.map(r => ({ ...r })),
+    slPnlPercent: preset.exit.slPnlPercent,
+  };
+  positionSizing = {
+    maxPositionValuePercent: preset.sizing.maxPositionValuePercent,
+    leverage: preset.sizing.leverage,
+    entries: preset.sizing.entries.map(r => ({ ...r })),
+  };
+  if ($('btExecTf')) $('btExecTf').value = preset.execTf || '';
+  if ($('btDays')) $('btDays').value = String(preset.days || 2);
+  if ($('longConfirmTrigger')) $('longConfirmTrigger').value = preset.longTrigger || '';
+  if ($('shortConfirmTrigger')) $('shortConfirmTrigger').value = preset.shortTrigger || '';
+  markBuilderEdited();
+  renderStrategyBuilder();
+}
+
+function cloneRows(rows) {
+  return rows.map(r => ({ ...r }));
 }
 
 function renderStrategyBuilder() {
+  renderWizardShell();
+  renderPresetCards();
   const active = indicators.filter(i => i.enabled).length;
   $('indicatorCount').textContent = active + ' / ' + indicators.length + ' active';
 
-  // 지표 추가 바: 카탈로그에 있고 아직 추가 안 된 타입만 노출.
-  const addable = Object.keys(INDICATOR_CATALOG).filter(t => !indicators.some(i => i.type === t));
+  // 지표 추가 바: 같은 타입도 여러 인스턴스로 추가할 수 있다.
+  const addable = Object.keys(INDICATOR_CATALOG);
   $('indicatorAddBar').innerHTML =
     '<select onchange="if(this.value){addIndicator(this.value); this.value=\\'\\';}"' +
       (addable.length ? '' : ' disabled') + '>' +
-      '<option value="">+ 보조지표 추가' + (addable.length ? '' : ' (모두 추가됨)') + '</option>' +
+      '<option value="">+ 보조지표 추가</option>' +
       addable.map(t => '<option value="' + t + '">' + esc(INDICATOR_CATALOG[t].name) + ' — ' + esc(INDICATOR_CATALOG[t].hint) + '</option>').join('') +
     '</select>';
 
@@ -1513,8 +2153,10 @@ function renderStrategyBuilder() {
       '<div class="ind-head">' +
         '<span class="ind-dot"></span>' +
         '<h3>' + esc(ind.name) + '</h3>' +
-        '<span class="ind-hint">' + indicatorHint(ind.id) + '</span>' +
+        '<span class="ind-hint">' + esc(ind.key) + ' · ' + indicatorHint(ind.type) + '</span>' +
+        (indicatorDesc(ind.type) ? '<span class="ind-help" data-tip="' + esc(indicatorDesc(ind.type)) + '">?</span>' : '') +
         '<span class="spacer"></span>' +
+        '<select class="ind-tf" title="이 지표 타임프레임 (MTF)" onchange="setIndicatorTf(' + index + ', this.value)">' + tfOptions(ind.tf) + '</select>' +
         '<label class="switch" title="' + esc(ind.name) + ' 사용"><input type="checkbox" ' + (ind.enabled ? 'checked' : '') + ' onchange="toggleIndicator(' + index + ')" /><span></span></label>' +
         '<button class="ind-remove" type="button" title="지표 제거" onclick="removeIndicator(' + index + ')">×</button>' +
       '</div>' +
@@ -1523,16 +2165,71 @@ function renderStrategyBuilder() {
     '</article>';
   }).join('');
 
-  $('conditionList').innerHTML = conditions.map((c, index) =>
+  const varsFlat = signalVarsFlat();
+  $('conditionList').innerHTML = conditionRowsHtml(conditions, 'long') +
+    '<datalist id="signalVars">' + varsFlat.map(v => '<option value="' + v + '"></option>').join('') + '</datalist>';
+  $('shortConditionList').innerHTML = conditionRowsHtml(shortConditions, 'short') ||
+    '<p class="muted" style="padding:4px 0;">숏 조건 없음 → 숏 진입 안 함. 위에서 말로 고르거나 "직접 추가".</p>';
+  if ($('longRecipe')) $('longRecipe').innerHTML = recipeOptions('long');
+  if ($('shortRecipe')) $('shortRecipe').innerHTML = recipeOptions('short');
+  renderExitRules();
+  renderSizingRules();
+  $('builderStatus').textContent = (conditions.length + shortConditions.length) + ' conditions';
+}
+
+// 조건 행 HTML. which='long'|'short' 으로 어느 목록인지 핸들러에 전달.
+function conditionRowsHtml(list, which) {
+  return list.map((c, index) =>
     '<div class="condition-row">' +
-      '<select onchange="setCondition(' + index + ', \\'join\\', this.value)"><option ' + selected(c.join, 'AND') + '>AND</option><option ' + selected(c.join, 'OR') + '>OR</option></select>' +
-      '<input value="' + esc(c.left) + '" oninput="setCondition(' + index + ', \\'left\\', this.value)" />' +
-      '<select onchange="setCondition(' + index + ', \\'op\\', this.value)">' + ['<=','>=','>','<','==','!='].map(op => '<option ' + selected(c.op, op) + '>' + op + '</option>').join('') + '</select>' +
-      '<input value="' + esc(c.right) + '" oninput="setCondition(' + index + ', \\'right\\', this.value)" />' +
-      '<button class="icon-btn" type="button" title="조건 삭제" onclick="removeCondition(' + index + ')">×</button>' +
+      '<div class="condition-field"><span>연결</span><select onchange="setCondition(\\'' + which + '\\', ' + index + ', \\'join\\', this.value)"><option ' + selected(c.join, 'AND') + '>AND</option><option ' + selected(c.join, 'OR') + '>OR</option></select></div>' +
+      '<div class="condition-field"><span>언제</span><select disabled><option>4시간봉 마감 시</option></select></div>' +
+      '<div class="condition-field"><span>무슨 지표로</span><select onchange="setCondition(\\'' + which + '\\', ' + index + ', \\'left\\', this.value)">' + varOptions(c.left) + '</select></div>' +
+      '<div class="condition-field"><span>지표의 무엇이 될 때</span><select onchange="setCondition(\\'' + which + '\\', ' + index + ', \\'op\\', this.value)">' + opOptions(c.op) + '</select></div>' +
+      '<div class="condition-field"><span>기준값 또는 지표</span><input list="signalVars" value="' + esc(c.right) + '" oninput="setCondition(\\'' + which + '\\', ' + index + ', \\'right\\', this.value)" placeholder="예: 35 또는 ema" /></div>' +
+      '<button class="icon-btn" type="button" title="조건 삭제" onclick="removeCondition(\\'' + which + '\\', ' + index + ')">×</button>' +
     '</div>'
   ).join('');
-  $('builderStatus').textContent = conditions.length + ' conditions';
+}
+
+// 청산 규칙 UI: TP/SL을 PnL(ROE) % 기준으로 설정한다.
+function renderExitRules() {
+  const host = $('exitRulesBody');
+  if (!host) return;
+  const tpRows = exitRules.tp.map((r, i) =>
+    '<div class="exit-row">' +
+      '<div class="exit-field"><span>언제 익절</span><b>익절 ' + (i + 1) + '</b></div>' +
+      '<div class="exit-field"><span>PNL/ROE가 +몇 %?</span><input type="number" step="0.1" min="0" value="' + exitPnlValue(r) + '" oninput="setExitTp(' + i + ', \\'pnlPercent\\', this.value)" placeholder="예: 5" /></div>' +
+      '<div class="exit-field"><span>그때 팔 수량 %</span><input type="number" step="1" min="0" max="100" value="' + r.sizePercent + '" oninput="setExitTp(' + i + ', \\'sizePercent\\', this.value)" placeholder="예: 30" /></div>' +
+      '<button class="icon-btn" type="button" title="TP 삭제" onclick="removeExitTp(' + i + ')">×</button>' +
+    '</div>'
+  ).join('');
+  host.innerHTML = tpRows +
+    '<div class="exit-row stop">' +
+      '<div class="exit-field"><span>언제 손절</span><b>손절</b></div>' +
+      '<div class="exit-field"><span>PNL/ROE가 -몇 %?</span><input type="number" step="0.1" min="0" value="' + exitRules.slPnlPercent + '" oninput="setExitSl(this.value)" placeholder="예: 4" /></div>' +
+      '<div class="exit-field"><span>그때 정리 수량</span><b>남은 수량 전부</b></div>' +
+    '</div>' +
+    '<p class="exit-note">PNL/ROE 기준입니다. 예를 들어 레버리지 2x에서 +6% 익절은 가격이 약 +3% 움직였을 때 실행됩니다. 숏은 방향이 자동으로 반대로 적용됩니다.</p>';
+}
+
+function exitPnlValue(rule) {
+  return rule.pnlPercent ?? 0;
+}
+
+function renderSizingRules() {
+  const host = $('sizingRulesBody');
+  if (!host) return;
+  $('maxPositionPercent').value = positionSizing.maxPositionValuePercent;
+  $('sizingLeverage').value = positionSizing.leverage;
+  $('btLev').value = positionSizing.leverage + 'x';
+  host.innerHTML = positionSizing.entries.map((r, i) =>
+    '<div class="sizing-row">' +
+      '<span class="muted">Step ' + r.step + '</span>' +
+      '<input type="number" step="1" min="0" max="100" value="' + r.sizePercent + '" oninput="setSizingStep(' + i + ', \\'sizePercent\\', this.value)" placeholder="진입 비중%" />' +
+      '<input type="number" step="0.1" min="0" value="' + (r.atrMult ?? '') + '" ' + (i === 0 ? 'disabled' : '') + ' oninput="setSizingStep(' + i + ', \\'atrMult\\', this.value)" placeholder="' + (i === 0 ? '첫 진입' : '추가 ATR배수') + '" />' +
+      '<button class="icon-btn" type="button" title="단계 삭제" onclick="removeSizingStep(' + i + ')" ' + (positionSizing.entries.length <= 1 ? 'disabled' : '') + '>×</button>' +
+    '</div>'
+  ).join('');
 }
 
 function indicatorHint(id) {
@@ -1540,10 +2237,16 @@ function indicatorHint(id) {
   return c ? c.hint : 'custom';
 }
 
+function indicatorDesc(id) {
+  const c = INDICATOR_CATALOG[id];
+  return c ? c.desc : '';
+}
+
 function addIndicator(type) {
   if (!INDICATOR_CATALOG[type]) return;
-  if (indicators.some(i => i.type === type)) return; // 중복 방지
-  indicators.push(makeIndicator(type, true));
+  const tf = MULTI_INSTANCE_TYPES.has(type) ? nextIndicatorTf(type) : '';
+  const key = uniqueIndicatorKey(defaultIndicatorKey(type, tf));
+  indicators.push(makeIndicator({ type, key, tf, enabled:true }));
   renderStrategyBuilder();
 }
 
@@ -1554,6 +2257,63 @@ function removeIndicator(index) {
 
 function selected(a, b) {
   return a === b ? 'selected' : '';
+}
+
+function opOptions(current) {
+  const labels = {
+    '<=':'이하가 될 때',
+    '>=':'이상이 될 때',
+    '>':'초과할 때',
+    '<':'미만일 때',
+    '==':'같아질 때',
+    '!=':'다를 때',
+  };
+  return ['<=','>=','>','<','==','!=']
+    .map(op => '<option value="' + op + '" ' + selected(current, op) + '>' + labels[op] + '</option>')
+    .join('');
+}
+
+// left 드롭다운 옵션. 그룹별 optgroup, 목록에 없는 기존값은 살려서 첫 옵션으로.
+function varOptions(current) {
+  const groups = signalVarGroups();
+  const flat = groups.reduce((a, g) => a.concat(g[1]), []);
+  const extra = flat.indexOf(current) === -1
+    ? '<option selected>' + esc(current) + '</option>'
+    : '';
+  return extra + groups.map(g =>
+    '<optgroup label="' + g[0] + '">' +
+    g[1].map(v => '<option value="' + esc(v) + '" ' + selected(current, v) + '>' + esc(signalVarLabel(v)) + '</option>').join('') +
+    '</optgroup>'
+  ).join('');
+}
+
+function signalVarLabel(v) {
+  const match = String(v).match(/^([a-zA-Z_][a-zA-Z0-9_]*)\\.(.+)$/);
+  if (match && !SIGNAL_VAR_LABELS[v]) {
+    const ind = indicators.find(i => i.key === match[1]);
+    if (ind) return ind.name + ' ' + match[1] + '.' + match[2] + ' (' + v + ')';
+  }
+  return (SIGNAL_VAR_LABELS[v] || v) + ' (' + v + ')';
+}
+
+// 지표 타임프레임 옵션. 빈값 = 신호봉(config.timeframe) 사용.
+function tfOptions(current) {
+  return ['', '1m', '3m', '5m', '15m', '1h', '4h', '12h', '1d', '1w']
+    .map(tf => '<option value="' + tf + '"' + selected(current, tf) + '>' + (tf || '신호봉') + '</option>')
+    .join('');
+}
+
+function setIndicatorTf(index, value) {
+  const ind = indicators[index];
+  const previousAutoKey = defaultIndicatorKey(ind.type, ind.tf);
+  indicators[index].tf = value;
+  if (MULTI_INSTANCE_TYPES.has(ind.type) && (!ind.key || ind.key === previousAutoKey)) {
+    ind.key = uniqueIndicatorKey(defaultIndicatorKey(ind.type, value), index);
+    ind.id = ind.key;
+  }
+  $('builderStatus').className = 'status warn';
+  $('builderStatus').textContent = 'edited';
+  renderStrategyBuilder();
 }
 
 function toggleIndicator(index) {
@@ -1572,25 +2332,174 @@ function setIndicatorParam(index, paramIndex, value, el) {
   if (sum) sum.textContent = indicatorSummary(indicators[index]);
 }
 
-function setCondition(index, key, value) {
-  conditions[index][key] = value;
+function condListOf(which) { return which === 'short' ? shortConditions : conditions; }
+
+// 비전공자용 "말로 고르는" 조건 레시피. 문장 → 기술적 규칙(left/op/right)으로 자동 변환.
+// 표준 변수만 사용(단일TF에서 항상 계산됨). side: 어느 방향 목록에 보일지.
+const CONDITION_RECIPES = [
+  { label:'📉 가격이 과하게 떨어졌을 때 (과매도·반등 노림)', side:'long',  cond:{ left:'rsi', op:'<=', right:'30' } },
+  { label:'📈 가격이 과하게 올랐을 때 (과매수·하락 노림)',  side:'short', cond:{ left:'rsi', op:'>=', right:'70' } },
+  { label:'🟢 상승 추세일 때 (장기평균선 위)',              side:'long',  cond:{ left:'close', op:'>', right:'ema' } },
+  { label:'🔴 하락 추세일 때 (장기평균선 아래)',            side:'short', cond:{ left:'close', op:'<', right:'ema' } },
+  { label:'🔊 거래량이 평소보다 많을 때 (관심 급증)',       side:'both',  cond:{ left:'volume', op:'>', right:'volMa * 1.5' } },
+  { label:'⚡ 상승 힘이 살아날 때 (MACD 개선)',             side:'long',  cond:{ left:'macd.histogram', op:'>', right:'macd.histogram.previous' } },
+  { label:'⚡ 하락 힘이 살아날 때 (MACD 악화)',             side:'short', cond:{ left:'macd.histogram', op:'<', right:'macd.histogram.previous' } },
+  { label:'⬇️ 변동성 밴드 하단을 찍을 때 (싸진 신호)',      side:'long',  cond:{ left:'close', op:'<=', right:'boll.lower' } },
+  { label:'⬆️ 변동성 밴드 상단을 찍을 때 (비싸진 신호)',    side:'short', cond:{ left:'close', op:'>=', right:'boll.upper' } },
+  { label:'🟩 강세 주문블록(세력 매수) 구역에 있을 때',     side:'long',  cond:{ left:'ob.activeBullish', op:'==', right:'1' } },
+  { label:'🟥 약세 주문블록(세력 매도) 구역에 있을 때',     side:'short', cond:{ left:'ob.activeBearish', op:'==', right:'1' } },
+  { label:'🟦 강세 FVG(가격 공백) 구역에 있을 때',          side:'long',  cond:{ left:'fvg.activeBullish', op:'==', right:'1' } },
+  { label:'🟧 약세 FVG(가격 공백) 구역에 있을 때',          side:'short', cond:{ left:'fvg.activeBearish', op:'==', right:'1' } },
+];
+
+// which 방향에 맞는 레시피만 옵션으로. (both는 양쪽 다 표시)
+function recipeOptions(which) {
+  const opts = CONDITION_RECIPES
+    .map((r, i) => ({ r, i }))
+    .filter(({ r }) => r.side === 'both' || r.side === which)
+    .map(({ r, i }) => '<option value="' + i + '">' + esc(r.label) + '</option>')
+    .join('');
+  return '<option value="">＋ 말로 조건 고르기 (쉬운 추가)</option>' + opts;
+}
+
+function addRecipe(which, idxStr) {
+  if (idxStr === '') return;
+  const r = CONDITION_RECIPES[Number(idxStr)];
+  if (!r) return;
+  condListOf(which).push({ join:'AND', left:r.cond.left, op:r.cond.op, right:r.cond.right });
+  $('builderStatus').className = 'status warn';
+  $('builderStatus').textContent = 'edited';
+  renderStrategyBuilder();
+}
+
+// 지표(left)별 기본 연산자+기준값. left 선택 시 right를 알아서 채운다.
+const COND_DEFAULTS = {
+  close:        { op:'>',  right:'ema' },
+  previousClose:{ op:'>',  right:'ema' },
+  high:         { op:'>',  right:'ema' },
+  low:          { op:'<',  right:'ema' },
+  price:        { op:'>',  right:'ema' },
+  avgEntry:     { op:'>',  right:'ema' },
+  volume:       { op:'>',  right:'volMa * 1.5' },
+  volMa:        { op:'>',  right:'0' },
+  rsi:          { op:'<=', right:'35' },
+  ema:          { op:'<',  right:'close' },
+  atr:          { op:'>',  right:'0' },
+  'macd.histogram':          { op:'>', right:'macd.histogram.previous' },
+  'macd.histogram.previous': { op:'<', right:'macd.histogram' },
+  'boll.upper': { op:'<', right:'close' },
+  'boll.lower': { op:'>', right:'close' },
+  'boll.mid':   { op:'>', right:'close' },
+  'boll.percentB': { op:'<=', right:'0' },
+};
+
+// 맵에 없으면 SMC(FVG/OB) 계열은 이름 패턴으로 추정.
+function defaultCondFor(left) {
+  if (COND_DEFAULTS[left]) return COND_DEFAULTS[left];
+  if (/(bullish|bearish|confluence|direction)$/i.test(left)) return { op:'==', right:'1' };
+  if (/(low|high|mid)$/i.test(left)) return { op:'<', right:'close' };
+  if (/size$/i.test(left)) return { op:'>', right:'0' };
+  return { op:'>', right:'0' };
+}
+
+function setCondition(which, index, key, value) {
+  const c = condListOf(which)[index];
+  c[key] = value;
+  // 지표가 바뀌면 연산자+기준값을 그 지표 디폴트로 채우고 다시 그린다.
+  if (key === 'left') {
+    const d = defaultCondFor(value);
+    c.op = d.op;
+    c.right = d.right;
+    renderStrategyBuilder();
+  }
   $('builderStatus').className = 'status warn';
   $('builderStatus').textContent = 'edited';
 }
 
-function addCondition() {
-  conditions.push({ join:'AND', left:'volume', op:'>', right:'volume.sma20 * 1.5' });
+function addCondition(which) {
+  const c = which === 'short'
+    ? { join:'AND', left:'rsi', op:'>=', right:'65' }
+    : { join:'AND', left:'volume', op:'>', right:'volMa * 1.5' };
+  condListOf(which).push(c);
   renderStrategyBuilder();
 }
 
-function removeCondition(index) {
-  conditions.splice(index, 1);
+function removeCondition(which, index) {
+  condListOf(which).splice(index, 1);
   renderStrategyBuilder();
+}
+
+function setExitTp(i, key, value) {
+  exitRules.tp[i][key] = Number(value);
+  $('builderStatus').className = 'status warn';
+  $('builderStatus').textContent = 'edited';
+}
+function removeExitTp(i) {
+  exitRules.tp.splice(i, 1);
+  renderStrategyBuilder();
+}
+function addExitTp() {
+  exitRules.tp.push({ pnlPercent:5, sizePercent:0 });
+  renderStrategyBuilder();
+}
+function setExitSl(value) {
+  exitRules.slPnlPercent = Number(value);
+  $('builderStatus').className = 'status warn';
+  $('builderStatus').textContent = 'edited';
+}
+
+function setMaxPositionPercent(value) {
+  const n = Number(value);
+  positionSizing.maxPositionValuePercent = Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 25;
+  markBuilderEdited();
+}
+
+function setSizingLeverage(value) {
+  const n = Number(String(value).replace(/[^0-9.]/g, ''));
+  positionSizing.leverage = Number.isFinite(n) && n > 0 ? n : 1;
+  $('btLev').value = positionSizing.leverage + 'x';
+  $('sizingLeverage').value = positionSizing.leverage;
+  markBuilderEdited();
+}
+
+function setSizingStep(i, key, value) {
+  const n = Number(value);
+  if (!positionSizing.entries[i]) return;
+  positionSizing.entries[i][key] = Number.isFinite(n) ? n : 0;
+  markBuilderEdited();
+}
+
+function addSizingStep() {
+  const next = positionSizing.entries.length + 1;
+  positionSizing.entries.push({ step:next, sizePercent:25, atrMult:1.5 });
+  normalizeSizingSteps();
+  renderStrategyBuilder();
+}
+
+function removeSizingStep(i) {
+  if (positionSizing.entries.length <= 1) return;
+  positionSizing.entries.splice(i, 1);
+  normalizeSizingSteps();
+  renderStrategyBuilder();
+}
+
+function normalizeSizingSteps() {
+  positionSizing.entries = positionSizing.entries.map((r, i) => {
+    const next = { ...r, step:i + 1, sizePercent:Number(r.sizePercent) || 0 };
+    if (i === 0) delete next.atrMult;
+    else next.atrMult = Number(next.atrMult) || 0;
+    return next;
+  });
+}
+
+function markBuilderEdited() {
+  $('builderStatus').className = 'status warn';
+  $('builderStatus').textContent = 'edited';
 }
 
 function generateStrategyDsl() {
   const lines = conditions.map((c, index) => (index === 0 ? 'IF ' : c.join + ' ') + c.left + ' ' + c.op + ' ' + c.right);
-  $('strategyText').value = lines.join('\\n') + '\\nTHEN long_score += 70\\n\\nEXIT:\\ntake_profit when close >= avgEntry + atr14 * 1.8\\nstop_loss when close <= avgEntry - atr14 * 1.1\\n\\nRISK:\\nstop new entries when dailyLoss <= -2%';
+  $('strategyText').value = lines.join('\\n') + '\\nTHEN long_score += 70\\n\\nEXIT:\\ntake_profit when close >= avgEntry + atr * 1.8\\nstop_loss when close <= avgEntry - atr * 1.1\\n\\nRISK:\\nstop new entries when dailyLoss <= -2%';
   $('builderStatus').className = 'status ok';
   $('builderStatus').textContent = 'synced';
 }
@@ -1650,49 +2559,235 @@ function metricsFromResult(result) {
   };
 }
 
+function renderBacktestSummary(metrics) {
+  const returnOk = metrics.returnPct > 35;
+  const mddOk = metrics.mdd > -20;
+  const pfOk = metrics.pf >= 1.2;
+  const passed = returnOk && mddOk && pfOk;
+  const box = $('btSummaryBox');
+  if (!box) return;
+  box.className = 'bt-summary ' + (passed ? 'ok' : 'warn');
+  $('btSummaryStatus').className = 'status ' + (passed ? 'ok' : 'warn');
+  $('btSummaryStatus').textContent = passed ? '통과' : '개선 필요';
+  $('btSummaryTitle').textContent = passed ? 'Testnet 적용 가능' : '아직 개선이 필요합니다';
+  $('btSummaryCopy').textContent = passed
+    ? '수익률, MDD, Profit Factor 기준을 통과했습니다. 차트에서 진입/청산 위치를 확인한 뒤 적용 단계로 이동하세요.'
+    : nextBacktestAdvice(metrics, { returnOk, mddOk, pfOk });
+  $('btCriteria').innerHTML =
+    criteriaHtml('수익률', (metrics.returnPct > 0 ? '+' : '') + metrics.returnPct.toFixed(1) + '%', returnOk, '> 35%') +
+    criteriaHtml('MDD', metrics.mdd.toFixed(1) + '%', mddOk, '> -20%') +
+    criteriaHtml('PF', Number.isFinite(metrics.pf) ? metrics.pf.toFixed(2) : '∞', pfOk, '>= 1.2') +
+    criteriaHtml('거래 수', String(metrics.trades), metrics.trades > 0, '1회 이상');
+}
+
+function criteriaHtml(label, value, ok, target) {
+  return '<div class="criteria ' + (ok ? 'ok' : 'warn') + '">' +
+    '<span>' + esc(label) + ' · ' + esc(target) + '</span><b>' + esc(value) + '</b></div>';
+}
+
+function nextBacktestAdvice(metrics, checks) {
+  if (!metrics.trades) return '거래가 없습니다. 진입 조건을 완화하거나 백테스트 기간을 늘려 먼저 거래가 발생하는지 확인하세요.';
+  if (!checks.returnOk) return '수익률 기준을 넘지 못했습니다. 프리셋을 바꾸거나 진입 조건과 TP 거리를 조정해 보세요.';
+  if (!checks.mddOk) return '최대 낙폭이 큽니다. 최대 포지션 비중, 레버리지, 추가 진입 단계를 낮춰 리스크를 줄여보세요.';
+  if (!checks.pfOk) return 'Profit Factor가 낮습니다. 손절 거리를 줄이거나 익절 비중과 진입 조건을 다시 점검해 보세요.';
+  return '핵심 기준 일부가 부족합니다. 아래 차트에서 손실 구간을 먼저 확인하세요.';
+}
+
 async function runParameterSearch() {
-  const rsi = $('searchRsi').value.split(',').map(v => v.trim()).filter(Boolean);
-  const ema = $('searchEma').value.split(',').map(v => v.trim()).filter(Boolean);
-  const atr = $('searchAtr').value.split(',').map(v => v.trim()).filter(Boolean);
+  const profile = ($('searchProfile') && $('searchProfile').value) || 'balanced';
+  const rr = Math.max(1, Number(($('searchRr') && $('searchRr').value) || 1.5));
+  const maxCombos = Math.max(4, Math.min(48, Number(($('searchMaxCombos') && $('searchMaxCombos').value) || 18)));
+  const combos = buildIndicatorSearchCombos(maxCombos);
   const rows = [];
-  const combos = [];
-  for (const rv of rsi) for (const ev of ema) for (const av of atr) {
-    combos.push({ rv:Number(rv), ev:Number(ev), av:Number(av) });
+  if (!combos.length) {
+    $('searchResults').innerHTML = '<div class="empty">탐색할 활성 보조지표가 부족합니다. 지표 세부 설정에서 최소 2개 이상 켜주세요.</div>';
+    return;
   }
-  $('searchResults').innerHTML = '<div class="empty">실제 백테스트 엔진으로 파라미터 조합을 탐색 중입니다.</div>';
-  for (const combo of combos.slice(0, 8)) {
+  $('searchResults').innerHTML = '<div class="empty">현재 활성 보조지표 조합으로 후보 전략을 백테스트 중입니다.</div>';
+  for (const combo of combos) {
     try {
+      const config = buildSearchConfig(combo, rr);
       const response = await fetch('/api/backtest', {
         method:'POST',
         headers:{ 'content-type':'application/json' },
         body:JSON.stringify({
-          config:buildStrategyConfig({ rsiPeriod:combo.rv, emaPeriod:combo.ev, atrStop:combo.av }),
+          config,
           years:parseBacktestYears(),
+          days:parseSearchBacktestDays(),
           startEquity:parseCapital(),
         }),
       });
       const body = await response.json();
       if (!response.ok || !body.ok) throw new Error(body.error || '백테스트 실패');
       const m = metricsFromResult(body.result);
-      rows.push({ combo:'RSI ' + combo.rv + ' · EMA ' + combo.ev + ' · ATR ' + combo.av + 'x', ret:m.returnPct, mdd:m.mdd, pf:m.pf });
+      rows.push({ combo:combo.name, ret:m.returnPct, win:m.winRate, mdd:m.mdd, pf:m.pf, trades:m.trades, config });
     } catch (err) {
-      rows.push({ combo:'RSI ' + combo.rv + ' · EMA ' + combo.ev + ' · ATR ' + combo.av + 'x', error:err instanceof Error ? err.message : String(err) });
+      rows.push({ combo:combo.name, error:err instanceof Error ? err.message : String(err) });
     }
   }
-  rows.sort((a, b) => (b.ret ?? -Infinity) - (a.ret ?? -Infinity));
+  rows.sort((a, b) => searchRank(b, profile) - searchRank(a, profile));
   $('searchResults').innerHTML = rows.map((r, index) => {
     const summary = r.error
       ? '실패 · ' + esc(r.error)
-      : '수익률 ' + (r.ret > 0 ? '+' : '') + r.ret.toFixed(1) + '% · MDD ' + r.mdd.toFixed(1) + '% · PF ' + (Number.isFinite(r.pf) ? r.pf.toFixed(2) : '∞');
-    return '<div class="mini-item"><div><b>#' + (index + 1) + ' ' + esc(r.combo) + '</b><br /><span>' + summary + '</span></div>' +
-      '<button class="btn ghost" type="button" onclick="useSearchResult(\\'' + esc(r.combo) + '\\')">적용</button></div>';
+      : '수익률 ' + (r.ret > 0 ? '+' : '') + r.ret.toFixed(1) + '% · 승률 ' + r.win.toFixed(1) + '% · MDD ' + r.mdd.toFixed(1) + '% · PF ' + (Number.isFinite(r.pf) ? r.pf.toFixed(2) : '∞') + ' · 거래 ' + r.trades;
+    return '<div class="mini-item"><div><b>#' + (index + 1) + ' ' + esc(r.combo) + '</b><br /><span>' + summary + '</span></div></div>';
   }).join('');
 }
 
-function useSearchResult(combo) {
-  $('builderStatus').className = 'status ok';
-  $('builderStatus').textContent = 'optimized';
-  alert(combo + ' 조합을 현재 전략 후보에 반영했습니다.');
+function buildIndicatorSearchCombos(limit) {
+  const zone = buildZoneSearchTemplate();
+  const timing = indicators
+    .filter(i => i.enabled)
+    .map(indicatorSearchTemplate)
+    .filter(Boolean)
+    .filter(t => !t.zone && (t.long || t.short));
+  const out = [];
+  const add = (name, longParts, shortParts) => {
+    const long = leftExpr(longParts.filter(Boolean));
+    const short = leftExpr(shortParts.filter(Boolean));
+    if (!long && !short) return;
+    const key = name + '|' + long + '|' + short;
+    if (out.some(x => x.key === key)) return;
+    out.push({ key, name, long, short });
+  };
+
+  if (zone) {
+    for (const threshold of [1, 2, 3]) {
+      add(zone.label + ' >= ' + threshold, [zone.longScore + ' >= ' + threshold], [zone.shortScore + ' >= ' + threshold]);
+      for (let size = 1; size <= Math.min(2, timing.length); size++) {
+        for (const group of combinations(timing, size)) {
+          add(
+            zone.label + '>=' + threshold + ' + ' + group.map(t => t.label).join(' + '),
+            [zone.longScore + ' >= ' + threshold, ...group.map(t => t.long)],
+            [zone.shortScore + ' >= ' + threshold, ...group.map(t => t.short)],
+          );
+          if (out.length >= limit) return out;
+        }
+      }
+    }
+    return out.slice(0, limit);
+  }
+
+  for (let size = 1; size <= Math.min(3, timing.length); size++) {
+    for (const group of combinations(timing, size)) {
+      add(group.map(t => t.label).join(' + '), group.map(t => t.long), group.map(t => t.short));
+      if (out.length >= limit) return out;
+    }
+  }
+  return out.slice(0, limit);
+}
+
+function indicatorSearchTemplate(ind) {
+  const key = searchVariableKey(ind);
+  const label = key || ind.type;
+  if (ind.type === 'ob' || ind.type === 'fvg') {
+    return { label, zone:true };
+  }
+  if (ind.type === 'rsi') {
+    return { label, long:key + ' > 30', short:key + ' < 70' };
+  }
+  if (ind.type === 'volume') {
+    return { label, long:'volume > ' + key + ' * 1.2', short:'volume > ' + key + ' * 1.2' };
+  }
+  if (ind.type === 'macd') {
+    return { label, long:key + '.histogram > ' + key + '.histogram.previous', short:key + '.histogram < ' + key + '.histogram.previous' };
+  }
+  if (ind.type === 'ema' || ind.type === 'sma') {
+    return { label, long:'close > ' + key, short:'close < ' + key };
+  }
+  if (ind.type === 'bollinger') {
+    return { label, long:'close <= ' + key + '.lower', short:'close >= ' + key + '.upper' };
+  }
+  return null;
+}
+
+function buildZoneSearchTemplate() {
+  const zoneIndicators = indicators.filter(i => i.enabled && (i.type === 'ob' || i.type === 'fvg'));
+  if (!zoneIndicators.length) return null;
+  const longTerms = [];
+  const shortTerms = [];
+  for (const ind of zoneIndicators) {
+    const key = searchVariableKey(ind);
+    const weight = zoneWeight(ind);
+    longTerms.push(key + '.activeBullish * ' + weight);
+    shortTerms.push(key + '.activeBearish * ' + weight);
+  }
+  return {
+    label:'상위 OB/FVG 구역',
+    longScore:longTerms.join(' + '),
+    shortScore:shortTerms.join(' + '),
+  };
+}
+
+function zoneWeight(ind) {
+  if (ind.tf === '12h' || ind.tf === '1d' || ind.tf === '1w') return 3;
+  if (ind.tf === '4h') return 2;
+  return 1;
+}
+
+function searchUsesMtf() {
+  return Boolean(($('btExecTf') && $('btExecTf').value) || indicators.some(i => i.enabled && i.tf));
+}
+
+function searchVariableKey(ind) {
+  if (searchUsesMtf()) return ind.key;
+  if (ind.type === 'rsi') return 'rsi';
+  if (ind.type === 'ema') return 'ema';
+  if (ind.type === 'atr') return 'atr';
+  if (ind.type === 'volume') return 'volMa';
+  if (ind.type === 'macd') return 'macd';
+  if (ind.type === 'bollinger') return 'boll';
+  if (ind.type === 'ob') return 'ob';
+  if (ind.type === 'fvg') return 'fvg';
+  return ind.key;
+}
+
+function leftExpr(parts) {
+  return parts.map(p => '(' + p + ')').join(' AND ');
+}
+
+function combinations(items, size) {
+  const out = [];
+  const walk = (start, pick) => {
+    if (pick.length === size) { out.push(pick.slice()); return; }
+    for (let i = start; i < items.length; i++) {
+      pick.push(items[i]);
+      walk(i + 1, pick);
+      pick.pop();
+    }
+  };
+  walk(0, []);
+  return out;
+}
+
+function buildSearchConfig(combo, rr) {
+  const config = buildStrategyConfig();
+  const sl = Number(config.exit.stopLoss?.pct ?? 0.6);
+  config.name = 'Auto search · ' + combo.name;
+  if (!config.executionTimeframe && searchUsesMtf()) config.executionTimeframe = '5m';
+  config.entry.long = {
+    enabled:Boolean(combo.long),
+    minimumScore:0,
+    hardFilters:combo.long ? [{ left:combo.long, operator:'==', right:1, description:'자동 지표 조합 롱' }] : [],
+    scoreRules:[],
+  };
+  config.entry.short = {
+    enabled:Boolean(combo.short),
+    minimumScore:0,
+    hardFilters:combo.short ? [{ left:combo.short, operator:'==', right:1, description:'자동 지표 조합 숏' }] : [],
+    scoreRules:[],
+  };
+  config.exit.stopLoss = { sizePercent:100, pct:sl };
+  config.exit.takeProfit = [{ sizePercent:100, pct:Math.round(sl * rr * 100) / 100 }];
+  return config;
+}
+
+function searchRank(r, profile) {
+  if (r.error) return -Infinity;
+  const pf = Number.isFinite(r.pf) ? r.pf : 3;
+  if (profile === 'highWin') return r.win * 2 + pf * 20 + r.ret - Math.abs(r.mdd) * 1.5 + Math.min(r.trades, 100) * 0.1;
+  if (profile === 'highReturn') return r.ret * 2 + pf * 25 - Math.abs(r.mdd) + Math.min(r.trades, 100) * 0.05;
+  return r.ret + r.win + pf * 20 - Math.abs(r.mdd) + Math.min(r.trades, 100) * 0.08;
 }
 
 function renderPosition(position) {
@@ -1735,22 +2830,21 @@ function setEditorMode(mode) {
   $('scriptTab').className = 'tab ' + (mode === 'script' ? 'active' : '');
   $('mathTab').className = 'tab ' + (mode === 'math' ? 'active' : '');
   $('strategyText').value = mode === 'script'
-    ? 'IF rsi14 <= 35\\nAND close > ema200\\nAND macd.histogram > macd.histogram.previous\\nTHEN long_score += 70\\n\\nSCALE IN:\\nstep2 when price <= avgEntry - atr14 * 0.7\\nstep3 when price <= avgEntry - atr14 * 1.2\\n\\nRISK:\\nstop new entries when dailyLoss <= -2%'
+    ? 'IF rsi <= 35\\nAND close > ema\\nAND macd.histogram > macd.histogram.previous\\nTHEN long_score += 70\\n\\nSCALE IN:\\nstep2 when price <= avgEntry - atr * 0.7\\nstep3 when price <= avgEntry - atr * 1.2\\n\\nRISK:\\nstop new entries when dailyLoss <= -2%'
     : '아이디어:\\n평균 회귀는 EMA200 위에서만 허용한다.\\nRSI가 35 이하일 때 과매도 가능성을 보고, MACD 히스토그램이 이전 봉보다 개선될 때 하락 둔화를 확인한다.\\n\\n리스크:\\n손실 제한은 전략 점수보다 우선한다.\\n청산가 거리 5% 미만이면 신규 진입을 금지한다.';
 }
 
 function buildStrategyConfig(overrides = {}) {
   const symbol = $('btSymbol').value.trim().toUpperCase() || 'BTCUSDT';
-  const rsi = getIndicator('rsi');
-  const ema = getIndicator('ema');
-  const macd = getIndicator('macd');
-  const atr = getIndicator('atr');
-  const volume = getIndicator('volume');
-  const stopMultiplier = Number(overrides.atrStop ?? getParam(atr, 'stop x', 1.1));
-  const expression = conditionExpression();
-  const hardFilters = expression
-    ? [{ left: expression, operator: '==', right: 1, description: '조건 조합기 전체 통과' }]
+  const longExpr = conditionExpression(conditions);
+  const shortExpr = conditionExpression(shortConditions);
+  const filtersFrom = (expr) => expr
+    ? [{ left: expr, operator: '==', right: 1, description: '조건 조합기 전체 통과' }]
     : [];
+  const execTf = ($('btExecTf') && $('btExecTf').value) || '';
+  const longTrigger = ($('longConfirmTrigger') && $('longConfirmTrigger').value.trim()) || '';
+  const shortTrigger = ($('shortConfirmTrigger') && $('shortConfirmTrigger').value.trim()) || '';
+  const indicatorConfig = buildIndicatorConfig(overrides);
 
   return {
     strategyId:'lab_strategy_' + Date.now(),
@@ -1758,42 +2852,36 @@ function buildStrategyConfig(overrides = {}) {
     symbol,
     market:'BINANCE_USDM_FUTURES',
     timeframe:'4h',
+    ...(execTf ? { executionTimeframe: execTf } : {}),
     mode:'backtest',
-    indicators:{
-      rsi14:{ type:'RSI', period:Number(overrides.rsiPeriod ?? getParam(rsi, 'period', 14)) },
-      macd:{ type:'MACD', fast:Number(getParam(macd, 'fast', 12)), slow:Number(getParam(macd, 'slow', 26)), signal:Number(getParam(macd, 'signal', 9)) },
-      atr14:{ type:'ATR', period:Number(getParam(atr, 'period', 14)) },
-      ema200:{ type:'EMA', period:Number(overrides.emaPeriod ?? getParam(ema, 'period', 200)) },
-      volumeMA20:{ type:'SMA', source:'volume', period:Number(getParam(volume, 'sma', 20)) },
-      ...(getIndicator('fvg') ? { fvg:{ type:'FVG' } } : {}),
-      ...(getIndicator('ob') ? { ob:{ type:'OB', minBodyRatio:Number(getParam(getIndicator('ob'), 'body ratio', 0)) } } : {}),
-    },
+    indicators:indicatorConfig,
     entry:{
       long:{
         enabled:true,
         minimumScore:0,
-        hardFilters,
+        hardFilters:filtersFrom(longExpr),
         scoreRules:[],
+        ...(longTrigger ? { confirmTrigger: longTrigger } : {}),
+      },
+      short:{
+        enabled:shortConditions.length > 0,
+        minimumScore:0,
+        hardFilters:filtersFrom(shortExpr),
+        scoreRules:[],
+        ...(shortTrigger ? { confirmTrigger: shortTrigger } : {}),
       },
     },
     positionSizing:{
       type:'atr_based',
-      maxPositionValuePercent:25,
+      maxPositionValuePercent:Number(positionSizing.maxPositionValuePercent),
       leverage:parseLeverage(),
-      entries:[
-        { step:1, sizePercent:25, trigger:'initial_signal' },
-        { step:2, sizePercent:25, trigger:'price <= avgEntry - atr14 * 0.7' },
-        { step:3, sizePercent:25, trigger:'price <= avgEntry - atr14 * 1.2' },
-        { step:4, sizePercent:25, trigger:'price <= avgEntry - atr14 * 2.0' },
-      ],
+      entries:positionSizing.entries.map((r, i) => i === 0
+        ? { step:i + 1, sizePercent:Number(r.sizePercent) }
+        : { step:i + 1, sizePercent:Number(r.sizePercent), atrMult:Number(r.atrMult) }),
     },
     exit:{
-      takeProfit:[
-        { sizePercent:30, trigger:'price >= avgEntry + atr14 * 0.7' },
-        { sizePercent:30, trigger:'price >= avgEntry + atr14 * 1.2' },
-        { sizePercent:40, trigger:'price >= avgEntry + atr14 * 1.8' },
-      ],
-      stopLoss:{ sizePercent:100, trigger:'price <= avgEntry - atr14 * ' + stopMultiplier },
+      takeProfit:exitRules.tp.map(r => ({ sizePercent:Number(r.sizePercent), pnlPercent:Number(r.pnlPercent) })),
+      stopLoss:{ sizePercent:100, pnlPercent:Number(exitRules.slPnlPercent) },
       trailingStop:{ enabled:false, sizePercent:0, atrMultiplier:1.5 },
     },
     risk:{
@@ -1807,8 +2895,8 @@ function buildStrategyConfig(overrides = {}) {
   };
 }
 
-function conditionExpression() {
-  return conditions
+function conditionExpression(list) {
+  return list
     .filter(c => c.left.trim() && c.op.trim() && String(c.right).trim())
     .map((c, index) => {
       const expr = c.left.trim() + ' ' + c.op + ' ' + String(c.right).trim();
@@ -1818,12 +2906,35 @@ function conditionExpression() {
 }
 
 function getIndicator(id) {
-  return indicators.find(i => i.id === id);
+  return indicators.find(i => i.id === id || i.key === id || i.type === id);
 }
 
 function getParam(indicator, name, fallback) {
   const row = indicator?.params.find(p => p[0] === name);
   return row ? row[1] : fallback;
+}
+
+function buildIndicatorConfig(overrides = {}) {
+  const out = {};
+  for (const ind of indicators) {
+    if (!ind.enabled) continue;
+    out[ind.key] = indicatorConfigSpec(ind, overrides);
+  }
+  return out;
+}
+
+function indicatorConfigSpec(ind, overrides = {}) {
+  const tf = ind.tf ? { timeframe:ind.tf } : {};
+  if (ind.type === 'rsi') return { type:'RSI', period:Number(overrides.rsiPeriod ?? getParam(ind, 'period', 14)), ...tf };
+  if (ind.type === 'ema') return { type:'EMA', period:Number(overrides.emaPeriod ?? getParam(ind, 'period', 200)), ...tf };
+  if (ind.type === 'sma') return { type:'SMA', period:Number(getParam(ind, 'period', 50)), ...tf };
+  if (ind.type === 'macd') return { type:'MACD', fast:Number(getParam(ind, 'fast', 12)), slow:Number(getParam(ind, 'slow', 26)), signal:Number(getParam(ind, 'signal', 9)), ...tf };
+  if (ind.type === 'atr') return { type:'ATR', period:Number(getParam(ind, 'period', 14)), ...tf };
+  if (ind.type === 'volume') return { type:'SMA', source:'volume', period:Number(getParam(ind, 'sma', 20)), ...tf };
+  if (ind.type === 'bollinger') return { type:'BOLL', period:Number(getParam(ind, 'period', 20)), std:Number(getParam(ind, 'std', 2)), ...tf };
+  if (ind.type === 'fvg') return { type:'FVG', ...tf };
+  if (ind.type === 'ob') return { type:'OB', minBodyRatio:Number(getParam(ind, 'body ratio', 0)), ...tf };
+  return { type:String(ind.type).toUpperCase(), ...tf };
 }
 
 function parseLeverage() {
@@ -1834,6 +2945,15 @@ function parseLeverage() {
 function parseCapital() {
   const n = Number(String($('btCapital').value).replace(/[^0-9.]/g, ''));
   return Number.isFinite(n) && n > 0 ? n : 10000;
+}
+
+function parseBacktestDays() {
+  const n = Number(String(($('btDays') && $('btDays').value) || '').replace(/[^0-9.]/g, ''));
+  return Number.isFinite(n) && n > 0 ? Math.min(14, n) : 2;
+}
+
+function parseSearchBacktestDays() {
+  return searchUsesMtf() ? 14 : parseBacktestDays();
 }
 
 function parseBacktestYears() {
@@ -1856,6 +2976,7 @@ async function previewBacktest() {
     const payload = {
       config: buildStrategyConfig(),
       years: parseBacktestYears(),
+      days: parseBacktestDays(),
       startEquity: parseCapital(),
     };
     const response = await fetch('/api/backtest', {
@@ -1882,6 +3003,7 @@ async function previewBacktest() {
   const mdd = result.mdd;
   const pf = result.pf;
   backtestPassed = returnPct > 35 && mdd > -20 && pf >= 1.2;
+  renderBacktestSummary(result);
   $('btReturn').textContent = (returnPct > 0 ? '+' : '') + returnPct.toFixed(1) + '%';
   $('btReturn').className = 'num ' + signedClass(returnPct);
   $('btWinRate').textContent = result.winRate.toFixed(1) + '%';

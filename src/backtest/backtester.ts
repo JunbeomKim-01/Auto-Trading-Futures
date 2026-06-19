@@ -2,12 +2,15 @@
 // 라이브와 동일한 buildContext/decide/상태머신을 과거 4시간봉에 바-바이-바로 적용해,
 // 실거래 판단과 일치하는 결과를 낸다. 체결은 해당 캔들 종가로 가정.
 import type { Candle, Position, StrategyConfig, StrategyRecord } from '../types';
-import { precomputeIndicators, contextAt, decide } from '../strategy/strategyEngine';
+import {
+  precomputeIndicators, contextAt, decideHedge,
+  precomputeMTF, contextAtMTF, type Decision, type Streams,
+} from '../strategy/strategyEngine';
 import { computeQuantity } from '../execution/orderExecutor';
 import { addToPosition, openPosition, reducePosition } from '../position/positionStateMachine';
 
 export interface Trade {
-  side: 'LONG';
+  side: 'LONG' | 'SHORT';
   entryTime: number;
   exitTime: number;
   avgEntry: number;
@@ -66,8 +69,9 @@ export function runBacktest(
     status: 'active',
   };
 
-  let position: Position | null = null;
-  let entryBarIndex = 0;
+  // 헤지: 롱/숏 슬롯 독립 운용. 각 슬롯은 자체 DCA 단계/진입바를 가진다.
+  const long: Slot = { pos: null, entryBar: 0 };
+  const short: Slot = { pos: null, entryBar: 0 };
   const trades: Trade[] = [];
   let cumPnl = 0;
 
@@ -78,81 +82,22 @@ export function runBacktest(
 
   for (let i = warmup; i < candles.length; i++) {
     const price = candles[i].close;
-    const ctx = contextAt(indicators, i, position); // [0..i], i가 "마감된" 마지막 캔들
-    const decision = decide(config, ctx, position);
+    // 헤지에서는 평단이 슬롯별로 다르므로 포지션 비종속 ctx(avgEntry=NaN)로 평가한다.
+    const ctx = contextAt(indicators, i, null); // [0..i], i가 "마감된" 마지막 캔들
+    const decisions = decideHedge(config, ctx, { long: long.pos, short: short.pos });
 
-    if (decision.action === 'enter') {
-      const qty = computeQuantity(config, startEquity, decision.sizePercent, price);
-      if (qty > 0) {
-        position = openPosition(strategy, 'LONG', price, qty, new Date(candles[i].closeTime));
-        entryBarIndex = i;
-      }
-    } else if (decision.action === 'add' && position) {
-      const qty = computeQuantity(config, startEquity, decision.sizePercent, price);
-      if (qty > 0) {
-        position = addToPosition(position, decision.step, price, qty, new Date(candles[i].closeTime));
-      }
-    } else if (decision.action === 'take_profit' && position) {
-      const closeQty = decision.closeRemaining
-        ? floorQty(position.totalSize)
-        : floorQty(position.totalSize * (decision.sizePercent / 100));
-      const before = position.realizedPnl;
-      const sizeAtEntry = position.totalSize;
-      const updated = reducePosition(
-        position, closeQty, price, new Date(candles[i].closeTime),
-        decision.tpIndex, decision.closeRemaining,
-      );
-      cumPnl += updated.realizedPnl - before;
-      if (updated.state === 'CLOSED') {
-        trades.push({
-          side: 'LONG',
-          entryTime: position.openedAt ? Date.parse(position.openedAt) : candles[entryBarIndex].openTime,
-          exitTime: candles[i].closeTime,
-          avgEntry: position.avgEntryPrice,
-          exitPrice: price,
-          size: sizeAtEntry,
-          pnl: updated.realizedPnl,
-          bars: i - entryBarIndex,
-          steps: position.currentStep,
-        });
-        position = null;
-      } else {
-        position = updated;
-      }
-    } else if (decision.action === 'stop_loss' && position) {
-      const before = position.realizedPnl;
-      const sizeAtEntry = position.totalSize;
-      const updated = reducePosition(
-        position,
-        floorQty(position.totalSize),
-        price,
-        new Date(candles[i].closeTime),
-        position.tpFilled,
-        true,
-      );
-      cumPnl += updated.realizedPnl - before;
-      trades.push({
-        side: 'LONG',
-        entryTime: position.openedAt ? Date.parse(position.openedAt) : candles[entryBarIndex].openTime,
-        exitTime: candles[i].closeTime,
-        avgEntry: position.avgEntryPrice,
-        exitPrice: price,
-        size: sizeAtEntry,
-        pnl: updated.realizedPnl,
-        bars: i - entryBarIndex,
-        steps: position.currentStep,
-      });
-      position = null;
+    for (const decision of decisions) {
+      if (!('side' in decision)) continue; // hold / no_signal
+      const slot = decision.side === 'LONG' ? long : short;
+      cumPnl += applyDecision(slot, decision, i, price, candles, config, strategy, startEquity, trades);
     }
 
-    // 에쿼티 곡선(실현 + 미실현)으로 MDD 산출.
-    const unrealized = position
-      ? (price - position.avgEntryPrice) * position.totalSize
-      : 0;
+    // 에쿼티 곡선(실현 + 미실현)으로 MDD 산출. 숏은 부호 반대. 두 슬롯 합산.
+    const unrealized = slotUnrealized(long.pos, price) + slotUnrealized(short.pos, price);
     equityCurve.push({ time: candles[i].openTime, equity: startEquity + cumPnl + unrealized });
   }
 
-  return summarize(trades, equityCurve, startEquity, candles, !!position, warmup);
+  return summarize(trades, equityCurve, startEquity, candles, !!(long.pos || short.pos), warmup);
 }
 
 function summarize(
@@ -216,6 +161,115 @@ function summarize(
     tradeList: trades,
     equityCurve,
   };
+}
+
+// MTF 백테스트: 지표는 각 상위봉, 진입/청산은 executionTimeframe 봉마다. 헤지 호환.
+export function runBacktestMTF(
+  config: StrategyConfig,
+  streams: Streams,
+  opts: BacktestOptions = {},
+): BacktestResult {
+  const startEquity = opts.startEquity ?? 10000;
+  const strategy: StrategyRecord = {
+    strategyId: config.strategyId, version: 1, name: config.name, config, status: 'active',
+  };
+
+  const p = precomputeMTF(config, streams);
+  const exec = p.exec;
+  const long: Slot = { pos: null, entryBar: 0 };
+  const short: Slot = { pos: null, entryBar: 0 };
+  const trades: Trade[] = [];
+  let cumPnl = 0;
+  const equityCurve: EquityPoint[] = [];
+
+  for (let i = p.warmup; i < exec.length; i++) {
+    const price = exec[i].close;
+    const ctx = contextAtMTF(p, i, null);
+    const decisions = decideHedge(config, ctx, { long: long.pos, short: short.pos });
+    for (const decision of decisions) {
+      if (!('side' in decision)) continue;
+      const slot = decision.side === 'LONG' ? long : short;
+      cumPnl += applyDecision(slot, decision, i, price, exec, config, strategy, startEquity, trades);
+    }
+    const unrealized = slotUnrealized(long.pos, price) + slotUnrealized(short.pos, price);
+    equityCurve.push({ time: exec[i].openTime, equity: startEquity + cumPnl + unrealized });
+  }
+
+  return summarize(trades, equityCurve, startEquity, exec, !!(long.pos || short.pos), p.warmup);
+}
+
+interface Slot {
+  pos: Position | null;
+  entryBar: number;
+}
+
+function slotUnrealized(pos: Position | null, price: number): number {
+  if (!pos) return 0;
+  return (pos.side === 'LONG' ? price - pos.avgEntryPrice : pos.avgEntryPrice - price) * pos.totalSize;
+}
+
+// 한 슬롯에 결정 1개 적용. 슬롯을 변경하고, 청산 시 trades에 push. 실현손익 증분을 반환.
+function applyDecision(
+  slot: Slot,
+  decision: Decision & { side: 'LONG' | 'SHORT' },
+  i: number,
+  price: number,
+  candles: Candle[],
+  config: StrategyConfig,
+  strategy: StrategyRecord,
+  startEquity: number,
+  trades: Trade[],
+): number {
+  const when = new Date(candles[i].closeTime);
+
+  if (decision.action === 'enter') {
+    const qty = computeQuantity(config, startEquity, decision.sizePercent, price);
+    if (qty > 0) {
+      slot.pos = openPosition(strategy, decision.side, price, qty, when);
+      slot.entryBar = i;
+    }
+    return 0;
+  }
+
+  const pos = slot.pos;
+  if (!pos) return 0;
+
+  if (decision.action === 'add') {
+    const qty = computeQuantity(config, startEquity, decision.sizePercent, price);
+    if (qty > 0) slot.pos = addToPosition(pos, decision.step, price, qty, when);
+    return 0;
+  }
+
+  if (decision.action === 'take_profit' || decision.action === 'stop_loss') {
+    const isSl = decision.action === 'stop_loss';
+    const closeQty = isSl || decision.closeRemaining
+      ? floorQty(pos.totalSize)
+      : floorQty(pos.totalSize * (decision.sizePercent / 100));
+    const before = pos.realizedPnl;
+    const sizeAtEntry = pos.totalSize;
+    const tpIndex = isSl ? pos.tpFilled : decision.tpIndex;
+    const closeRemaining = isSl ? true : decision.closeRemaining;
+    const updated = reducePosition(pos, closeQty, price, when, tpIndex, closeRemaining);
+    if (updated.state === 'CLOSED') {
+      trades.push({
+        side: pos.side,
+        entryTime: pos.openedAt ? Date.parse(pos.openedAt) : candles[slot.entryBar].openTime,
+        exitTime: candles[i].closeTime,
+        avgEntry: pos.avgEntryPrice,
+        exitPrice: price,
+        size: sizeAtEntry,
+        pnl: updated.realizedPnl,
+        bars: i - slot.entryBar,
+        steps: pos.currentStep,
+      });
+      slot.pos = null;
+    } else {
+      slot.pos = updated;
+    }
+    return updated.realizedPnl - before;
+  }
+
+  return 0;
 }
 
 function floorQty(qty: number): number {

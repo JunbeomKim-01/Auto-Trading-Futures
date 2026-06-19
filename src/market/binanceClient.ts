@@ -47,21 +47,24 @@ export class BinanceClient {
     return this.signedRequest('POST', '/fapi/v1/leverage', { symbol, leverage });
   }
 
+  // 헤지 모드(dualSidePosition)에서는 positionSide(LONG/SHORT)가 필수이고 reduceOnly는
+  // 보내면 안 된다(방향이 positionSide로 결정됨). positionSide 미지정 시 단방향 호환 동작.
   async marketOrder(
     symbol: string,
     side: 'BUY' | 'SELL',
     quantity: number,
     reduceOnly = false,
+    positionSide?: 'LONG' | 'SHORT',
   ): Promise<unknown> {
     if (this.viaExecutor) {
-      return this.executorPost('/order', { symbol, side, quantity, reduceOnly });
+      return this.executorPost('/order', { symbol, side, quantity, reduceOnly, positionSide });
     }
     return this.signedRequest('POST', '/fapi/v1/order', {
       symbol,
       side,
       type: 'MARKET',
       quantity,
-      ...(reduceOnly ? { reduceOnly: 'true' } : {}),
+      ...(positionSide ? { positionSide } : reduceOnly ? { reduceOnly: 'true' } : {}),
     });
   }
 
