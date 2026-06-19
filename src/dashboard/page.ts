@@ -25,6 +25,8 @@ export function dashboardHtml(): string {
     --down:#f6465d;
     --blue:#3b82f6;
     --live:#d9342b;
+    --surface:linear-gradient(180deg, #181d24, #14181e);
+    --radius:12px;
   }
   * { box-sizing:border-box; }
   html { background:var(--canvas); }
@@ -178,8 +180,8 @@ export function dashboardHtml(): string {
     min-height:62px;
     padding:11px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:var(--card);
+    border-radius:var(--radius);
+    background:var(--surface);
   }
   .flow-step span {
     display:block;
@@ -204,12 +206,13 @@ export function dashboardHtml(): string {
     min-height:132px;
     padding:16px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:var(--card);
+    border-radius:var(--radius);
+    background:var(--surface);
     color:var(--text);
     text-decoration:none;
+    transition:border-color .15s, transform .15s;
   }
-  .dash-link:hover { border-color:var(--muted); }
+  .dash-link:hover { border-color:var(--primary); transform:translateY(-2px); }
   .dash-link b {
     display:block;
     margin-top:8px;
@@ -230,10 +233,10 @@ export function dashboardHtml(): string {
   }
   .stack { display:grid; gap:16px; }
   .card {
-    padding:20px;
+    padding:clamp(16px, 2.2vw, 22px);
     border:1px solid var(--line);
-    border-radius:8px;
-    background:var(--card);
+    border-radius:14px;
+    background:var(--surface);
   }
   .card-head {
     display:flex;
@@ -268,44 +271,14 @@ export function dashboardHtml(): string {
     font-size:12px;
     font-weight:600;
   }
-  .pnl-panel {
-    display:grid;
-    grid-template-columns:minmax(0, 1fr) 260px;
-    gap:18px;
-    align-items:stretch;
-    min-height:260px;
-  }
-  .pnl-main {
-    padding:24px;
-    border-radius:8px;
-    background:var(--panel);
-    border:1px solid var(--line);
-  }
-  .pnl-number {
-    margin-top:14px;
-    font-size:64px;
-    line-height:1;
-    font-weight:650;
-  }
   .up { color:var(--up); }
   .down { color:var(--down); }
   .neutral { color:var(--text); }
-  .pnl-copy {
-    max-width:620px;
-    margin-top:14px;
-    color:var(--muted-strong);
-    font-size:14px;
-    line-height:1.6;
-  }
-  .pnl-side {
-    display:grid;
-    gap:10px;
-  }
   .metric {
     padding:14px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#171c22;
+    border-radius:10px;
+    background:rgba(255,255,255,.025);
   }
   .metric b {
     display:block;
@@ -460,8 +433,8 @@ export function dashboardHtml(): string {
     padding:14px;
     border:1px solid var(--line);
     border-left:4px solid var(--muted);
-    border-radius:8px;
-    background:#171c22;
+    border-radius:var(--radius);
+    background:var(--surface);
   }
   .log-item.enter { border-left-color:var(--up); }
   .log-item.block { border-left-color:var(--down); }
@@ -546,10 +519,10 @@ export function dashboardHtml(): string {
     align-items:start;
   }
   .tool-panel {
-    padding:14px;
+    padding:clamp(14px, 2vw, 18px);
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#171c22;
+    border-radius:12px;
+    background:linear-gradient(180deg, #181d24, #14181e);
   }
   .tool-head {
     display:flex;
@@ -569,8 +542,8 @@ export function dashboardHtml(): string {
     min-height:142px;
     padding:12px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#11161c;
+    border-radius:10px;
+    background:rgba(255,255,255,.025);
   }
   .indicator-top {
     display:flex;
@@ -706,34 +679,37 @@ export function dashboardHtml(): string {
     gap:14px;
   }
   .wizard-steps {
-    display:grid;
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-    gap:8px;
+    display:flex;
+    gap:4px;
+    padding:6px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:rgba(255,255,255,.02);
   }
   .wizard-step {
-    min-height:58px;
-    padding:10px;
-    border:1px solid var(--line);
-    border-radius:8px;
-    background:#11161c;
-    color:var(--muted-strong);
-    text-align:left;
-  }
-  .wizard-step span {
-    display:block;
-    margin-bottom:4px;
+    flex:1; min-width:0;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:10px 8px;
+    border:0; border-radius:8px;
+    background:transparent;
     color:var(--muted);
-    font-size:11px;
-    font-weight:650;
+    text-align:center;
+    transition:.15s;
   }
-  .wizard-step b {
-    font-size:13px;
-    font-weight:650;
+  .wstep-num {
+    flex:0 0 auto; width:26px; height:26px; border-radius:50%;
+    display:grid; place-items:center;
+    border:1px solid var(--line); background:#11161c;
+    font-size:12px; font-weight:700;
   }
-  .wizard-step.active {
-    border-color:var(--primary);
-    color:var(--text);
-    background:rgba(252,213,53,.08);
+  .wizard-step b { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wizard-step.active { color:var(--ink); background:var(--primary); }
+  .wizard-step.active .wstep-num { background:var(--ink); color:var(--primary); border-color:var(--ink); }
+  .wizard-step.done { color:var(--text); }
+  .wizard-step.done .wstep-num { border-color:var(--up); background:rgba(14,203,129,.16); color:var(--up); }
+  @media (max-width: 640px) {
+    .wizard-step b { display:none; }
+    .wizard-step.active b { display:inline; }
   }
   .wizard-panel { display:none; }
   .wizard-panel.active {
@@ -755,11 +731,13 @@ export function dashboardHtml(): string {
     min-height:132px;
     padding:14px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#11161c;
+    border-radius:var(--radius);
+    background:var(--surface);
     color:var(--text);
     text-align:left;
+    transition:border-color .15s, transform .15s;
   }
+  .preset-card:hover { border-color:var(--muted); transform:translateY(-2px); }
   .preset-card.active {
     border-color:var(--primary);
     background:rgba(252,213,53,.08);
@@ -791,54 +769,66 @@ export function dashboardHtml(): string {
   details.advanced > .advanced-body {
     padding:0 14px 14px;
   }
-  .bt-summary {
-    display:grid;
-    grid-template-columns:minmax(0, 1.1fr) minmax(260px, .9fr);
-    gap:12px;
+  /* ── 백테스트 판정 카드 ── */
+  .verdict {
     margin-bottom:14px;
-    padding:16px;
+    padding:clamp(16px, 2.4vw, 22px);
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#171c22;
+    border-radius:14px;
+    background:linear-gradient(180deg, #1a1f26, #14181e);
   }
-  .bt-summary.ok { border-color:rgba(14,203,129,.45); }
-  .bt-summary.warn { border-color:rgba(240,185,11,.45); }
-  .bt-summary h3 {
-    margin:0;
-    font-size:22px;
-    font-weight:700;
+  .verdict.ok   { border-color:rgba(14,203,129,.45); box-shadow:0 0 0 1px rgba(14,203,129,.12) inset; }
+  .verdict.warn { border-color:rgba(240,185,11,.45); }
+  .verdict-head { display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; }
+  .verdict-badge {
+    flex:0 0 auto; width:54px; height:54px; border-radius:14px;
+    display:grid; place-items:center; font-size:26px;
+    background:rgba(255,255,255,.04); border:1px solid var(--line);
   }
-  .bt-summary p {
-    margin:8px 0 0;
-    color:var(--muted-strong);
-    font-size:13px;
-    line-height:1.45;
+  .verdict.ok   .verdict-badge { background:rgba(14,203,129,.12); border-color:rgba(14,203,129,.4); }
+  .verdict.warn .verdict-badge { background:rgba(240,185,11,.12); border-color:rgba(240,185,11,.4); }
+  .verdict-text { min-width:0; }
+  .verdict-tag {
+    display:inline-block; margin-bottom:6px; padding:2px 9px; border-radius:999px;
+    font-size:11px; font-weight:700; background:var(--elevated); color:var(--muted-strong);
   }
+  .verdict.ok   .verdict-tag { background:rgba(14,203,129,.16); color:var(--up); }
+  .verdict.warn .verdict-tag { background:rgba(240,185,11,.16); color:var(--primary-active); }
+  .verdict-text h3 { margin:0; font-size:clamp(18px, 2.2vw, 22px); font-weight:700; }
+  .verdict-text p { margin:7px 0 0; color:var(--muted-strong); font-size:13px; line-height:1.55; }
+  .verdict-cta { margin-top:16px; }
   .criteria-row {
     display:grid;
     grid-template-columns:repeat(4, minmax(0, 1fr));
-    gap:7px;
+    gap:8px;
   }
   .criteria {
-    min-height:54px;
-    padding:9px;
+    min-height:62px;
+    padding:11px;
     border:1px solid var(--line);
-    border-radius:6px;
-    background:#11161c;
+    border-radius:10px;
+    background:rgba(255,255,255,.025);
   }
   .criteria span {
-    display:block;
-    color:var(--muted);
-    font-size:11px;
-    font-weight:650;
+    display:flex; align-items:center; gap:5px;
+    color:var(--muted); font-size:11px; font-weight:650;
   }
   .criteria b {
     display:block;
-    margin-top:5px;
-    font-size:13px;
+    margin-top:6px;
+    font-size:15px;
+    font-variant-numeric:tabular-nums;
   }
+  .criteria-mark { font-size:11px; }
+  .criteria.ok   { border-color:rgba(14,203,129,.35); }
   .criteria.ok b { color:var(--up); }
+  .criteria.ok .criteria-mark { color:var(--up); }
+  .criteria.warn, .criteria.bad { border-color:rgba(240,185,11,.3); }
   .criteria.warn b, .criteria.bad b { color:var(--primary-active); }
+  .criteria.warn .criteria-mark, .criteria.bad .criteria-mark { color:var(--primary-active); }
+  @media (max-width: 640px) {
+    .criteria-row { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  }
   .icon-btn {
     width:38px;
     height:36px;
@@ -868,8 +858,8 @@ export function dashboardHtml(): string {
     min-height:42px;
     padding:10px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#11161c;
+    border-radius:10px;
+    background:rgba(255,255,255,.025);
   }
   .mini-item b {
     font-size:13px;
@@ -893,8 +883,8 @@ export function dashboardHtml(): string {
   .compare-card {
     padding:14px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#171c22;
+    border-radius:var(--radius);
+    background:var(--surface);
   }
   .compare-card.best { border-color:rgba(14,203,129,.55); }
   .compare-card b {
@@ -924,8 +914,8 @@ export function dashboardHtml(): string {
   .apply-box {
     padding:16px;
     border:1px solid var(--line);
-    border-radius:8px;
-    background:#171c22;
+    border-radius:var(--radius);
+    background:var(--surface);
   }
   .empty {
     min-height:100px;
@@ -933,8 +923,8 @@ export function dashboardHtml(): string {
     place-items:center;
     padding:18px;
     border:1px dashed var(--line);
-    border-radius:8px;
-    background:#171c22;
+    border-radius:var(--radius);
+    background:var(--surface);
     color:var(--muted);
     text-align:center;
   }
@@ -962,10 +952,9 @@ export function dashboardHtml(): string {
   tr:last-child td { border-bottom:0; }
   .mobile-actions { display:none; }
   @media (max-width: 1100px) {
-    .grid, .pnl-panel, .lab-grid { grid-template-columns:1fr; }
+    .grid, .lab-grid { grid-template-columns:1fr; }
     .flow, .result-grid, .dashboard-cards, .preset-grid, .criteria-row { grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .form-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    .bt-summary { grid-template-columns:1fr; }
     .compare-grid { grid-template-columns:1fr; }
   }
   @media (max-width: 720px) {
@@ -979,7 +968,7 @@ export function dashboardHtml(): string {
     .condition-row .icon-btn, .sizing-row .icon-btn { width:100%; }
     .wizard-actions { flex-direction:column; }
     h1 { font-size:24px; }
-    .pnl-number { font-size:46px; }
+    .hero-pnl-num { font-size:42px; }
     .mobile-actions {
       position:fixed;
       left:0;
@@ -1064,6 +1053,63 @@ export function dashboardHtml(): string {
     border:1px solid var(--primary); background:rgba(252,213,53,.08);
     color:var(--text); font-size:13px; font-weight:600;
   }
+
+  /* ── 홈 히어로 (신호등 + 1액션 + 신뢰 스트립) ── */
+  .hero {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) clamp(220px, 26%, 300px);
+    gap:clamp(16px, 3vw, 28px);
+    padding:clamp(20px, 3vw, 32px);
+    border:1px solid var(--line); border-radius:16px;
+    background:
+      radial-gradient(120% 140% at 0% 0%, rgba(252,213,53,.06), transparent 55%),
+      linear-gradient(180deg, #1a1f26, #14181e);
+  }
+  .hero-main { min-width:0; display:flex; flex-direction:column; gap:14px; }
+  .signal { display:flex; align-items:center; gap:14px; }
+  .signal-ring {
+    position:relative; flex:0 0 auto; width:48px; height:48px; border-radius:50%;
+    display:grid; place-items:center; background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+  }
+  .signal-core { width:18px; height:18px; border-radius:50%; background:var(--muted); transition:.2s; }
+  .signal-text { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .signal-label { font-size:15px; font-weight:700; letter-spacing:.2px; }
+  .signal-sub { font-size:12px; color:var(--muted-strong); }
+  .signal.ok    .signal-core { background:var(--up);   box-shadow:0 0 0 6px rgba(14,203,129,.16), 0 0 22px rgba(14,203,129,.45); }
+  .signal.warn  .signal-core { background:var(--primary); box-shadow:0 0 0 6px rgba(240,185,11,.16), 0 0 22px rgba(240,185,11,.4); }
+  .signal.bad   .signal-core { background:var(--down); box-shadow:0 0 0 6px rgba(246,70,93,.18), 0 0 22px rgba(246,70,93,.5); animation:pulse 1.4s ease-in-out infinite; }
+  .signal.idle  .signal-core { background:var(--muted); }
+  .signal.ok .signal-ring { border-color:rgba(14,203,129,.4); }
+  .signal.warn .signal-ring { border-color:rgba(240,185,11,.4); }
+  .signal.bad .signal-ring { border-color:rgba(246,70,93,.45); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+
+  .hero-pnl { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .hero-pnl-label { font-size:12px; font-weight:600; color:var(--muted); }
+  .hero-pnl-num { font-size:clamp(40px, 7vw, 60px); line-height:1; font-weight:680; }
+  .hero-title { font-size:clamp(19px, 2.4vw, 24px); line-height:1.25; font-weight:680; }
+  .hero-copy { max-width:60ch; color:var(--muted-strong); font-size:14px; line-height:1.6; }
+  .hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+  .btn.lg { min-height:46px; padding:0 20px; border-radius:9px; font-size:14px; }
+
+  .hero-side { display:flex; flex-direction:column; gap:10px; }
+  .trust-card {
+    display:flex; flex-direction:column; gap:4px;
+    padding:14px 16px; border:1px solid var(--line); border-radius:12px;
+    background:rgba(255,255,255,.025);
+  }
+  .trust-card b { font-size:17px; font-weight:680; }
+  .trust-note { font-size:11px; color:var(--muted); }
+  @media (max-width: 900px) {
+    .hero { grid-template-columns:1fr; }
+    .hero-side { flex-direction:row; flex-wrap:wrap; }
+    .hero-side .trust-card { flex:1 1 30%; }
+  }
+  @media (max-width: 520px) {
+    .hero-actions .btn { flex:1 1 100%; }
+    .hero-side .trust-card { flex:1 1 100%; }
+  }
   /* ── 지표 설명 툴팁 (? 호버) ── */
   .ind-help {
     position:relative; flex:0 0 auto; width:16px; height:16px;
@@ -1138,29 +1184,49 @@ export function dashboardHtml(): string {
 
   <section class="grid">
     <div class="stack">
-      <section id="profit" class="card dashboard-only">
-        <div class="pnl-panel">
-          <div class="pnl-main">
-            <div class="label">지금 제일 먼저 볼 것</div>
-            <h1 id="pnlTitle">오늘 손익을 불러오는 중입니다</h1>
-            <div id="pnlNumber" class="pnl-number num neutral">0.00%</div>
-            <p id="pnlCopy" class="pnl-copy">손익이 괜찮으면 봇을 계속 감시하고, 손실이 커지면 먼저 멈춘 뒤 로그를 봅니다.</p>
-            <div class="actions">
-              <button id="primaryDecision" class="btn primary" type="button" onclick="primaryDecision()">상태 새로고침</button>
-              <button class="btn danger" type="button" onclick="emergencyStop()">더 손해보기 전에 봇 멈춰</button>
-              <a class="btn ghost" href="#logs" style="display:inline-flex;align-items:center;text-decoration:none;">왜 못했는지 로그 보기</a>
-            </div>
-            <div id="lossAlert" class="loss-alert" hidden>
-              <h3>손실 방어 우선</h3>
-              <p class="muted" style="margin-top:6px;">일일 손실 제한에 가까워지면 전략 개선보다 먼저 신규 진입을 멈추는 게 맞습니다.</p>
+      <section id="profit" class="hero dashboard-only">
+        <div class="hero-main">
+          <div id="signal" class="signal idle">
+            <span class="signal-ring"><span class="signal-core"></span></span>
+            <div class="signal-text">
+              <span id="signalLabel" class="signal-label">상태 확인 중</span>
+              <span id="signalSub" class="signal-sub">잠시만요…</span>
             </div>
           </div>
-          <aside class="pnl-side">
-            <div class="metric"><span class="label">봇 상태</span><b id="botState">-</b></div>
-            <div class="metric"><span class="label">모드</span><b id="modeState">-</b></div>
-            <div class="metric"><span class="label">현재 포지션</span><b id="positionState">-</b></div>
-          </aside>
+
+          <div class="hero-pnl">
+            <span class="hero-pnl-label">실현 손익</span>
+            <div id="pnlNumber" class="hero-pnl-num num neutral">0.00%</div>
+          </div>
+
+          <h1 id="pnlTitle" class="hero-title">오늘 손익을 불러오는 중입니다</h1>
+          <p id="pnlCopy" class="hero-copy">손익이 괜찮으면 계속 감시하고, 손실이 커지면 먼저 멈춘 뒤 로그를 봅니다.</p>
+
+          <div class="hero-actions">
+            <button id="primaryDecision" class="btn primary lg" type="button" onclick="primaryDecision()">상태 새로고침</button>
+            <button id="heroStop" class="btn danger lg" type="button" onclick="emergencyStop()">봇 멈추기</button>
+          </div>
+          <div id="lossAlert" class="loss-alert" hidden>
+            <h3>손실 방어 우선</h3>
+            <p class="muted" style="margin-top:6px;">일일 손실 제한에 가까워지면 전략 개선보다 먼저 신규 진입을 멈추는 게 맞습니다.</p>
+          </div>
         </div>
+
+        <aside class="hero-side">
+          <div class="trust-card">
+            <span class="label">실행 모드</span>
+            <b id="modeState">-</b>
+            <span id="modeNote" class="trust-note">실제 주문이 아닙니다</span>
+          </div>
+          <div class="trust-card">
+            <span class="label">봇 상태</span>
+            <b id="botState">-</b>
+          </div>
+          <div class="trust-card">
+            <span class="label">현재 포지션</span>
+            <b id="positionState">없음</b>
+          </div>
+        </aside>
       </section>
 
       <section id="logs" class="card view-logs">
@@ -1271,8 +1337,10 @@ export function dashboardHtml(): string {
                   <h3>청산 규칙</h3>
                   <p class="muted">PNL/ROE가 몇 %가 되면 몇 %를 팔지, 몇 % 손실이면 정리할지 정합니다.</p>
                 </div>
-                <button class="btn ghost" type="button" onclick="addExitTp()">TP 추가</button>
+                <button class="btn ghost" type="button" onclick="addExitTp()">직접 추가 (고급)</button>
               </div>
+              <select id="exitPreset" class="recipe-select" onchange="applyExitPreset(this.value)"></select>
+              <p class="muted" style="margin:6px 0 12px;">말로 고르면 익절/손절이 자동 설정됩니다. 아래서 세부 조정 가능.</p>
               <div id="exitRulesBody" class="condition-list"></div>
             </div>
 
@@ -1367,17 +1435,23 @@ stop new entries when dailyLoss <= -2%</textarea>
           <button id="btRunBtn" class="btn primary" type="button" onclick="previewBacktest()">백테스트 실행</button>
         </div>
 
-        <div id="btSummaryBox" class="bt-summary warn">
-          <div>
-            <span id="btSummaryStatus" class="status warn">대기</span>
-            <h3 id="btSummaryTitle">아직 백테스트 전입니다</h3>
-            <p id="btSummaryCopy">전략 생성 마법사의 마지막 단계에서 백테스트를 실행하면 통과 여부와 핵심 기준을 먼저 보여줍니다.</p>
+        <div id="btSummaryBox" class="verdict pending">
+          <div class="verdict-head">
+            <div id="verdictBadge" class="verdict-badge">···</div>
+            <div class="verdict-text">
+              <span id="btSummaryStatus" class="verdict-tag">대기</span>
+              <h3 id="btSummaryTitle">아직 백테스트 전입니다</h3>
+              <p id="btSummaryCopy">마법사 마지막 단계에서 백테스트를 실행하면 통과 여부와 핵심 기준을 먼저 보여줍니다.</p>
+            </div>
           </div>
           <div id="btCriteria" class="criteria-row">
-            <div class="criteria warn"><span>수익률</span><b>대기</b></div>
-            <div class="criteria warn"><span>MDD</span><b>대기</b></div>
-            <div class="criteria warn"><span>PF</span><b>대기</b></div>
-            <div class="criteria warn"><span>거래 수</span><b>대기</b></div>
+            <div class="criteria"><span>수익률</span><b>대기</b></div>
+            <div class="criteria"><span>MDD</span><b>대기</b></div>
+            <div class="criteria"><span>PF</span><b>대기</b></div>
+            <div class="criteria"><span>거래 수</span><b>대기</b></div>
+          </div>
+          <div id="verdictCta" class="verdict-cta" hidden>
+            <button class="btn primary lg" type="button" onclick="location.hash='apply'">이 전략 적용하러 가기 →</button>
           </div>
         </div>
 
@@ -1799,22 +1873,38 @@ function render() {
   $('botPill').innerHTML = '<span class="dot ' + botDot + '"></span>' + botText;
 
   $('pnlNumber').textContent = pct(pnl);
-  $('pnlNumber').className = 'pnl-number num ' + signedClass(pnl);
-  if (pnl > 0) {
-    $('pnlTitle').textContent = '음, 오늘은 이 정도 벌었네요';
-    $('pnlCopy').textContent = '수익 상태입니다. 그래도 최근 로그에서 왜 진입했는지 확인하고, 전략 개선 아이디어가 있으면 백테스트로 검증하세요.';
+  $('pnlNumber').className = 'hero-pnl-num num ' + signedClass(pnl);
+
+  // 신호등: 손실=빨강, 신규중지=노랑, 정상운영=초록, 꺼짐=회색.
+  let sig, sigLabel, sigSub;
+  if (!isOn(mode) && mode !== 'ALERT_ONLY') {
+    sig = 'idle'; sigLabel = '봇 꺼짐'; sigSub = '적용 화면에서 봇을 켤 수 있어요';
+    $('pnlTitle').textContent = '봇이 꺼져 있습니다';
+    $('pnlCopy').textContent = '거래를 시작하려면 전략을 만들고 백테스트로 검증한 뒤, 적용 화면에서 봇을 켜세요.';
   } else if (pnl < 0) {
+    sig = 'bad'; sigLabel = '주의: 손실 발생'; sigSub = '먼저 멈출지 판단하세요';
     $('pnlTitle').textContent = '오늘은 손실입니다. 먼저 멈출지 판단하세요';
-    $('pnlCopy').textContent = '손실이 발생했습니다. 추가 손실을 막으려면 봇을 정지하거나 신규 진입을 중지한 뒤 매매 로그를 확인하세요.';
+    $('pnlCopy').textContent = '추가 손실을 막으려면 봇을 멈추거나 신규 진입을 중지한 뒤, 매매 로그에서 원인을 확인하세요.';
+  } else if (mode === 'ALERT_ONLY') {
+    sig = 'warn'; sigLabel = '신규 진입 중지됨'; sigSub = '보유 포지션 청산만 동작';
+    $('pnlTitle').textContent = '신규 진입을 멈춘 상태입니다';
+    $('pnlCopy').textContent = '새 매수/매도는 하지 않고 기존 포지션 관리만 합니다. 안정되면 다시 봇을 켜세요.';
   } else {
-    $('pnlTitle').textContent = '아직 확정 손익은 없습니다';
-    $('pnlCopy').textContent = '현재 기록된 실현 손익은 0입니다. 첫 판단 전이라면 Run once로 파이프라인을 점검할 수 있습니다.';
+    sig = 'ok'; sigLabel = '정상 운영 중'; sigSub = pnl > 0 ? '수익 구간' : '대기 중';
+    $('pnlTitle').textContent = pnl > 0 ? '잘 운영되고 있습니다' : '정상 운영 중입니다';
+    $('pnlCopy').textContent = '봇이 전략대로 감시 중입니다. 최근 판단 이유는 매매 로그에서 확인할 수 있어요.';
   }
+  $('signal').className = 'signal ' + sig;
+  $('signalLabel').textContent = sigLabel;
+  $('signalSub').textContent = sigSub;
+
   $('lossAlert').hidden = pnl >= 0;
-  $('primaryDecision').textContent = pnl < 0 ? '봇 멈추기' : '매매 로그 보기';
+  $('primaryDecision').textContent = pnl < 0 ? '매매 로그 보기' : '상태 새로고침';
+  $('heroStop').style.display = isOn(mode) || mode === 'ALERT_ONLY' ? '' : 'none';
   $('botState').textContent = botText;
   $('modeState').textContent = mode;
-  $('positionState').textContent = position ? position.side + ' · step ' + position.currentStep + '/' + position.maxStep : '없음';
+  $('modeNote').textContent = isLive(mode) ? '실제 자금으로 주문됩니다' : '실제 주문이 아닙니다 (모의)';
+  $('positionState').textContent = position ? position.side + ' · 단계 ' + position.currentStep + '/' + position.maxStep : '없음';
 
   renderLogs();
   renderTradeChart();
@@ -2066,11 +2156,13 @@ function signalVarsFlat() {
 function renderWizardShell() {
   const steps = $('wizardSteps');
   if (!steps) return;
-  steps.innerHTML = WIZARD_STEPS.map(s =>
-    '<button class="wizard-step ' + (wizardStep === s.step ? 'active' : '') + '" type="button" onclick="setWizardStep(' + s.step + ')">' +
-      '<span>Step ' + s.step + '</span><b>' + esc(s.title) + '</b>' +
-    '</button>'
-  ).join('');
+  steps.innerHTML = WIZARD_STEPS.map(s => {
+    const cls = wizardStep === s.step ? 'active' : wizardStep > s.step ? 'done' : '';
+    const num = wizardStep > s.step ? '✓' : String(s.step);
+    return '<button class="wizard-step ' + cls + '" type="button" onclick="setWizardStep(' + s.step + ')">' +
+      '<span class="wstep-num">' + num + '</span><b>' + esc(s.title) + '</b>' +
+    '</button>';
+  }).join('');
   document.querySelectorAll('.wizard-panel').forEach(panel => {
     panel.classList.toggle('active', Number(panel.dataset.step) === wizardStep);
   });
@@ -2191,10 +2283,34 @@ function conditionRowsHtml(list, which) {
   ).join('');
 }
 
+// 비전공자용 청산 프리셋. 익절 단계 + 손절을 한 번에 채운다 (PnL/ROE % 기준).
+const EXIT_PRESETS = [
+  { label:'🛡️ 안전 제일 (작게 먹고 빨리 손절)', tp:[{ pnlPercent:2, sizePercent:100 }], sl:1.5 },
+  { label:'⚖️ 균형 (나눠 익절, 적당한 손절)',   tp:[{ pnlPercent:3, sizePercent:50 }, { pnlPercent:6, sizePercent:50 }], sl:3 },
+  { label:'🚀 공격 (크게 노리고 넓은 손절)',     tp:[{ pnlPercent:6, sizePercent:50 }, { pnlPercent:12, sizePercent:50 }], sl:5 },
+];
+
+function exitPresetOptions() {
+  return '<option value="">＋ 말로 청산 고르기 (쉬운 설정)</option>' +
+    EXIT_PRESETS.map((p, i) => '<option value="' + i + '">' + esc(p.label) + '</option>').join('');
+}
+
+function applyExitPreset(idxStr) {
+  if (idxStr === '') return;
+  const p = EXIT_PRESETS[Number(idxStr)];
+  if (!p) return;
+  exitRules.tp = p.tp.map(r => ({ ...r }));
+  exitRules.slPnlPercent = p.sl;
+  $('builderStatus').className = 'status warn';
+  $('builderStatus').textContent = 'edited';
+  renderExitRules();
+}
+
 // 청산 규칙 UI: TP/SL을 PnL(ROE) % 기준으로 설정한다.
 function renderExitRules() {
   const host = $('exitRulesBody');
   if (!host) return;
+  if ($('exitPreset')) $('exitPreset').innerHTML = exitPresetOptions();
   const tpRows = exitRules.tp.map((r, i) =>
     '<div class="exit-row">' +
       '<div class="exit-field"><span>언제 익절</span><b>익절 ' + (i + 1) + '</b></div>' +
@@ -2566,23 +2682,26 @@ function renderBacktestSummary(metrics) {
   const passed = returnOk && mddOk && pfOk;
   const box = $('btSummaryBox');
   if (!box) return;
-  box.className = 'bt-summary ' + (passed ? 'ok' : 'warn');
-  $('btSummaryStatus').className = 'status ' + (passed ? 'ok' : 'warn');
+  box.className = 'verdict ' + (passed ? 'ok' : 'warn');
+  $('verdictBadge').textContent = passed ? '✅' : '⚠️';
+  $('btSummaryStatus').className = 'verdict-tag';
   $('btSummaryStatus').textContent = passed ? '통과' : '개선 필요';
-  $('btSummaryTitle').textContent = passed ? 'Testnet 적용 가능' : '아직 개선이 필요합니다';
+  $('btSummaryTitle').textContent = passed ? '실거래 적용 가능한 전략입니다' : '아직 개선이 필요합니다';
   $('btSummaryCopy').textContent = passed
-    ? '수익률, MDD, Profit Factor 기준을 통과했습니다. 차트에서 진입/청산 위치를 확인한 뒤 적용 단계로 이동하세요.'
+    ? '수익률·MDD·손익비(PF) 기준을 모두 통과했습니다. 아래 차트에서 진입/청산 위치를 확인한 뒤 적용하세요.'
     : nextBacktestAdvice(metrics, { returnOk, mddOk, pfOk });
+  $('verdictCta').hidden = !passed;
   $('btCriteria').innerHTML =
-    criteriaHtml('수익률', (metrics.returnPct > 0 ? '+' : '') + metrics.returnPct.toFixed(1) + '%', returnOk, '> 35%') +
-    criteriaHtml('MDD', metrics.mdd.toFixed(1) + '%', mddOk, '> -20%') +
-    criteriaHtml('PF', Number.isFinite(metrics.pf) ? metrics.pf.toFixed(2) : '∞', pfOk, '>= 1.2') +
+    criteriaHtml('수익률', (metrics.returnPct > 0 ? '+' : '') + metrics.returnPct.toFixed(1) + '%', returnOk, '+35% 이상') +
+    criteriaHtml('최대 낙폭', metrics.mdd.toFixed(1) + '%', mddOk, '-20% 이내') +
+    criteriaHtml('손익비(PF)', Number.isFinite(metrics.pf) ? metrics.pf.toFixed(2) : '∞', pfOk, '1.2 이상') +
     criteriaHtml('거래 수', String(metrics.trades), metrics.trades > 0, '1회 이상');
 }
 
 function criteriaHtml(label, value, ok, target) {
   return '<div class="criteria ' + (ok ? 'ok' : 'warn') + '">' +
-    '<span>' + esc(label) + ' · ' + esc(target) + '</span><b>' + esc(value) + '</b></div>';
+    '<span><span class="criteria-mark">' + (ok ? '✓' : '✗') + '</span>' + esc(label) + ' · ' + esc(target) + '</span>' +
+    '<b>' + esc(value) + '</b></div>';
 }
 
 function nextBacktestAdvice(metrics, checks) {
