@@ -2345,6 +2345,38 @@ function setIndicatorParam(index, paramIndex, value, el) {
 
 function condListOf(which) { return which === 'short' ? shortConditions : conditions; }
 
+// 조건이 참조하는 지표를 자동으로 켠다. 토큰('rsi','boll.lower','volMa*1.5')의
+// 베이스를 지표 type으로 매핑해, 해당 type 지표가 꺼져 있으면 켠다. 안 켜면 그
+// 변수가 NaN(거래 0)이거나 평가기에서 "알 수 없는 변수"로 백테스트가 실패한다.
+const TOKEN_TO_INDICATOR_TYPE = {
+  rsi:'rsi', ema:'ema', macd:'macd', atr:'atr',
+  volMa:'volume', boll:'bollinger', ob:'ob', fvg:'fvg', sma:'sma',
+};
+const RAW_PRICE_TOKENS = ['close','previousClose','high','low','price','avgEntry','volume'];
+function tokenBase(s) {
+  return String(s == null ? '' : s).trim().split('*')[0].trim().split('.')[0].trim();
+}
+function ensureIndicatorForToken(tok) {
+  const base = tokenBase(tok);
+  if (!base || /^-?\\d/.test(base) || RAW_PRICE_TOKENS.includes(base)) return false;
+  const type = TOKEN_TO_INDICATOR_TYPE[base];
+  if (!type) return false; // 사용자 커스텀 키 등은 건드리지 않는다.
+  if (indicators.some(i => i.type === type && i.enabled)) return false;
+  const ind = indicators.find(i => i.type === type);
+  if (!ind) return false;
+  ind.enabled = true;
+  return true;
+}
+// 롱/숏 조건 전체를 훑어 참조 지표를 켠다. 켜진 개수 반환.
+function autoEnableConditionIndicators() {
+  let changed = 0;
+  for (const c of conditions.concat(shortConditions)) {
+    if (ensureIndicatorForToken(c.left)) changed++;
+    if (ensureIndicatorForToken(c.right)) changed++;
+  }
+  return changed;
+}
+
 // 비전공자용 "말로 고르는" 조건 레시피. 문장 → 기술적 규칙(left/op/right)으로 자동 변환.
 // 표준 변수만 사용(단일TF에서 항상 계산됨). side: 어느 방향 목록에 보일지.
 const CONDITION_RECIPES = [
@@ -2378,6 +2410,8 @@ function addRecipe(which, idxStr) {
   const r = CONDITION_RECIPES[Number(idxStr)];
   if (!r) return;
   condListOf(which).push({ join:'AND', left:r.cond.left, op:r.cond.op, right:r.cond.right });
+  ensureIndicatorForToken(r.cond.left);
+  ensureIndicatorForToken(r.cond.right);
   $('builderStatus').className = 'status warn';
   $('builderStatus').textContent = 'edited';
   renderStrategyBuilder();
@@ -2421,8 +2455,11 @@ function setCondition(which, index, key, value) {
     const d = defaultCondFor(value);
     c.op = d.op;
     c.right = d.right;
+    ensureIndicatorForToken(value);
+    ensureIndicatorForToken(d.right);
     renderStrategyBuilder();
   }
+  if (key === 'right') ensureIndicatorForToken(value);
   $('builderStatus').className = 'status warn';
   $('builderStatus').textContent = 'edited';
 }
@@ -3104,6 +3141,8 @@ function parseBacktestYears() {
 }
 
 async function previewBacktest(configOverride) {
+  // 빌더에서 실행할 때는 조건이 참조하는 지표를 먼저 켠다(껐으면 NaN/평가 오류).
+  if (!configOverride && autoEnableConditionIndicators()) renderStrategyBuilder();
   const config = configOverride || buildStrategyConfig();
   activeBacktestConfig = config;
   const runBtns = document.querySelectorAll('[onclick="previewBacktest()"]');
