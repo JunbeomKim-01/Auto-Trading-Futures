@@ -108,6 +108,9 @@ async function handleBacktest(req: Request, env: Env): Promise<Response> {
     if (!body.config) return json({ error: 'config가 필요합니다' }, 400);
 
     const config = body.config;
+    // 신호봉(timeframe)은 필수지만 저장된/외부 config에서 누락될 수 있다. 기본 4h로 보정.
+    // MTF에서 지표 timeframe이 없을 때 이 값으로 streams를 조회하므로 비면 안 된다.
+    if (!config.timeframe) config.timeframe = '4h';
     const startEquity = Number(body.startEquity ?? 10000);
 
     // MTF: executionTimeframe 있으면 멀티 스트림 + runBacktestMTF.
@@ -299,6 +302,7 @@ async function fetchKlines(
 }
 
 function intervalToMs(interval: string): number {
+  if (!interval) return 14400_000;
   const value = Number(interval.slice(0, -1));
   const unit = interval.slice(-1);
   if (!Number.isFinite(value) || value <= 0) return 14400_000;
