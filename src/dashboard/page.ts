@@ -547,6 +547,16 @@ export function dashboardHtml(): string {
     gap:8px;
     align-items:end;
   }
+  .condition-plain {
+    grid-column:1 / -1;
+    margin-top:2px;
+    padding:5px 9px;
+    border-left:2px solid var(--primary);
+    background:rgba(41,98,255,.06);
+    border-radius:3px;
+    font-size:12px;
+    color:var(--text);
+  }
   .condition-row select, .condition-row input {
     height:36px;
     padding:0 9px;
@@ -2139,6 +2149,7 @@ function conditionRowsHtml(list, which) {
       '<div class="condition-field"><span>지표의 무엇이 될 때</span><select onchange="setCondition(\\'' + which + '\\', ' + index + ', \\'op\\', this.value)">' + opOptions(c.op) + '</select></div>' +
       '<div class="condition-field"><span>기준값 또는 지표</span><input list="signalVars" value="' + esc(c.right) + '" oninput="setCondition(\\'' + which + '\\', ' + index + ', \\'right\\', this.value)" placeholder="예: 35 또는 ema" /></div>' +
       '<button class="icon-btn" type="button" title="조건 삭제" onclick="removeCondition(\\'' + which + '\\', ' + index + ')">×</button>' +
+      '<div class="condition-plain">' + (index > 0 ? esc(c.join === 'OR' ? '또는 · ' : '그리고 · ') : '') + esc(conditionPlain(c)) + '</div>' +
     '</div>'
   ).join('');
 }
@@ -2270,6 +2281,30 @@ function signalVarLabel(v) {
     if (ind) return ind.name + ' ' + match[1] + '.' + match[2] + ' (' + v + ')';
   }
   return (SIGNAL_VAR_LABELS[v] || v) + ' (' + v + ')';
+}
+
+// 조건 식을 사람 말로. left/right 토큰과 'tok * k' 배수, == 1 구역 플래그를 풀어준다.
+const OP_WORD = { '<=':'이하일 때', '>=':'이상일 때', '>':'초과할 때', '<':'미만일 때', '==':'와 같을 때', '!=':'와 다를 때' };
+function operandKo(s) {
+  s = String(s == null ? '' : s).trim();
+  if (s === '') return '';
+  if (/^-?\\d+(\\.\\d+)?$/.test(s)) return s;
+  const mult = s.match(/^([a-zA-Z][\\w.]*)\\s*\\*\\s*(-?\\d+(?:\\.\\d+)?)$/);
+  if (mult) return (SIGNAL_VAR_LABELS[mult[1]] || mult[1]) + '의 ' + mult[2] + '배';
+  return SIGNAL_VAR_LABELS[s] || s;
+}
+// 받침 있으면 '이', 없으면 '가' (비한글은 '가').
+function josaIGa(w) {
+  w = String(w);
+  const code = w.length ? w.charCodeAt(w.length - 1) : 0;
+  if (code >= 0xAC00 && code <= 0xD7A3) return (code - 0xAC00) % 28 !== 0 ? '이' : '가';
+  return '가';
+}
+function conditionPlain(c) {
+  const L = operandKo(c.left), R = String(c.right == null ? '' : c.right).trim();
+  // 구역 플래그(== 1 / != 0): "~ 안에 있을 때"
+  if ((c.op === '==' && R === '1') || (c.op === '!=' && R === '0')) return L + ' 일 때';
+  return L + josaIGa(L) + ' ' + operandKo(c.right) + ' ' + (OP_WORD[c.op] || c.op);
 }
 
 // 지표 타임프레임 옵션. 빈값 = 신호봉(config.timeframe) 사용.
