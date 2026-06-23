@@ -99,6 +99,14 @@ const server = http.createServer(async (req, res) => {
       return send(res, r.status, r.ok ? JSON.parse(r.body) : { error: r.body });
     }
 
+    // 포지션 리스크: markPrice / unRealizedProfit / liquidationPrice / leverage 제공.
+    if (url.pathname === '/positionRisk' && req.method === 'POST') {
+      const b = await readJson(req);
+      const params = b.symbol ? { symbol: b.symbol } : {};
+      const r = await signedRequest('GET', '/fapi/v2/positionRisk', params);
+      return send(res, r.status, r.ok ? JSON.parse(r.body) : { error: r.body });
+    }
+
     if (url.pathname === '/leverage' && req.method === 'POST') {
       const b = await readJson(req);
       const r = await signedRequest('POST', '/fapi/v1/leverage', {

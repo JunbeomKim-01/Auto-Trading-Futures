@@ -17,13 +17,26 @@
       "enabled": true,
       "minimumScore": 70,
       "hardFilters": [
-        { "left": "close", "operator": ">", "right": "ema200", "description": "장기 하락 추세에서는 롱 진입 제한" }
+        { "left": "close", "operator": ">", "right": "ema", "description": "장기 하락 추세에서는 롱 진입 제한" }
       ],
       "scoreRules": [
-        { "name": "RSI 과매도", "left": "rsi14", "operator": "<=", "right": 35, "score": 25 },
+        { "name": "RSI 과매도", "left": "rsi", "operator": "<=", "right": 35, "score": 25 },
         { "name": "MACD 하락 둔화", "left": "macd.histogram", "operator": ">", "right": "macd.histogram.previous", "score": 20 },
-        { "name": "거래량 증가", "left": "volume", "operator": ">", "right": "volumeMA20 * 1.5", "score": 20 },
-        { "name": "ATR 기준 과도한 하락", "left": "close", "operator": "<", "right": "previousClose - atr14 * 1.2", "score": 25 }
+        { "name": "거래량 증가", "left": "volume", "operator": ">", "right": "volMa * 1.5", "score": 20 },
+        { "name": "ATR 기준 과도한 하락", "left": "close", "operator": "<", "right": "previousClose - atr * 1.2", "score": 25 }
+      ]
+    },
+    "short": {
+      "enabled": true,
+      "minimumScore": 70,
+      "hardFilters": [
+        { "left": "close", "operator": "<", "right": "ema", "description": "장기 상승 추세에서는 숏 진입 제한" }
+      ],
+      "scoreRules": [
+        { "name": "RSI 과매수", "left": "rsi", "operator": ">=", "right": 65, "score": 25 },
+        { "name": "MACD 상승 둔화", "left": "macd.histogram", "operator": "<", "right": "macd.histogram.previous", "score": 20 },
+        { "name": "거래량 증가", "left": "volume", "operator": ">", "right": "volMa * 1.5", "score": 20 },
+        { "name": "ATR 기준 과도한 상승", "left": "close", "operator": ">", "right": "previousClose + atr * 1.2", "score": 25 }
       ]
     }
   },
@@ -32,18 +45,19 @@
     "maxPositionValuePercent": 25,
     "leverage": 2,
     "entries": [
-      { "step": 1, "sizePercent": 25, "trigger": "initial_signal" },
-      { "step": 2, "sizePercent": 25, "trigger": "price <= avgEntry - atr14 * 0.7" },
-      { "step": 3, "sizePercent": 25, "trigger": "price <= avgEntry - atr14 * 1.2" },
-      { "step": 4, "sizePercent": 25, "trigger": "price <= avgEntry - atr14 * 2.0" }
+      { "step": 1, "sizePercent": 25 },
+      { "step": 2, "sizePercent": 25, "atrMult": 0.7 },
+      { "step": 3, "sizePercent": 25, "atrMult": 1.2 },
+      { "step": 4, "sizePercent": 25, "atrMult": 2.0 }
     ]
   },
   "exit": {
     "takeProfit": [
-      { "sizePercent": 30, "trigger": "price >= avgEntry + atr14 * 0.7" },
-      { "sizePercent": 30, "trigger": "price >= avgEntry + atr14 * 1.2" },
-      { "sizePercent": 30, "trigger": "price >= avgEntry + atr14 * 2.0" }
+      { "sizePercent": 30, "pnlPercent": 3 },
+      { "sizePercent": 30, "pnlPercent": 6 },
+      { "sizePercent": 30, "pnlPercent": 10 }
     ],
+    "stopLoss": { "sizePercent": 100, "pnlPercent": 4 },
     "trailingStop": { "enabled": true, "sizePercent": 10, "atrMultiplier": 1.5 }
   },
   "risk": {
@@ -51,7 +65,7 @@
     "maxWeeklyLossPercent": 5,
     "maxConsecutiveLosses": 3,
     "minLiquidationDistancePercent": 5,
-    "maxOpenPositions": 1,
+    "maxOpenPositions": 2,
     "disableNewEntryWhenOrderPending": true
   }
 }
