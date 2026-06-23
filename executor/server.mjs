@@ -5,7 +5,8 @@
 // 의존성 없음 (Node 18+ 내장 http + fetch + crypto).
 // 환경변수:
 //   PORT             (기본 8080)
-//   BINANCE_BASE     예) https://testnet.binancefuture.com
+//   BINANCE_BASE     서명 작업(주문/계좌) 대상. 예) https://testnet.binancefuture.com
+//   PUBLIC_BASE      공개 조회(klines) 대상. 기본 https://fapi.binance.com (백테스트용 실데이터)
 //   BINANCE_API_KEY
 //   BINANCE_API_SECRET
 //   PROXY_TOKEN      워커-Executor 공유 시크릿 (Bearer 인증)
@@ -14,6 +15,9 @@ import crypto from 'node:crypto';
 
 const PORT = Number(process.env.PORT ?? 8080);
 const BASE = process.env.BINANCE_BASE ?? 'https://testnet.binancefuture.com';
+// 공개 데이터(klines)는 키가 필요 없고 testnet은 심볼·과거데이터가 빈약하다.
+// 백테스트가 실제 시세를 쓰도록 공개 조회는 항상 프로덕션에서 가져온다.
+const PUBLIC_BASE = process.env.PUBLIC_BASE ?? 'https://fapi.binance.com';
 const API_KEY = process.env.BINANCE_API_KEY ?? '';
 const API_SECRET = process.env.BINANCE_API_SECRET ?? '';
 const TOKEN = process.env.PROXY_TOKEN ?? '';
@@ -44,7 +48,7 @@ async function signedRequest(method, path, params) {
 
 async function publicRequest(path, params) {
   const usp = new URLSearchParams(params);
-  const res = await fetch(`${BASE}${path}?${usp.toString()}`);
+  const res = await fetch(`${PUBLIC_BASE}${path}?${usp.toString()}`);
   const body = await res.text();
   return { ok: res.ok, status: res.status, body };
 }
@@ -73,7 +77,7 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://localhost:${PORT}`);
 
-    if (url.pathname === '/health') return send(res, 200, { ok: true, base: BASE });
+    if (url.pathname === '/health') return send(res, 200, { ok: true, base: BASE, publicBase: PUBLIC_BASE });
 
     // Bearer 인증.
     const auth = req.headers['authorization'] ?? '';
