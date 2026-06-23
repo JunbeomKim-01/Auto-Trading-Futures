@@ -1055,9 +1055,9 @@ export function dashboardHtml(): string {
 <header class="topbar">
   <div class="brand"><span class="brand-mark">AT</span><span>Auto Trading Futures</span></div>
   <nav class="nav" aria-label="Workflow">
-    <a class="active" href="#dashboard">대시보드</a>
-    <a href="#logs">매매 로그</a>
-    <a href="#strategy">전략 생성</a>
+    <a class="active" href="#dashboard">모니터</a>
+    <a href="#logs">로그</a>
+    <a href="#strategy">전략</a>
     <a href="#backtest">백테스트</a>
     <a href="#apply">적용</a>
   </nav>
@@ -1090,8 +1090,8 @@ export function dashboardHtml(): string {
       <section id="logs" class="card view-logs">
         <div class="card-head">
           <div>
-            <h2>차트에서 매매 로그 보기</h2>
-            <p class="muted">어느 구간에서 매매했고, 당시 주문 금액·수량·상태가 어땠는지 먼저 차트로 확인합니다.</p>
+            <h2>매매 로그</h2>
+            <p class="muted">진입·청산 위치, 주문 금액·수량·상태.</p>
           </div>
           <span id="chartSummary" class="status info">chart</span>
         </div>
@@ -1101,8 +1101,8 @@ export function dashboardHtml(): string {
       <section class="card view-logs">
         <div class="card-head">
           <div>
-            <h2>왜 이렇게 매매를 못 했지?</h2>
-            <p class="muted">차트 마커를 본 뒤, 아래 판단 로그에서 점수 미달·리스크 차단·주문 실패 사유를 확인합니다.</p>
+            <h2>판단 로그</h2>
+            <p class="muted">점수 미달 · 리스크 차단 · 주문 실패 사유.</p>
           </div>
           <span id="logSummary" class="status info">logs</span>
         </div>
@@ -1112,8 +1112,8 @@ export function dashboardHtml(): string {
       <section id="strategy-lab" class="card view-strategy">
         <div class="card-head">
           <div>
-            <h2>전략 생성 마법사</h2>
-            <p class="muted">프리셋을 고른 뒤 진입, 청산, 수량, 백테스트 설정만 순서대로 확인합니다.</p>
+            <h2>전략 생성</h2>
+            <p class="muted">프리셋 → 진입 · 청산 · 수량 · 백테스트.</p>
           </div>
           <span id="builderStatus" class="status warn">draft</span>
         </div>
@@ -1269,7 +1269,7 @@ stop new entries when dailyLoss <= -2%</textarea>
               <div class="tool-head">
                 <div>
                   <h3>전략 저장소</h3>
-                  <p class="muted">좋은 전략은 버전으로 저장하고 이전 결과와 비교합니다.</p>
+                  <p class="muted">버전 저장 · 이전 결과 비교.</p>
                 </div>
                 <button class="btn ghost" type="button" onclick="saveStrategyVersion()">저장</button>
               </div>
@@ -1287,8 +1287,8 @@ stop new entries when dailyLoss <= -2%</textarea>
       <section id="backtest" class="card view-backtest">
         <div class="card-head">
           <div>
-            <h2>백테스트 결과 비교</h2>
-            <p class="muted">진입·청산 위치, 수익률, 승률, MDD, 손익비를 확인하고 여러 전략 결과를 나란히 비교합니다.</p>
+            <h2>백테스트</h2>
+            <p class="muted">수익률 · 승률 · MDD · 손익비, 전략 비교.</p>
           </div>
           <button id="btRunBtn" class="btn primary" type="button" onclick="previewBacktest()">백테스트 실행</button>
         </div>
@@ -1348,7 +1348,7 @@ stop new entries when dailyLoss <= -2%</textarea>
           <div class="tool-head">
             <div>
               <h3>지표 조합 자동 탐색</h3>
-              <p class="muted">전략 생성 마법사에서 켜둔 보조지표들을 조합해 후보 조건을 만들고 백테스트로 랭킹합니다.</p>
+              <p class="muted">켜둔 지표 조합 → 후보 생성 → 백테스트 랭킹.</p>
             </div>
             <button class="btn ghost" type="button" onclick="runParameterSearch()">탐색 시작</button>
           </div>
@@ -1363,7 +1363,7 @@ stop new entries when dailyLoss <= -2%</textarea>
           <div class="tool-head">
             <div>
               <h3>전략 결과 비교</h3>
-              <p class="muted">최근 실행한 전략과 저장된 후보를 같은 기준으로 비교합니다.</p>
+              <p class="muted">최근 실행 · 저장 후보 동일 기준 비교.</p>
             </div>
           </div>
           <div id="compareGrid" class="compare-grid"></div>
@@ -1375,8 +1375,8 @@ stop new entries when dailyLoss <= -2%</textarea>
       <section class="card dashboard-only">
         <div class="card-head">
           <div>
-            <h2>정지/재개</h2>
-            <p class="muted">손실이 커지면 전략 편집보다 먼저 봇을 멈춥니다.</p>
+            <h2>봇 제어</h2>
+            <p class="muted">OFF · 신규 진입 중지 · ON.</p>
           </div>
         </div>
         <div class="actions" style="margin-top:0;">
@@ -1390,7 +1390,7 @@ stop new entries when dailyLoss <= -2%</textarea>
         <div class="card-head">
           <div>
             <h2>현재 포지션</h2>
-            <p class="muted">기존 포지션은 진입 당시 전략 버전으로 관리합니다.</p>
+            <p class="muted">진입 당시 전략 버전으로 관리.</p>
           </div>
           <span id="positionChip" class="status">없음</span>
         </div>
@@ -1401,7 +1401,7 @@ stop new entries when dailyLoss <= -2%</textarea>
         <div class="card-head">
           <div>
             <h2>최근 주문</h2>
-            <p class="muted">주문 실패가 있으면 전략 적용 전에 먼저 원인을 확인합니다.</p>
+            <p class="muted">체결 · 실패 내역.</p>
           </div>
           <span id="orderChip" class="status ok">정상</span>
         </div>
@@ -1411,8 +1411,8 @@ stop new entries when dailyLoss <= -2%</textarea>
       <section id="apply" class="card view-apply">
         <div class="card-head">
           <div>
-            <h2>전략 변경 및 적용</h2>
-            <p class="muted">백테스트 통과 후 TESTNET 적용, 이후 봇 ON 순서입니다.</p>
+            <h2>전략 적용</h2>
+            <p class="muted">백테스트 통과 → TESTNET 적용 → 봇 ON.</p>
           </div>
           <span id="applyStatus" class="status warn">locked</span>
         </div>
@@ -2510,9 +2510,9 @@ function renderVersions() {
       '<div class="mini-item"><div><b>' + esc(s.name) + '</b><br /><span>' +
         (m ? metricsLine(m) : '백테스트 지표 없음') + ' · ' + esc(s.symbol) + '</span>' +
         '<div class="actions" style="margin-top:6px;gap:6px;">' +
-          '<button class="btn ghost" type="button" onclick="loadStrategy(\'' + sid + '\')">불러오기</button>' +
-          (s.status === 'active' ? '' : '<button class="btn primary" type="button" onclick="activateStrategy(\'' + sid + '\')">적용</button>') +
-          (s.status === 'active' ? '' : '<button class="btn ghost" type="button" onclick="deleteStrategy(\'' + sid + '\')">삭제</button>') +
+          '<button class="btn ghost" type="button" onclick="loadStrategy(\\'' + sid + '\\')">불러오기</button>' +
+          (s.status === 'active' ? '' : '<button class="btn primary" type="button" onclick="activateStrategy(\\'' + sid + '\\')">적용</button>') +
+          (s.status === 'active' ? '' : '<button class="btn ghost" type="button" onclick="deleteStrategy(\\'' + sid + '\\')">삭제</button>') +
         '</div>' +
       '</div>' +
       '<span class="status ' + badge + '">' + esc(s.status) + '</span></div>'
