@@ -6,6 +6,7 @@ import { runStrategyTick } from './runner';
 import { D1Repository } from './storage/d1Repository';
 import { KvRepository } from './storage/kvRepository';
 import { dashboardHtml } from './dashboard/page';
+import { BinanceClient } from './market/binanceClient';
 
 const VALID_MODES: RunMode[] = ['OFF', 'ALERT_ONLY', 'PAPER', 'TESTNET', 'LIVE_SMALL', 'LIVE_FULL'];
 
@@ -27,11 +28,25 @@ export default {
     if (path === '/' ) return html(dashboardHtml());
 
     if (path === '/api/status') return json(await status(env));
+    if (path === '/api/health') return json(await health(env));
     if (path === '/api/signals') return json(await new D1Repository(env).recentSignals(30));
     if (path === '/api/orders') return json(await new D1Repository(env).recentOrders(30));
     if (path === '/api/klines') return handleKlines(url, env);
     if (path === '/api/backtest' && req.method === 'POST') {
       return handleBacktest(req, env);
+    }
+
+    if (path === '/api/strategies' && req.method === 'GET') {
+      return json(await new D1Repository(env).listStrategies());
+    }
+    if (path === '/api/strategies' && req.method === 'POST') {
+      return handleSaveStrategy(req, env);
+    }
+    if (path === '/api/strategies/activate' && req.method === 'POST') {
+      return handleStrategyAction(req, env, 'activate');
+    }
+    if (path === '/api/strategies/delete' && req.method === 'POST') {
+      return handleStrategyAction(req, env, 'delete');
     }
 
     if (path === '/api/mode' && req.method === 'POST') {
@@ -52,6 +67,35 @@ export default {
     return json({ error: 'not found' }, 404);
   },
 };
+
+async function handleSaveStrategy(req: Request, env: Env): Promise<Response> {
+  const body = (await req.json().catch(() => ({}))) as {
+    config?: StrategyConfig;
+    name?: string;
+    metrics?: unknown;
+  };
+  if (!body.config || !body.config.strategyId || !body.config.symbol) {
+    return json({ error: 'config(strategyId, symbol 포함)가 필요합니다' }, 400);
+  }
+  const name = (body.name ?? body.config.name ?? '저장 전략').trim() || '저장 전략';
+  const saved = await new D1Repository(env).saveStrategy(body.config, name, body.metrics ?? null);
+  return json({ ok: true, ...saved });
+}
+
+async function handleStrategyAction(
+  req: Request, env: Env, action: 'activate' | 'delete',
+): Promise<Response> {
+  const body = (await req.json().catch(() => ({}))) as { strategyId?: string };
+  if (!body.strategyId) return json({ error: 'strategyId가 필요합니다' }, 400);
+  try {
+    const repo = new D1Repository(env);
+    if (action === 'activate') await repo.activateStrategy(body.strategyId);
+    else await repo.deleteStrategy(body.strategyId);
+    return json({ ok: true });
+  } catch (e) {
+    return json({ error: e instanceof Error ? e.message : String(e) }, 400);
+  }
+}
 
 async function handleBacktest(req: Request, env: Env): Promise<Response> {
   try {
@@ -277,10 +321,55 @@ async function status(env: Env) {
   const positions = await d1.getOpenPositions('BTCUSDT');
   const lastCandle = await kv.getLastProcessedCandle('BTCUSDT');
   // position: 단일 표시용 하위호환(롱 우선). positions: 헤지 슬롯 전체.
+  const position = positions.long ?? positions.short;
+
+  // 실거래/테스트넷 + 보유 포지션일 때만 Binance에서 실시간 지표(markPrice/청산가/미실현)
+  // 를 가져온다. 실패해도 status 본체는 유지(live=null).
+  let live = null;
+  if (position && (mode === 'TESTNET' || mode === 'LIVE_SMALL' || mode === 'LIVE_FULL')) {
+    live = await positionMetrics(env, mode, 'BTCUSDT', position.side).catch(() => null);
+  }
+
   return {
     mode, symbol: 'BTCUSDT', lastProcessedCandle: lastCandle,
-    position: positions.long ?? positions.short, positions,
+    position, positions, live,
   };
+}
+
+// Binance positionRisk에서 표시용 실시간 지표 추출.
+async function positionMetrics(env: Env, mode: RunMode, symbol: string, side: 'LONG' | 'SHORT') {
+  const raw = await new BinanceClient(env, mode).getPositionRisk(symbol);
+  const rows = (Array.isArray(raw) ? raw : []) as Array<Record<string, unknown>>;
+  const row =
+    rows.find((r) => r.symbol === symbol && (r.positionSide === side || r.positionSide === 'BOTH')) ??
+    rows[0];
+  if (!row) return null;
+  const markPrice = Number(row.markPrice);
+  const liquidationPrice = Number(row.liquidationPrice);
+  const liqDistancePct =
+    markPrice > 0 && liquidationPrice > 0
+      ? (Math.abs(markPrice - liquidationPrice) / markPrice) * 100
+      : null;
+  return {
+    markPrice,
+    liquidationPrice,
+    unrealizedPnl: Number(row.unRealizedProfit),
+    leverage: Number(row.leverage),
+    notional: Math.abs(Number(row.notional ?? 0)),
+    liqDistancePct,
+  };
+}
+
+// Executor 연결 상태 핑. 터널이 죽으면 여기서 잡힌다.
+async function health(env: Env) {
+  const executor = env.EXECUTOR_URL?.replace(/\/$/, '');
+  if (!executor) return { executor: 'none' };
+  try {
+    const res = await fetch(`${executor}/health`, { signal: AbortSignal.timeout(4000) });
+    return { executor: res.ok ? 'ok' : 'down', status: res.status };
+  } catch (e) {
+    return { executor: 'down', error: e instanceof Error ? e.message : String(e) };
+  }
 }
 
 function json(data: unknown, status = 200): Response {

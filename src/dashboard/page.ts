@@ -10,23 +10,23 @@ export function dashboardHtml(): string {
 <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
   :root {
-    --canvas:#0b0e11;
-    --card:#1e2329;
-    --panel:#171b21;
-    --elevated:#2b3139;
-    --line:#2b3139;
-    --text:#eaecef;
-    --muted:#707a8a;
-    --muted-strong:#929aa5;
-    --primary:#FCD535;
-    --primary-active:#d6a908;
-    --ink:#181a20;
-    --up:#0ecb81;
-    --down:#f6465d;
-    --blue:#3b82f6;
-    --live:#d9342b;
-    --surface:linear-gradient(180deg, #181d24, #14181e);
-    --radius:12px;
+    --canvas:#131722;
+    --card:#1e222d;
+    --panel:#1e222d;
+    --elevated:#2a2e39;
+    --line:#2a2e39;
+    --text:#d1d4dc;
+    --muted:#787b86;
+    --muted-strong:#9598a1;
+    --primary:#2962ff;
+    --primary-active:#1e53e5;
+    --ink:#ffffff;
+    --up:#26a69a;
+    --down:#ef5350;
+    --blue:#2962ff;
+    --live:#ef5350;
+    --surface:#1e222d;
+    --radius:4px;
   }
   * { box-sizing:border-box; }
   html { background:var(--canvas); }
@@ -42,12 +42,12 @@ export function dashboardHtml(): string {
   textarea, input, select {
     width:100%;
     border:1px solid var(--line);
-    border-radius:6px;
+    border-radius:4px;
     background:#11161c;
     color:var(--text);
     outline:none;
   }
-  textarea:focus, input:focus, select:focus { box-shadow:0 0 0 2px rgba(59,130,246,.45); }
+  textarea:focus, input:focus, select:focus { box-shadow:0 0 0 2px rgba(41,98,255,.45); }
   .num {
     font-family:"IBM Plex Sans", BinancePlex, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-variant-numeric:tabular-nums;
@@ -76,7 +76,7 @@ export function dashboardHtml(): string {
     height:22px;
     display:grid;
     place-items:center;
-    border-radius:6px;
+    border-radius:4px;
     background:var(--primary);
     color:var(--ink);
     font-size:11px;
@@ -109,7 +109,7 @@ export function dashboardHtml(): string {
     gap:7px;
     min-height:28px;
     padding:0 9px;
-    border-radius:6px;
+    border-radius:4px;
     border:1px solid var(--line);
     background:var(--card);
     color:var(--muted-strong);
@@ -117,10 +117,10 @@ export function dashboardHtml(): string {
     font-weight:600;
     white-space:nowrap;
   }
-  .status.ok { color:var(--up); background:rgba(14,203,129,.1); }
-  .status.bad { color:var(--down); background:rgba(246,70,93,.1); }
-  .status.warn { color:var(--primary-active); background:rgba(240,185,11,.1); }
-  .status.info { color:var(--blue); background:rgba(59,130,246,.1); }
+  .status.ok { color:var(--up); background:rgba(38,166,154,.1); }
+  .status.bad { color:var(--down); background:rgba(239,83,80,.1); }
+  .status.warn { color:var(--primary-active); background:rgba(41,98,255,.1); }
+  .status.info { color:var(--blue); background:rgba(41,98,255,.1); }
   .dot { width:8px; height:8px; border-radius:50%; background:var(--muted); }
   .dot.up { background:var(--up); }
   .dot.down { background:var(--down); }
@@ -170,61 +170,6 @@ export function dashboardHtml(): string {
   .page:not([data-view="dashboard"]) .view-strategy,
   .page:not([data-view="dashboard"]) .view-backtest,
   .page:not([data-view="dashboard"]) .view-apply { max-width:1040px; }
-  .flow {
-    display:grid;
-    grid-template-columns:repeat(6, minmax(0, 1fr));
-    gap:8px;
-    margin-bottom:20px;
-  }
-  .flow-step {
-    min-height:62px;
-    padding:11px;
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    background:var(--surface);
-  }
-  .flow-step span {
-    display:block;
-    color:var(--muted);
-    font-size:11px;
-    font-weight:600;
-  }
-  .flow-step b {
-    display:block;
-    margin-top:5px;
-    font-size:13px;
-    font-weight:650;
-  }
-  .dashboard-cards {
-    display:grid;
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-    gap:12px;
-    margin-bottom:20px;
-  }
-  .dash-link {
-    display:block;
-    min-height:132px;
-    padding:16px;
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    background:var(--surface);
-    color:var(--text);
-    text-decoration:none;
-    transition:border-color .15s, transform .15s;
-  }
-  .dash-link:hover { border-color:var(--primary); transform:translateY(-2px); }
-  .dash-link b {
-    display:block;
-    margin-top:8px;
-    font-size:15px;
-    font-weight:650;
-  }
-  .dash-link p {
-    margin-top:8px;
-    color:var(--muted-strong);
-    font-size:13px;
-    line-height:1.45;
-  }
   .grid {
     display:grid;
     grid-template-columns:minmax(0, 1.5fr) minmax(320px, .8fr);
@@ -235,7 +180,7 @@ export function dashboardHtml(): string {
   .card {
     padding:clamp(16px, 2.2vw, 22px);
     border:1px solid var(--line);
-    border-radius:14px;
+    border-radius:4px;
     background:var(--surface);
   }
   .card-head {
@@ -277,7 +222,7 @@ export function dashboardHtml(): string {
   .metric {
     padding:14px;
     border:1px solid var(--line);
-    border-radius:10px;
+    border-radius:4px;
     background:rgba(255,255,255,.025);
   }
   .metric b {
@@ -295,7 +240,7 @@ export function dashboardHtml(): string {
   .btn {
     min-height:40px;
     border:1px solid var(--line);
-    border-radius:6px;
+    border-radius:4px;
     padding:0 14px;
     background:var(--card);
     color:var(--text);
@@ -314,20 +259,12 @@ export function dashboardHtml(): string {
   .btn.ghost {
     background:#11161c;
   }
-  .loss-alert {
-    margin-top:16px;
-    padding:14px;
-    border:1px solid rgba(246,70,93,.35);
-    border-left:4px solid var(--down);
-    border-radius:6px;
-    background:rgba(246,70,93,.06);
-  }
   .trade-chart {
     position:relative;
     min-height:360px;
     overflow:hidden;
     border:1px solid var(--line);
-    border-radius:8px;
+    border-radius:4px;
     background:
       linear-gradient(to right, rgba(234,236,239,.045) 1px, transparent 1px) 0 0 / 72px 100%,
       linear-gradient(to bottom, rgba(234,236,239,.045) 1px, transparent 1px) 0 0 / 100% 58px,
@@ -375,7 +312,7 @@ export function dashboardHtml(): string {
     padding:8px 9px;
     border:1px solid var(--line);
     border-left:4px solid var(--up);
-    border-radius:6px;
+    border-radius:4px;
     background:rgba(30,35,41,.96);
     transform:translate(-50%, -50%);
   }
@@ -472,7 +409,7 @@ export function dashboardHtml(): string {
     min-height:32px;
     padding:0 12px;
     border:1px solid var(--line);
-    border-radius:6px;
+    border-radius:4px;
     background:#11161c;
     color:var(--muted-strong);
     font-size:13px;
@@ -521,8 +458,8 @@ export function dashboardHtml(): string {
   .tool-panel {
     padding:clamp(14px, 2vw, 18px);
     border:1px solid var(--line);
-    border-radius:12px;
-    background:linear-gradient(180deg, #181d24, #14181e);
+    border-radius:4px;
+    background:#1e222d;
   }
   .tool-head {
     display:flex;
@@ -542,7 +479,7 @@ export function dashboardHtml(): string {
     min-height:142px;
     padding:12px;
     border:1px solid var(--line);
-    border-radius:10px;
+    border-radius:4px;
     background:rgba(255,255,255,.025);
   }
   .indicator-top {
@@ -581,7 +518,7 @@ export function dashboardHtml(): string {
     transition:.18s ease;
   }
   .switch input:checked + span {
-    background:rgba(252,213,53,.18);
+    background:rgba(41,98,255,.18);
     border-color:var(--primary);
   }
   .switch input:checked + span::after {
@@ -631,7 +568,7 @@ export function dashboardHtml(): string {
     align-items:end;
     padding:10px;
     border:1px solid var(--line);
-    border-radius:8px;
+    border-radius:4px;
     background:#11161c;
   }
   .exit-row.stop {
@@ -683,14 +620,14 @@ export function dashboardHtml(): string {
     gap:4px;
     padding:6px;
     border:1px solid var(--line);
-    border-radius:12px;
+    border-radius:4px;
     background:rgba(255,255,255,.02);
   }
   .wizard-step {
     flex:1; min-width:0;
     display:flex; align-items:center; justify-content:center; gap:8px;
     padding:10px 8px;
-    border:0; border-radius:8px;
+    border:0; border-radius:4px;
     background:transparent;
     color:var(--muted);
     text-align:center;
@@ -706,7 +643,7 @@ export function dashboardHtml(): string {
   .wizard-step.active { color:var(--ink); background:var(--primary); }
   .wizard-step.active .wstep-num { background:var(--ink); color:var(--primary); border-color:var(--ink); }
   .wizard-step.done { color:var(--text); }
-  .wizard-step.done .wstep-num { border-color:var(--up); background:rgba(14,203,129,.16); color:var(--up); }
+  .wizard-step.done .wstep-num { border-color:var(--up); background:rgba(38,166,154,.16); color:var(--up); }
   @media (max-width: 640px) {
     .wizard-step b { display:none; }
     .wizard-step.active b { display:inline; }
@@ -740,7 +677,7 @@ export function dashboardHtml(): string {
   .preset-card:hover { border-color:var(--muted); transform:translateY(-2px); }
   .preset-card.active {
     border-color:var(--primary);
-    background:rgba(252,213,53,.08);
+    background:rgba(41,98,255,.08);
   }
   .preset-card b {
     display:block;
@@ -755,7 +692,7 @@ export function dashboardHtml(): string {
   }
   details.advanced {
     border:1px solid var(--line);
-    border-radius:8px;
+    border-radius:4px;
     background:#171c22;
   }
   details.advanced summary {
@@ -774,26 +711,26 @@ export function dashboardHtml(): string {
     margin-bottom:14px;
     padding:clamp(16px, 2.4vw, 22px);
     border:1px solid var(--line);
-    border-radius:14px;
-    background:linear-gradient(180deg, #1a1f26, #14181e);
+    border-radius:4px;
+    background:#1e222d;
   }
-  .verdict.ok   { border-color:rgba(14,203,129,.45); box-shadow:0 0 0 1px rgba(14,203,129,.12) inset; }
-  .verdict.warn { border-color:rgba(240,185,11,.45); }
+  .verdict.ok   { border-color:rgba(38,166,154,.45); box-shadow:0 0 0 1px rgba(38,166,154,.12) inset; }
+  .verdict.warn { border-color:rgba(41,98,255,.45); }
   .verdict-head { display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; }
   .verdict-badge {
-    flex:0 0 auto; width:54px; height:54px; border-radius:14px;
+    flex:0 0 auto; width:54px; height:54px; border-radius:4px;
     display:grid; place-items:center; font-size:26px;
     background:rgba(255,255,255,.04); border:1px solid var(--line);
   }
-  .verdict.ok   .verdict-badge { background:rgba(14,203,129,.12); border-color:rgba(14,203,129,.4); }
-  .verdict.warn .verdict-badge { background:rgba(240,185,11,.12); border-color:rgba(240,185,11,.4); }
+  .verdict.ok   .verdict-badge { background:rgba(38,166,154,.12); border-color:rgba(38,166,154,.4); }
+  .verdict.warn .verdict-badge { background:rgba(41,98,255,.12); border-color:rgba(41,98,255,.4); }
   .verdict-text { min-width:0; }
   .verdict-tag {
     display:inline-block; margin-bottom:6px; padding:2px 9px; border-radius:999px;
     font-size:11px; font-weight:700; background:var(--elevated); color:var(--muted-strong);
   }
-  .verdict.ok   .verdict-tag { background:rgba(14,203,129,.16); color:var(--up); }
-  .verdict.warn .verdict-tag { background:rgba(240,185,11,.16); color:var(--primary-active); }
+  .verdict.ok   .verdict-tag { background:rgba(38,166,154,.16); color:var(--up); }
+  .verdict.warn .verdict-tag { background:rgba(41,98,255,.16); color:var(--primary-active); }
   .verdict-text h3 { margin:0; font-size:clamp(18px, 2.2vw, 22px); font-weight:700; }
   .verdict-text p { margin:7px 0 0; color:var(--muted-strong); font-size:13px; line-height:1.55; }
   .verdict-cta { margin-top:16px; }
@@ -806,7 +743,7 @@ export function dashboardHtml(): string {
     min-height:62px;
     padding:11px;
     border:1px solid var(--line);
-    border-radius:10px;
+    border-radius:4px;
     background:rgba(255,255,255,.025);
   }
   .criteria span {
@@ -820,10 +757,10 @@ export function dashboardHtml(): string {
     font-variant-numeric:tabular-nums;
   }
   .criteria-mark { font-size:11px; }
-  .criteria.ok   { border-color:rgba(14,203,129,.35); }
+  .criteria.ok   { border-color:rgba(38,166,154,.35); }
   .criteria.ok b { color:var(--up); }
   .criteria.ok .criteria-mark { color:var(--up); }
-  .criteria.warn, .criteria.bad { border-color:rgba(240,185,11,.3); }
+  .criteria.warn, .criteria.bad { border-color:rgba(41,98,255,.3); }
   .criteria.warn b, .criteria.bad b { color:var(--primary-active); }
   .criteria.warn .criteria-mark, .criteria.bad .criteria-mark { color:var(--primary-active); }
   @media (max-width: 640px) {
@@ -835,7 +772,7 @@ export function dashboardHtml(): string {
     display:grid;
     place-items:center;
     border:1px solid var(--line);
-    border-radius:6px;
+    border-radius:4px;
     background:#11161c;
     color:var(--text);
     font-size:18px;
@@ -858,7 +795,7 @@ export function dashboardHtml(): string {
     min-height:42px;
     padding:10px;
     border:1px solid var(--line);
-    border-radius:10px;
+    border-radius:4px;
     background:rgba(255,255,255,.025);
   }
   .mini-item b {
@@ -886,7 +823,7 @@ export function dashboardHtml(): string {
     border-radius:var(--radius);
     background:var(--surface);
   }
-  .compare-card.best { border-color:rgba(14,203,129,.55); }
+  .compare-card.best { border-color:rgba(38,166,154,.55); }
   .compare-card b {
     display:block;
     margin-top:8px;
@@ -905,7 +842,7 @@ export function dashboardHtml(): string {
     min-height:26px;
     padding:0 8px;
     border:1px solid var(--line);
-    border-radius:6px;
+    border-radius:4px;
     background:#11161c;
     color:var(--muted-strong);
     font-size:12px;
@@ -931,7 +868,7 @@ export function dashboardHtml(): string {
   .table-wrap {
     overflow:auto;
     border:1px solid var(--line);
-    border-radius:8px;
+    border-radius:4px;
   }
   table {
     width:100%;
@@ -953,7 +890,7 @@ export function dashboardHtml(): string {
   .mobile-actions { display:none; }
   @media (max-width: 1100px) {
     .grid, .lab-grid { grid-template-columns:1fr; }
-    .flow, .result-grid, .dashboard-cards, .preset-grid, .criteria-row { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .result-grid, .preset-grid, .criteria-row { grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .form-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .compare-grid { grid-template-columns:1fr; }
   }
@@ -962,13 +899,12 @@ export function dashboardHtml(): string {
     .nav { order:3; width:100%; }
     .top-actions .btn.ghost { display:none; }
     .page { padding:14px 12px 82px; }
-    .flow, .result-grid, .form-grid, .two-col, .dashboard-cards, .indicator-grid, .search-grid, .wizard-steps, .preset-grid, .criteria-row, .sizing-grid { grid-template-columns:1fr; }
+    .result-grid, .form-grid, .two-col, .indicator-grid, .search-grid, .wizard-steps, .preset-grid, .criteria-row, .sizing-grid { grid-template-columns:1fr; }
     .condition-row, .exit-row, .exit-row.stop { grid-template-columns:1fr; }
     .sizing-row { grid-template-columns:1fr 1fr; }
     .condition-row .icon-btn, .sizing-row .icon-btn { width:100%; }
     .wizard-actions { flex-direction:column; }
     h1 { font-size:24px; }
-    .hero-pnl-num { font-size:42px; }
     .mobile-actions {
       position:fixed;
       left:0;
@@ -984,7 +920,7 @@ export function dashboardHtml(): string {
     }
     .mobile-actions button {
       min-height:44px;
-      border-radius:6px;
+      border-radius:4px;
       border:1px solid var(--line);
       background:var(--elevated);
       color:var(--text);
@@ -1003,7 +939,7 @@ export function dashboardHtml(): string {
   .bt-chart-head .muted { font-size:11px; }
   .chart-host {
     position:relative; width:100%; height:340px;
-    border:1px solid var(--line); border-radius:8px;
+    border:1px solid var(--line); border-radius:4px;
     background:#0e1318; overflow:hidden;
   }
   .chart-host.equity { height:200px; }
@@ -1016,30 +952,30 @@ export function dashboardHtml(): string {
   .bt-legend span { display:inline-flex; align-items:center; gap:5px; }
   .bt-legend i { width:9px; height:9px; border-radius:2px; display:inline-block; }
   .bt-legend i.in { background:var(--up); }
-  .bt-legend i.win { background:#2ebd85; }
+  .bt-legend i.win { background:#26a69a; }
   .bt-legend i.loss { background:var(--down); }
   .bt-legend i.eq { background:var(--primary); }
 
   /* ── 지표 카드 재설계 (한눈에 on/off + 현재값) ── */
   .ind-add-bar { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
   .ind-add-bar select {
-    flex:1; padding:8px 10px; border-radius:7px; border:1px solid var(--line);
+    flex:1; padding:8px 10px; border-radius:4px; border:1px solid var(--line);
     background:var(--elevated); color:var(--text); font-size:12px;
   }
   .indicator-card { min-height:0; transition:border-color .15s, opacity .15s; }
   .indicator-card.off { opacity:.5; }
-  .indicator-card.on { border-color:rgba(46,189,133,.45); }
+  .indicator-card.on { border-color:rgba(38,166,154,.45); }
   .ind-head { display:flex; align-items:center; gap:8px; }
   .ind-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); flex:0 0 auto; }
-  .indicator-card.on .ind-dot { background:#2ebd85; box-shadow:0 0 0 3px rgba(46,189,133,.15); }
+  .indicator-card.on .ind-dot { background:#26a69a; box-shadow:0 0 0 3px rgba(38,166,154,.15); }
   .ind-head h3 { margin:0; font-size:13px; font-weight:650; }
   .ind-head .ind-hint { font-size:11px; color:var(--muted); }
   .ind-head .spacer { flex:1; }
   .ind-remove {
     background:transparent; border:0; color:var(--muted); cursor:pointer;
-    font-size:16px; line-height:1; padding:2px 4px; border-radius:5px;
+    font-size:16px; line-height:1; padding:2px 4px; border-radius:4px;
   }
-  .ind-remove:hover { color:var(--down); background:rgba(246,70,93,.12); }
+  .ind-remove:hover { color:var(--down); background:rgba(239,83,80,.12); }
   .ind-summary {
     font-size:12px; color:var(--muted-strong); font-variant-numeric:tabular-nums;
     padding:2px 0 2px; letter-spacing:.2px;
@@ -1049,67 +985,13 @@ export function dashboardHtml(): string {
   .indicator-card.off .ind-params { display:none; }
   .ind-tf { width:auto; min-width:64px; height:24px; padding:0 6px; font-size:11px; flex:0 0 auto; }
   .recipe-select {
-    width:100%; height:42px; padding:0 12px; border-radius:8px;
-    border:1px solid var(--primary); background:rgba(252,213,53,.08);
+    width:100%; height:42px; padding:0 12px; border-radius:4px;
+    border:1px solid var(--primary); background:rgba(41,98,255,.08);
     color:var(--text); font-size:13px; font-weight:600;
   }
 
   /* ── 홈 히어로 (신호등 + 1액션 + 신뢰 스트립) ── */
-  .hero {
-    display:grid;
-    grid-template-columns:minmax(0,1fr) clamp(220px, 26%, 300px);
-    gap:clamp(16px, 3vw, 28px);
-    padding:clamp(20px, 3vw, 32px);
-    border:1px solid var(--line); border-radius:16px;
-    background:
-      radial-gradient(120% 140% at 0% 0%, rgba(252,213,53,.06), transparent 55%),
-      linear-gradient(180deg, #1a1f26, #14181e);
-  }
-  .hero-main { min-width:0; display:flex; flex-direction:column; gap:14px; }
-  .signal { display:flex; align-items:center; gap:14px; }
-  .signal-ring {
-    position:relative; flex:0 0 auto; width:48px; height:48px; border-radius:50%;
-    display:grid; place-items:center; background:rgba(255,255,255,.04);
-    border:1px solid var(--line);
-  }
-  .signal-core { width:18px; height:18px; border-radius:50%; background:var(--muted); transition:.2s; }
-  .signal-text { display:flex; flex-direction:column; gap:2px; min-width:0; }
-  .signal-label { font-size:15px; font-weight:700; letter-spacing:.2px; }
-  .signal-sub { font-size:12px; color:var(--muted-strong); }
-  .signal.ok    .signal-core { background:var(--up);   box-shadow:0 0 0 6px rgba(14,203,129,.16), 0 0 22px rgba(14,203,129,.45); }
-  .signal.warn  .signal-core { background:var(--primary); box-shadow:0 0 0 6px rgba(240,185,11,.16), 0 0 22px rgba(240,185,11,.4); }
-  .signal.bad   .signal-core { background:var(--down); box-shadow:0 0 0 6px rgba(246,70,93,.18), 0 0 22px rgba(246,70,93,.5); animation:pulse 1.4s ease-in-out infinite; }
-  .signal.idle  .signal-core { background:var(--muted); }
-  .signal.ok .signal-ring { border-color:rgba(14,203,129,.4); }
-  .signal.warn .signal-ring { border-color:rgba(240,185,11,.4); }
-  .signal.bad .signal-ring { border-color:rgba(246,70,93,.45); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
-
-  .hero-pnl { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
-  .hero-pnl-label { font-size:12px; font-weight:600; color:var(--muted); }
-  .hero-pnl-num { font-size:clamp(40px, 7vw, 60px); line-height:1; font-weight:680; }
-  .hero-title { font-size:clamp(19px, 2.4vw, 24px); line-height:1.25; font-weight:680; }
-  .hero-copy { max-width:60ch; color:var(--muted-strong); font-size:14px; line-height:1.6; }
-  .hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
-  .btn.lg { min-height:46px; padding:0 20px; border-radius:9px; font-size:14px; }
-
-  .hero-side { display:flex; flex-direction:column; gap:10px; }
-  .trust-card {
-    display:flex; flex-direction:column; gap:4px;
-    padding:14px 16px; border:1px solid var(--line); border-radius:12px;
-    background:rgba(255,255,255,.025);
-  }
-  .trust-card b { font-size:17px; font-weight:680; }
-  .trust-note { font-size:11px; color:var(--muted); }
-  @media (max-width: 900px) {
-    .hero { grid-template-columns:1fr; }
-    .hero-side { flex-direction:row; flex-wrap:wrap; }
-    .hero-side .trust-card { flex:1 1 30%; }
-  }
-  @media (max-width: 520px) {
-    .hero-actions .btn { flex:1 1 100%; }
-    .hero-side .trust-card { flex:1 1 100%; }
-  }
+  .btn.lg { min-height:46px; padding:0 20px; border-radius:4px; font-size:14px; }
   /* ── 지표 설명 툴팁 (? 호버) ── */
   .ind-help {
     position:relative; flex:0 0 auto; width:16px; height:16px;
@@ -1122,13 +1004,51 @@ export function dashboardHtml(): string {
     content:attr(data-tip);
     position:absolute; left:0; top:130%; z-index:60;
     width:230px; padding:9px 11px;
-    border:1px solid var(--line); border-radius:7px;
+    border:1px solid var(--line); border-radius:4px;
     background:#0b0e11; color:var(--text);
     font-size:11px; font-weight:500; line-height:1.5; white-space:normal;
     box-shadow:0 6px 20px rgba(0,0,0,.45);
     opacity:0; visibility:hidden; transform:translateY(-3px); transition:.12s ease;
   }
   .ind-help:hover::after { opacity:1; visibility:visible; transform:translateY(0); }
+
+  /* --- Monitor (메인) --- */
+  .monitor { margin-bottom:14px; }
+  .statusbar {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:10px 14px; background:var(--panel);
+    border:1px solid var(--line); border-radius:4px;
+  }
+  .sb-grow { flex:1 1 auto; }
+  .mpill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:4px 9px; border-radius:3px; font-size:12px; font-weight:600;
+    background:var(--elevated); color:var(--muted-strong);
+    border:1px solid var(--line);
+  }
+  .mpill .num { color:var(--text); font-weight:680; }
+  .mpill.ghost { background:transparent; }
+  .mpill .dot { width:7px; height:7px; border-radius:999px; background:var(--muted); }
+  .mpill .dot.up { background:var(--up); box-shadow:0 0 0 3px rgba(38,166,154,.18); }
+  .mpill .dot.warn { background:#f0a020; }
+  .mpill .dot.down { background:var(--down); }
+  .mode-pill { letter-spacing:.04em; }
+  .mode-pill.live { background:rgba(239,83,80,.14); color:var(--down); border-color:rgba(239,83,80,.4); }
+  .mode-pill.test { background:rgba(240,160,32,.14); color:#f0a020; border-color:rgba(240,160,32,.4); }
+  .mode-pill.off { background:var(--elevated); color:var(--muted); }
+  .sb-pnl { display:flex; align-items:baseline; gap:7px; }
+  .sb-pnl .label { font-size:11px; color:var(--muted); }
+  .sb-pnl b { font-size:16px; }
+
+  /* position panel */
+  .pos-panel { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1px; background:var(--line); }
+  .pos-cell { background:var(--panel); padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
+  .pos-cell .k { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+  .pos-cell .v { font-size:15px; font-weight:660; }
+  .pos-cell.wide { grid-column:1 / -1; }
+  .pos-flat { padding:18px 12px; color:var(--muted); text-align:center; font-size:13px; }
+  .liq-near { color:var(--down) !important; }
+  @media (max-width:720px) { .pos-panel { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 </style>
 </head>
 <body>
@@ -1150,83 +1070,21 @@ export function dashboardHtml(): string {
 <div id="modeBanner" class="mode">TESTNET MODE - 실제 주문이 아닙니다.</div>
 
 <main id="appPage" class="page" data-view="dashboard">
-  <section class="flow dashboard-only" aria-label="Trading workflow">
-    <div class="flow-step"><span>1</span><b>수익률 확인</b></div>
-    <div class="flow-step"><span>2</span><b>손실이면 정지</b></div>
-    <div class="flow-step"><span>3</span><b>로그로 원인 분석</b></div>
-    <div class="flow-step"><span>4</span><b>전략 새로 작성</b></div>
-    <div class="flow-step"><span>5</span><b>백테스트 검증</b></div>
-    <div class="flow-step"><span>6</span><b>적용 후 봇 ON</b></div>
-  </section>
-
-  <section class="dashboard-cards dashboard-only" aria-label="Feature pages">
-    <a class="dash-link" href="#logs">
-      <span class="label">상세 페이지</span>
-      <b>매매 로그 차트</b>
-      <p>어느 캔들에서 매매했고 당시 금액·수량·가격이 어땠는지 확인합니다.</p>
-    </a>
-    <a class="dash-link" href="#strategy">
-      <span class="label">상세 페이지</span>
-      <b>전략 생성</b>
-      <p>스크립트나 수학 원리로 새 전략 아이디어를 작성합니다.</p>
-    </a>
-    <a class="dash-link" href="#backtest">
-      <span class="label">상세 페이지</span>
-      <b>백테스트</b>
-      <p>가상 진입·청산 위치와 수익률을 차트에서 검증합니다.</p>
-    </a>
-    <a class="dash-link" href="#apply">
-      <span class="label">상세 페이지</span>
-      <b>전략 적용</b>
-      <p>백테스트 통과 후 전략 변경, TESTNET 적용, 봇 ON을 처리합니다.</p>
-    </a>
-  </section>
-
   <section class="grid">
     <div class="stack">
-      <section id="profit" class="hero dashboard-only">
-        <div class="hero-main">
-          <div id="signal" class="signal idle">
-            <span class="signal-ring"><span class="signal-core"></span></span>
-            <div class="signal-text">
-              <span id="signalLabel" class="signal-label">상태 확인 중</span>
-              <span id="signalSub" class="signal-sub">잠시만요…</span>
-            </div>
+      <section id="profit" class="monitor dashboard-only">
+        <div class="statusbar">
+          <span id="modePill" class="mpill mode-pill off">—</span>
+          <span id="botPill2" class="mpill"><span class="dot"></span>BOT —</span>
+          <span class="mpill ghost">신호 <b id="lastSignal" class="num">—</b></span>
+          <span id="execPill" class="mpill"><span class="dot"></span>exec —</span>
+          <span class="sb-grow"></span>
+          <div class="sb-pnl">
+            <span class="label">실현 PnL</span>
+            <b id="pnlNumber" class="num neutral">0.00</b>
           </div>
-
-          <div class="hero-pnl">
-            <span class="hero-pnl-label">실현 손익</span>
-            <div id="pnlNumber" class="hero-pnl-num num neutral">0.00%</div>
-          </div>
-
-          <h1 id="pnlTitle" class="hero-title">오늘 손익을 불러오는 중입니다</h1>
-          <p id="pnlCopy" class="hero-copy">손익이 괜찮으면 계속 감시하고, 손실이 커지면 먼저 멈춘 뒤 로그를 봅니다.</p>
-
-          <div class="hero-actions">
-            <button id="primaryDecision" class="btn primary lg" type="button" onclick="primaryDecision()">상태 새로고침</button>
-            <button id="heroStop" class="btn danger lg" type="button" onclick="emergencyStop()">봇 멈추기</button>
-          </div>
-          <div id="lossAlert" class="loss-alert" hidden>
-            <h3>손실 방어 우선</h3>
-            <p class="muted" style="margin-top:6px;">일일 손실 제한에 가까워지면 전략 개선보다 먼저 신규 진입을 멈추는 게 맞습니다.</p>
-          </div>
+          <button class="btn danger" type="button" onclick="emergencyStop()">KILL</button>
         </div>
-
-        <aside class="hero-side">
-          <div class="trust-card">
-            <span class="label">실행 모드</span>
-            <b id="modeState">-</b>
-            <span id="modeNote" class="trust-note">실제 주문이 아닙니다</span>
-          </div>
-          <div class="trust-card">
-            <span class="label">봇 상태</span>
-            <b id="botState">-</b>
-          </div>
-          <div class="trust-card">
-            <span class="label">현재 포지션</span>
-            <b id="positionState">없음</b>
-          </div>
-        </aside>
       </section>
 
       <section id="logs" class="card view-logs">
@@ -1584,7 +1442,6 @@ let editorMode = 'script';
 let backtestPassed = false;
 let lastBacktestResult = null;
 let lastBacktestCandles = null;
-let savedVersionCounter = 4;
 let wizardStep = 1;
 let activePreset = 'rsi_reversion';
 const WIZARD_STEPS = [
@@ -1801,11 +1658,11 @@ const SIGNAL_VAR_LABELS = {
   'ob.activeBullish':'활성 Bullish OB 안', 'ob.activeBearish':'활성 Bearish OB 안', 'ob.activeDirection':'활성 OB 방향', 'ob.activeLow':'활성 OB 하단', 'ob.activeHigh':'활성 OB 상단', 'ob.activeMid':'활성 OB 중앙', 'ob.activeSize':'활성 OB 크기',
   'obFvg.bullishConfluence':'Bullish OB+FVG 중첩', 'obFvg.bearishConfluence':'Bearish OB+FVG 중첩',
 };
-const savedVersions = [
-  { name:'Countertrend v3', ret:42.8, win:57.4, mdd:-11.9, pf:1.62, tag:'saved' },
-  { name:'Breakout v2', ret:31.2, win:44.1, mdd:-18.7, pf:1.28, tag:'watch' },
-  { name:'Mean Revert v1', ret:18.5, win:52.0, mdd:-24.4, pf:1.05, tag:'archived' },
-];
+// 저장소: /api/strategies에서 불러온 영속 전략 + 미저장 현재 후보(currentCandidate).
+let savedStrategies = [];
+let currentCandidate = null;
+// 마지막으로 백테스트한 config(빌더에서 만든 것 또는 저장소에서 불러온 것). 저장/적용 시 사용.
+let activeBacktestConfig = null;
 
 function $(id) { return document.getElementById(id); }
 function currentView() {
@@ -1843,6 +1700,16 @@ function dateShort(v) {
   const d = new Date(v);
   return Number.isNaN(d.getTime()) ? String(v) : d.toISOString().slice(0, 10);
 }
+function ago(ts) {
+  const ms = Date.now() - Number(ts);
+  if (!Number.isFinite(ms) || ms < 0) return '—';
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return '방금';
+  if (m < 60) return m + 'm 전';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h 전';
+  return Math.floor(h / 24) + 'd 전';
+}
 function signedClass(v) {
   const n = Number(v);
   if (n > 0) return 'up';
@@ -1860,51 +1727,44 @@ async function load() {
   render();
 }
 
+async function loadHealth() {
+  const el = $('execPill');
+  if (!el) return;
+  try {
+    const h = await fetch('/api/health').then(r => r.json());
+    const st = h.executor;
+    const dot = st === 'ok' ? 'up' : st === 'none' ? '' : 'down';
+    const txt = st === 'ok' ? 'exec OK' : st === 'none' ? 'exec 미설정' : 'exec DOWN';
+    el.innerHTML = '<span class="dot ' + dot + '"></span>' + txt;
+  } catch {
+    el.innerHTML = '<span class="dot down"></span>exec DOWN';
+  }
+}
+
 function render() {
   const mode = state.status.mode || 'OFF';
   const position = state.status.position;
+  const live = state.status.live;
   const failedOrders = state.orders.filter(isFailedOrder);
   const pnl = Number(position?.realizedPnl ?? 0);
 
   $('modeBanner').className = isLive(mode) ? 'mode live' : 'mode';
-  $('modeBanner').textContent = isLive(mode) ? 'LIVE MODE - 실제 자금으로 주문이 실행됩니다.' : mode + ' MODE - 실제 주문이 아닙니다.';
+  $('modeBanner').textContent = isLive(mode) ? 'LIVE MODE — 실제 자금으로 주문이 실행됩니다.' : mode + ' MODE — 모의/테스트 주문.';
+
+  // 상태바: 모드 / 봇 / 마지막 신호 / executor / 실현 PnL.
   const botText = mode === 'ALERT_ONLY' ? 'ENTRY PAUSED' : isOn(mode) ? 'BOT ON' : 'BOT OFF';
   const botDot = mode === 'ALERT_ONLY' ? 'warn' : isOn(mode) ? 'up' : '';
-  $('botPill').innerHTML = '<span class="dot ' + botDot + '"></span>' + botText;
+  const botHtml = '<span class="dot ' + botDot + '"></span>' + botText;
+  $('botPill').innerHTML = botHtml;
+  $('botPill2').innerHTML = botHtml;
 
-  $('pnlNumber').textContent = pct(pnl);
-  $('pnlNumber').className = 'hero-pnl-num num ' + signedClass(pnl);
+  $('modePill').textContent = mode;
+  $('modePill').className = 'mpill mode-pill ' + (isLive(mode) ? 'live' : isOn(mode) ? 'test' : 'off');
 
-  // 신호등: 손실=빨강, 신규중지=노랑, 정상운영=초록, 꺼짐=회색.
-  let sig, sigLabel, sigSub;
-  if (!isOn(mode) && mode !== 'ALERT_ONLY') {
-    sig = 'idle'; sigLabel = '봇 꺼짐'; sigSub = '적용 화면에서 봇을 켤 수 있어요';
-    $('pnlTitle').textContent = '봇이 꺼져 있습니다';
-    $('pnlCopy').textContent = '거래를 시작하려면 전략을 만들고 백테스트로 검증한 뒤, 적용 화면에서 봇을 켜세요.';
-  } else if (pnl < 0) {
-    sig = 'bad'; sigLabel = '주의: 손실 발생'; sigSub = '먼저 멈출지 판단하세요';
-    $('pnlTitle').textContent = '오늘은 손실입니다. 먼저 멈출지 판단하세요';
-    $('pnlCopy').textContent = '추가 손실을 막으려면 봇을 멈추거나 신규 진입을 중지한 뒤, 매매 로그에서 원인을 확인하세요.';
-  } else if (mode === 'ALERT_ONLY') {
-    sig = 'warn'; sigLabel = '신규 진입 중지됨'; sigSub = '보유 포지션 청산만 동작';
-    $('pnlTitle').textContent = '신규 진입을 멈춘 상태입니다';
-    $('pnlCopy').textContent = '새 매수/매도는 하지 않고 기존 포지션 관리만 합니다. 안정되면 다시 봇을 켜세요.';
-  } else {
-    sig = 'ok'; sigLabel = '정상 운영 중'; sigSub = pnl > 0 ? '수익 구간' : '대기 중';
-    $('pnlTitle').textContent = pnl > 0 ? '잘 운영되고 있습니다' : '정상 운영 중입니다';
-    $('pnlCopy').textContent = '봇이 전략대로 감시 중입니다. 최근 판단 이유는 매매 로그에서 확인할 수 있어요.';
-  }
-  $('signal').className = 'signal ' + sig;
-  $('signalLabel').textContent = sigLabel;
-  $('signalSub').textContent = sigSub;
+  $('lastSignal').textContent = state.status.lastProcessedCandle ? ago(state.status.lastProcessedCandle) : '—';
 
-  $('lossAlert').hidden = pnl >= 0;
-  $('primaryDecision').textContent = pnl < 0 ? '매매 로그 보기' : '상태 새로고침';
-  $('heroStop').style.display = isOn(mode) || mode === 'ALERT_ONLY' ? '' : 'none';
-  $('botState').textContent = botText;
-  $('modeState').textContent = mode;
-  $('modeNote').textContent = isLive(mode) ? '실제 자금으로 주문됩니다' : '실제 주문이 아닙니다 (모의)';
-  $('positionState').textContent = position ? position.side + ' · 단계 ' + position.currentStep + '/' + position.maxStep : '없음';
+  $('pnlNumber').textContent = (pnl >= 0 ? '+' : '') + num(pnl);
+  $('pnlNumber').className = 'num ' + signedClass(pnl);
 
   renderLogs();
   renderTradeChart();
@@ -1912,7 +1772,7 @@ function render() {
   renderStrategyBuilder();
   renderVersions();
   renderCompare();
-  renderPosition(position);
+  renderPosition(position, live);
   renderOrders(failedOrders);
 }
 
@@ -1926,8 +1786,8 @@ function ensureLiveChart() {
   if (!liveChart) {
     liveChart = LightweightCharts.createChart(el, chartTheme(360));
     liveCandleSeries = liveChart.addCandlestickSeries({
-      upColor:'#2ebd85', downColor:'#f6465d', borderVisible:false,
-      wickUpColor:'#2ebd85', wickDownColor:'#f6465d',
+      upColor:'#26a69a', downColor:'#ef5350', borderVisible:false,
+      wickUpColor:'#26a69a', wickDownColor:'#ef5350',
     });
   }
   return true;
@@ -1965,7 +1825,7 @@ function renderTradeChart() {
       return {
         time: sec(o.candle_open_time),
         position: buy ? 'belowBar' : 'aboveBar',
-        color: failed ? '#f6465d' : (buy ? '#2ebd85' : '#e0a800'),
+        color: failed ? '#ef5350' : (buy ? '#26a69a' : '#1e53e5'),
         shape: failed ? 'circle' : (buy ? 'arrowUp' : 'arrowDown'),
         text: failed ? 'FAIL' : (o.reason || o.side || ''),
       };
@@ -1979,7 +1839,7 @@ function renderTradeChart() {
   const position = state.status.position;
   if (position && position.avgEntryPrice) {
     livePriceLine = liveCandleSeries.createPriceLine({
-      price: Number(position.avgEntryPrice), color:'#f0b90b', lineWidth:1,
+      price: Number(position.avgEntryPrice), color:'#2962ff', lineWidth:1,
       lineStyle:2, axisLabelVisible:true, title:'평단',
     });
   }
@@ -2012,14 +1872,14 @@ function ensureBacktestCharts() {
   if (!btPriceChart) {
     btPriceChart = LightweightCharts.createChart(priceEl, chartTheme(340));
     btCandleSeries = btPriceChart.addCandlestickSeries({
-      upColor:'#2ebd85', downColor:'#f6465d', borderVisible:false,
-      wickUpColor:'#2ebd85', wickDownColor:'#f6465d',
+      upColor:'#26a69a', downColor:'#ef5350', borderVisible:false,
+      wickUpColor:'#26a69a', wickDownColor:'#ef5350',
     });
   }
   if (!btEquityChart && eqEl) {
     btEquityChart = LightweightCharts.createChart(eqEl, chartTheme(200));
     btEquitySeries = btEquityChart.addAreaSeries({
-      lineColor:'#f0b90b', topColor:'rgba(240,185,11,.25)', bottomColor:'rgba(240,185,11,.02)',
+      lineColor:'#2962ff', topColor:'rgba(41,98,255,.25)', bottomColor:'rgba(41,98,255,.02)',
       lineWidth:2, priceLineVisible:false,
     });
   }
@@ -2051,7 +1911,7 @@ function renderBacktestChart(result, candles) {
     markers.push({
       time: sec(t.entryTime),
       position: isLong ? 'belowBar' : 'aboveBar',
-      color: isLong ? '#2ebd85' : '#f6465d',
+      color: isLong ? '#26a69a' : '#ef5350',
       shape: isLong ? 'arrowUp' : 'arrowDown',
       text: (isLong ? 'LONG' : 'SHORT') + ' IN ' + num(t.avgEntry),
     });
@@ -2059,7 +1919,7 @@ function renderBacktestChart(result, candles) {
     markers.push({
       time: sec(t.exitTime),
       position: isLong ? 'aboveBar' : 'belowBar',
-      color: winCls ? '#2ebd85' : '#f6465d',
+      color: winCls ? '#26a69a' : '#ef5350',
       shape: isLong ? 'arrowDown' : 'arrowUp',
       text: 'OUT ' + (t.pnl >= 0 ? '+' : '') + Math.round(t.pnl),
     });
@@ -2620,38 +2480,138 @@ function generateStrategyDsl() {
   $('builderStatus').textContent = 'synced';
 }
 
-function renderVersions() {
-  $('versionList').innerHTML = savedVersions.map(v =>
-    '<div class="mini-item"><div><b>' + esc(v.name) + '</b><br /><span>수익률 ' + v.ret.toFixed(1) + '% · 승률 ' + v.win.toFixed(1) + '% · MDD ' + v.mdd.toFixed(1) + '%</span></div>' +
-    '<span class="status ' + (v.tag === 'saved' ? 'ok' : v.tag === 'watch' ? 'warn' : '') + '">' + esc(v.tag) + '</span></div>'
-  ).join('');
-}
-
-function saveStrategyVersion() {
-  const latest = currentBacktestMetrics();
-  savedVersions.unshift({
-    name:'Lab Strategy v' + savedVersionCounter++,
-    ret:latest.returnPct,
-    win:latest.winRate,
-    mdd:latest.mdd,
-    pf:latest.pf,
-    tag:'saved',
-  });
+async function loadStrategies() {
+  try {
+    const list = await fetch('/api/strategies').then(r => r.json());
+    savedStrategies = Array.isArray(list) ? list : [];
+  } catch { savedStrategies = []; }
   renderVersions();
   renderCompare();
-  alert('전략 후보를 새 버전으로 저장했습니다.');
+}
+
+// 저장소 목록: 영속 전략 카드(불러오기/적용/삭제). 활성 전략은 status=active 배지.
+function renderVersions() {
+  const rows = [];
+  if (currentCandidate) {
+    rows.push(
+      '<div class="mini-item"><div><b>현재 후보 (미저장)</b><br /><span>' + metricsLine(currentCandidate) + '</span></div>' +
+      '<span class="status ' + (currentCandidate.passed ? 'ok' : 'warn') + '">' + (currentCandidate.passed ? '통과' : '미통과') + '</span></div>'
+    );
+  }
+  if (!savedStrategies.length && !currentCandidate) {
+    $('versionList').innerHTML = '<div class="empty">저장된 전략이 없습니다. 백테스트 후 저장하세요.</div>';
+    return;
+  }
+  for (const s of savedStrategies) {
+    const m = s.metrics;
+    const badge = s.status === 'active' ? 'ok' : s.status === 'archived' ? '' : 'warn';
+    const sid = esc(s.strategyId);
+    rows.push(
+      '<div class="mini-item"><div><b>' + esc(s.name) + '</b><br /><span>' +
+        (m ? metricsLine(m) : '백테스트 지표 없음') + ' · ' + esc(s.symbol) + '</span>' +
+        '<div class="actions" style="margin-top:6px;gap:6px;">' +
+          '<button class="btn ghost" type="button" onclick="loadStrategy(\'' + sid + '\')">불러오기</button>' +
+          (s.status === 'active' ? '' : '<button class="btn primary" type="button" onclick="activateStrategy(\'' + sid + '\')">적용</button>') +
+          (s.status === 'active' ? '' : '<button class="btn ghost" type="button" onclick="deleteStrategy(\'' + sid + '\')">삭제</button>') +
+        '</div>' +
+      '</div>' +
+      '<span class="status ' + badge + '">' + esc(s.status) + '</span></div>'
+    );
+  }
+  $('versionList').innerHTML = rows.join('');
+}
+
+function metricsLine(m) {
+  const ret = Number(m.returnPct ?? m.ret ?? 0);
+  const win = Number(m.winRate ?? m.win ?? 0);
+  const mdd = Number(m.mdd ?? 0);
+  return '수익률 ' + (ret > 0 ? '+' : '') + ret.toFixed(1) + '% · 승률 ' + win.toFixed(1) + '% · MDD ' + mdd.toFixed(1) + '%';
+}
+
+async function saveStrategyVersion() {
+  if (!lastBacktestResult) { alert('먼저 백테스트를 실행한 뒤 저장하세요.'); return; }
+  const name = (prompt('저장할 전략 이름', '내 전략 ' + new Date().toISOString().slice(0, 16).replace('T', ' ')) || '').trim();
+  if (!name) return;
+  const config = activeBacktestConfig || buildStrategyConfig();
+  config.name = name;
+  const metrics = currentBacktestMetrics();
+  try {
+    const res = await fetch('/api/strategies', {
+      method:'POST', headers:{ 'content-type':'application/json' },
+      body:JSON.stringify({ config, name, metrics }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.ok) throw new Error(body.error || '저장 실패');
+  } catch (err) {
+    alert('저장하지 못했습니다.\\n' + (err instanceof Error ? err.message : String(err)));
+    return;
+  }
+  currentCandidate = null;
+  await loadStrategies();
+  alert('전략을 저장소에 저장했습니다.');
+}
+
+// 불러오기: 저장된 config로 바로 백테스트 실행 → 결과/적용 화면으로. 빌더는 안 건드림.
+function loadStrategy(strategyId) {
+  const s = savedStrategies.find(x => x.strategyId === strategyId);
+  if (!s) return;
+  previewBacktest(s.config);
+}
+
+async function activateStrategy(strategyId) {
+  const s = savedStrategies.find(x => x.strategyId === strategyId);
+  if (!confirm('"' + (s ? s.name : strategyId) + '"를 봇에 적용할까요? 같은 심볼의 기존 활성 전략은 보관됩니다.')) return;
+  try {
+    const res = await fetch('/api/strategies/activate', {
+      method:'POST', headers:{ 'content-type':'application/json' },
+      body:JSON.stringify({ strategyId }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.ok) throw new Error(body.error || '적용 실패');
+  } catch (err) {
+    alert('적용하지 못했습니다.\\n' + (err instanceof Error ? err.message : String(err)));
+    return;
+  }
+  await loadStrategies();
+  alert('전략을 봇에 적용했습니다. 다음 4시간봉 마감부터 이 전략으로 판단합니다.');
+}
+
+async function deleteStrategy(strategyId) {
+  const s = savedStrategies.find(x => x.strategyId === strategyId);
+  if (!confirm('"' + (s ? s.name : strategyId) + '"를 삭제할까요?')) return;
+  try {
+    const res = await fetch('/api/strategies/delete', {
+      method:'POST', headers:{ 'content-type':'application/json' },
+      body:JSON.stringify({ strategyId }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.ok) throw new Error(body.error || '삭제 실패');
+  } catch (err) {
+    alert('삭제하지 못했습니다.\\n' + (err instanceof Error ? err.message : String(err)));
+    return;
+  }
+  await loadStrategies();
 }
 
 function renderCompare() {
-  const items = savedVersions.slice(0, 3);
-  const bestRet = Math.max.apply(null, items.map(v => v.ret));
-  $('compareGrid').innerHTML = items.map(v =>
-    '<article class="compare-card ' + (v.ret === bestRet ? 'best' : '') + '">' +
+  const items = [];
+  if (currentCandidate) items.push({ name:'현재 후보', m:currentCandidate });
+  for (const s of savedStrategies) if (s.metrics) items.push({ name:s.name, m:s.metrics });
+  const top = items.slice(0, 3);
+  if (!top.length) { $('compareGrid').innerHTML = '<div class="empty">비교할 백테스트 결과가 없습니다.</div>'; return; }
+  const rets = top.map(v => Number(v.m.returnPct ?? v.m.ret ?? 0));
+  const bestRet = Math.max.apply(null, rets);
+  $('compareGrid').innerHTML = top.map((v, i) => {
+    const ret = rets[i];
+    const win = Number(v.m.winRate ?? v.m.win ?? 0);
+    const mdd = Number(v.m.mdd ?? 0);
+    const pf = Number(v.m.pf ?? 0);
+    return '<article class="compare-card ' + (ret === bestRet ? 'best' : '') + '">' +
       '<span class="label">' + esc(v.name) + '</span>' +
-      '<b class="num ' + signedClass(v.ret) + '">' + (v.ret > 0 ? '+' : '') + v.ret.toFixed(1) + '%</b>' +
-      '<div class="tag-row"><span class="tag">승률 ' + v.win.toFixed(1) + '%</span><span class="tag">MDD ' + v.mdd.toFixed(1) + '%</span><span class="tag">PF ' + v.pf.toFixed(2) + '</span></div>' +
-    '</article>'
-  ).join('');
+      '<b class="num ' + signedClass(ret) + '">' + (ret > 0 ? '+' : '') + ret.toFixed(1) + '%</b>' +
+      '<div class="tag-row"><span class="tag">승률 ' + win.toFixed(1) + '%</span><span class="tag">MDD ' + mdd.toFixed(1) + '%</span><span class="tag">PF ' + (Number.isFinite(pf) ? pf.toFixed(2) : '∞') + '</span></div>' +
+    '</article>';
+  }).join('');
 }
 
 function currentBacktestMetrics() {
@@ -2909,27 +2869,47 @@ function searchRank(r, profile) {
   return r.ret + r.win + pf * 20 - Math.abs(r.mdd) + Math.min(r.trades, 100) * 0.08;
 }
 
-function renderPosition(position) {
+function renderPosition(position, live) {
+  const body = $('positionBody');
   if (!position) {
     $('positionChip').className = 'status';
-    $('positionChip').textContent = '없음';
-    $('positionBody').innerHTML = '<div class="empty">보유 포지션 없음</div>';
+    $('positionChip').textContent = 'FLAT';
+    body.className = '';
+    body.innerHTML = '<div class="pos-flat">보유 포지션 없음</div>';
     return;
   }
   $('positionChip').className = 'status ' + (position.side === 'LONG' ? 'ok' : 'bad');
   $('positionChip').textContent = position.side + ' · v' + position.strategyVersion;
-  $('positionBody').innerHTML =
-    '<div class="two-col">' +
-      metric('상태', position.state, '') +
-      metric('평단', num(position.avgEntryPrice), 'num') +
-      metric('수량', num(position.totalSize), 'num') +
-      metric('실현 PnL', num(position.realizedPnl), 'num ' + signedClass(position.realizedPnl)) +
-    '</div>';
+
+  const cell = (k, v, cls) => '<div class="pos-cell"><span class="k">' + esc(k) + '</span><b class="v ' + (cls || '') + '">' + v + '</b></div>';
+  const dash = '<span class="muted">—</span>';
+
+  let cells = '';
+  cells += cell('SIDE', '<span class="' + (position.side === 'LONG' ? 'up' : 'down') + '">' + esc(position.side) + '</span>', 'num');
+  cells += cell('진입가', num(position.avgEntryPrice), 'num');
+  cells += cell('수량', num(position.totalSize) + ' · ' + position.currentStep + '/' + position.maxStep, 'num');
+
+  if (live) {
+    const up = Number(live.unrealizedPnl);
+    cells += cell('현재가', num(live.markPrice), 'num');
+    cells += cell('미실현', (up >= 0 ? '+' : '') + num(up) + ' USDT', 'num ' + signedClass(up));
+    cells += cell('노출액', num(live.notional) + ' USDT · ' + num(live.leverage) + 'x', 'num');
+    const liq = live.liqDistancePct;
+    const liqStr = (liq == null) ? dash
+      : num(live.liquidationPrice) + ' (' + liq.toFixed(1) + '%)';
+    cells += cell('청산가 (거리)', liqStr, 'num' + (liq != null && liq < 10 ? ' liq-near' : ''));
+  } else {
+    cells += cell('현재가', dash, 'num');
+    cells += cell('미실현', dash, 'num');
+    cells += cell('노출액', dash, 'num');
+    cells += cell('청산가 (거리)', dash, 'num');
+  }
+  cells += cell('실현 PnL', (Number(position.realizedPnl) >= 0 ? '+' : '') + num(position.realizedPnl) + ' USDT', 'num ' + signedClass(position.realizedPnl));
+
+  body.className = 'pos-panel';
+  body.innerHTML = cells;
 }
 
-function metric(label, value, cls) {
-  return '<div class="metric"><span class="label">' + esc(label) + '</span><b class="' + cls + '">' + esc(value) + '</b></div>';
-}
 
 function renderOrders(failedOrders) {
   $('orderChip').className = 'status ' + (failedOrders.length ? 'bad' : 'ok');
@@ -3088,12 +3068,14 @@ function parseBacktestYears() {
   return 3;
 }
 
-async function previewBacktest() {
+async function previewBacktest(configOverride) {
+  const config = configOverride || buildStrategyConfig();
+  activeBacktestConfig = config;
   const runBtns = document.querySelectorAll('[onclick="previewBacktest()"]');
   runBtns.forEach(b => { b.disabled = true; b.dataset.label = b.textContent; b.textContent = '실행 중…'; });
   try {
     const payload = {
-      config: buildStrategyConfig(),
+      config,
       years: parseBacktestYears(),
       days: parseBacktestDays(),
       startEquity: parseCapital(),
@@ -3145,25 +3127,41 @@ async function previewBacktest() {
   location.hash = 'backtest';
   // 뷰가 보인 뒤에 그려야 컨테이너 폭이 잡힌다.
   requestAnimationFrame(() => renderBacktestChart(lastBacktestResult, lastBacktestCandles));
-  savedVersions[0] = { name:'현재 후보', ret:returnPct, win:result.winRate, mdd, pf, tag:backtestPassed ? 'saved' : 'watch' };
+  currentCandidate = { returnPct, winRate:result.winRate, mdd, pf, passed:backtestPassed };
   renderVersions();
   renderCompare();
 }
 
-function applyStrategy() {
-  if (!backtestPassed) {
+async function applyStrategy() {
+  if (!backtestPassed || !activeBacktestConfig) {
     alert('백테스트 통과 후 적용할 수 있습니다.');
     return;
   }
-  alert('MVP UI: 전략 저장 API가 연결되면 여기서 새 전략 버전을 만들고 TESTNET에 적용합니다.');
-  setMode('TESTNET');
-}
-
-function primaryDecision() {
-  const position = state.status.position;
-  const pnl = Number(position?.realizedPnl ?? 0);
-  if (pnl < 0) emergencyStop();
-  else location.hash = 'logs';
+  const name = (prompt('적용할 전략 이름', activeBacktestConfig.name || '적용 전략') || '').trim();
+  if (!name) return;
+  const config = activeBacktestConfig;
+  config.name = name;
+  try {
+    const saveRes = await fetch('/api/strategies', {
+      method:'POST', headers:{ 'content-type':'application/json' },
+      body:JSON.stringify({ config, name, metrics: currentBacktestMetrics() }),
+    });
+    const saveBody = await saveRes.json();
+    if (!saveRes.ok || !saveBody.ok) throw new Error(saveBody.error || '저장 실패');
+    const actRes = await fetch('/api/strategies/activate', {
+      method:'POST', headers:{ 'content-type':'application/json' },
+      body:JSON.stringify({ strategyId: saveBody.strategyId }),
+    });
+    const actBody = await actRes.json();
+    if (!actRes.ok || !actBody.ok) throw new Error(actBody.error || '적용 실패');
+  } catch (err) {
+    alert('전략을 적용하지 못했습니다.\\n' + (err instanceof Error ? err.message : String(err)));
+    return;
+  }
+  currentCandidate = null;
+  await loadStrategies();
+  await setMode('TESTNET');
+  alert('전략을 저장하고 봇에 적용했습니다. 봇이 TESTNET으로 전환됩니다.');
 }
 
 async function setMode(mode) {
@@ -3190,10 +3188,14 @@ async function runNow() {
 renderStrategyBuilder();
 renderVersions();
 renderCompare();
+loadStrategies();
 load().catch(err => {
-  $('pnlTitle').textContent = '상태를 불러오지 못했습니다';
-  $('pnlCopy').textContent = err.message;
+  $('modeBanner').textContent = '상태를 불러오지 못했습니다: ' + err.message;
 });
+loadHealth();
+// 라이브 감시: 주기적으로 상태 + executor 핑 갱신.
+setInterval(() => { load().catch(() => {}); }, 15000);
+setInterval(() => { loadHealth(); }, 20000);
 window.addEventListener('hashchange', route);
 window.addEventListener('resize', resizeBacktestCharts);
 route();

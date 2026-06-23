@@ -42,6 +42,12 @@ export class BinanceClient {
     return this.signedRequest('GET', '/fapi/v2/account', {});
   }
 
+  // 포지션 리스크: markPrice / unRealizedProfit / liquidationPrice / leverage.
+  async getPositionRisk(symbol: string): Promise<unknown> {
+    if (this.viaExecutor) return this.executorPost('/positionRisk', { symbol });
+    return this.signedRequest('GET', '/fapi/v2/positionRisk', { symbol });
+  }
+
   async setLeverage(symbol: string, leverage: number): Promise<unknown> {
     if (this.viaExecutor) return this.executorPost('/leverage', { symbol, leverage });
     return this.signedRequest('POST', '/fapi/v1/leverage', { symbol, leverage });
